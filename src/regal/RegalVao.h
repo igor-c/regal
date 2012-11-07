@@ -42,11 +42,11 @@
 
 REGAL_GLOBAL_BEGIN
 
-#include <map>
 #include <string>
 
 #include "RegalEmu.h"
 #include "RegalContextInfo.h"
+#include "RegalSharedMap.h"
 
 REGAL_GLOBAL_END
 
@@ -87,7 +87,7 @@ struct RegalVao : public RegalEmu {
         Array a[ REGAL_VAO_NUM_ARRAYS ];
     };
 
-    std::map<GLuint, Vao> objects;
+    shared_map<GLuint, Vao> objects;
 
     GLenum clientActiveTexture;
 
@@ -113,6 +113,10 @@ struct RegalVao : public RegalEmu {
 
         maxVertexAttribs = ctx.info->maxVertexAttribs;
         RegalAssert( maxVertexAttribs <= REGAL_VAO_NUM_ARRAYS );
+
+        RegalContext *sharingWith = ctx.groupInitializedContext();
+        if (sharingWith)
+          objects = sharingWith->vao->objects;
 
         // we have RFF2A maps for sets of 8 and 16 attributes. if
         // REGAL_VAO_NUM_ARRAYS > 16 a new map needs to be added

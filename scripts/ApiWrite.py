@@ -13,10 +13,12 @@ def writeHeader(file,name):
 from Api import Api
 from Api import Function, Typedef, Enum
 from Api import Return, Parameter, Input, Output, InputOutput
-from Api import Enumerant'''
+from Api import Enumerant
+from Api import StateType, State'''
 
   print >>file, '''
-%s = Api()'''%(name)
+%s = Api()
+'''%(name)
 
 # Write out typedef container
 
@@ -76,7 +78,10 @@ defines = Enum('defines')
 '''%(name)
 
   for i in enumerants:
-    print >>file, '# %s'%i[0].category
+    if len(i[0].category):
+      print >>file, '# %s'%i[0].category
+    else:
+      print >>file, '#'
     print >>file, ''
     for j in i:
       print >>file, '%s = Enumerant(\'%s\','%(j.name,j.name),
@@ -117,7 +122,10 @@ def writeFunctions(file,name,functions):
   f = sorted( [ sorted( f[i], key = lambda k : k.name) for i in f.keys() ], cmp=cmpCategory )
 
   for i in f:
-    print >>file, '# %s'%i[0].category
+    if len(i[0].category):
+      print >>file, '# %s'%i[0].category
+    else:
+      print >>file, '#'
     print >>file, ''
     for j in i:
       print >>file, '%s = Function(\'%s\')'%(j.name,j.name)
@@ -161,3 +169,36 @@ def writeFunctions(file,name,functions):
         print >>file, '%s.play = %s'%(j.name,j.play)
       print >>file, '%s.add(%s)'%(name,j.name)
       print >>file, ''
+
+# Write out state values
+
+def writeStates(file, name, stateTypes, states):
+
+  if len(stateTypes):
+    print >>file, '# state types'
+    print >>file, ''
+
+    for s in stateTypes:
+      if len(s.name):
+        print >>file, '%s = StateType(\'%s\', \'%s\', \'%s\')'%(s.name,s.name,s.code,s.explanation)
+
+    print >>file, ''
+
+    for s in stateTypes:
+      if len(s.name):
+        print >>file, 'gl.add(%s)'%(s.name)
+
+  if len(states):
+    print >>file, ''
+    print >>file, '# states'
+    print >>file, ''
+
+    for s in states:
+      if len(s.getValue):
+        print >>file, '%s = State(\'%s\', \'%s\', \'%s\', \'%s\', \'%s\', \'%s\', \'%s\')'%( s.getValue, s.getValue, s.type, s.getCommand, s.initialValue, s.description, s.section, s.attribute)
+
+    print >>file, ''
+
+    for s in states:
+      if len(s.getValue):
+        print >>file, 'gl.add(%s)'%(s.getValue)

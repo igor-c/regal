@@ -3,8 +3,10 @@ from Api import Api
 from Api import Function, Typedef, Enum
 from Api import Return, Parameter, Input, Output, InputOutput
 from Api import Enumerant
+from Api import StateType, State
 
 cgl = Api()
+
 CGLContextObj = Typedef('CGLContextObj','void *')
 CGLContextObj.default = '0'
 
@@ -303,7 +305,7 @@ CGLError.add(kCGLBadConnection)
 defines = Enum('defines')
 cgl.add(defines)
 
-# 
+#
 
 kCGL0Bit = Enumerant('kCGL0Bit', 0x0001, '')
 kCGL10Bit = Enumerant('kCGL10Bit', 0x0100, '')

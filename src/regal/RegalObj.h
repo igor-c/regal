@@ -42,10 +42,9 @@
 
 REGAL_GLOBAL_BEGIN
 
-#include <map>
-
 #include "RegalEmu.h"
 #include "RegalPrivate.h"
+#include "RegalSharedMap.h"
 
 REGAL_GLOBAL_END
 
@@ -58,8 +57,8 @@ struct RegalName {
 };
 
 struct RegalNameTranslator {
-    std::map< GLuint, RegalName > app2drv;
-    std::map< GLuint, RegalName * > drv2app;
+    shared_map< GLuint, RegalName > app2drv;
+    shared_map< GLuint, RegalName * > drv2app;
     void (REGAL_CALL *gen)( GLsizei n, GLuint * objs );
     void (REGAL_CALL *del)( GLsizei n, const GLuint * objs );
 
@@ -130,6 +129,15 @@ struct RegalObj : public RegalEmu {
 
   void Init( RegalContext &ctx )
   {
+    RegalContext *sharingWith = ctx.groupInitializedContext();
+    if (sharingWith)
+    {
+      bufferNames.app2drv = sharingWith->obj->bufferNames.app2drv;
+      bufferNames.drv2app = sharingWith->obj->bufferNames.drv2app;
+      vaoNames.app2drv    = sharingWith->obj->vaoNames.app2drv;
+      vaoNames.drv2app    = sharingWith->obj->vaoNames.drv2app;
+    }
+
     bufferNames.gen = ctx.dispatcher.emulation.glGenBuffers;
     bufferNames.del = ctx.dispatcher.emulation.glDeleteBuffers;
     vaoNames.gen    = ctx.dispatcher.emulation.glGenVertexArrays;

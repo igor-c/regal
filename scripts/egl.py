@@ -3,8 +3,10 @@ from Api import Api
 from Api import Function, Typedef, Enum
 from Api import Return, Parameter, Input, Output, InputOutput
 from Api import Enumerant
+from Api import StateType, State
 
 egl = Api()
+
 EGLNativeWindowType = Typedef('EGLNativeWindowType','struct ANativeWindow*')
 EGLNativeWindowType.default = '0'
 
@@ -70,7 +72,7 @@ egl.add(__eglMustCastToProperFunctionPointerType)
 defines = Enum('defines')
 egl.add(defines)
 
-# 
+#
 
 EGLAPI = Enumerant('EGLAPI', 'KHRONOS_APICALL', '')
 EGLAPIENTRY = Enumerant('EGLAPIENTRY', 'KHRONOS_APIENTRY', '')

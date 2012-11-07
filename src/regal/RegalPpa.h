@@ -48,11 +48,12 @@ REGAL_GLOBAL_BEGIN
 
 #include <GL/Regal.h>
 
-#include "RegalContextInfo.h"
 #include "RegalState.h"
 #include "RegalEmu.h"
 #include "RegalLog.h"
 #include "RegalToken.h"
+#include "RegalContext.h"
+#include "RegalContextInfo.h"
 
 REGAL_GLOBAL_END
 

@@ -39,19 +39,13 @@ using namespace std;
 
 #include "RegalLog.h"
 #include "RegalInit.h"
-#include "RegalConfig.h"
 #include "RegalHttp.h"
 #include "RegalToken.h"
+#include "RegalConfig.h"
+#include "RegalContext.h"
+#include "RegalThread.h"
 #include "RegalDispatcher.h"
-#include "RegalPrivate.h"
 #include "RegalContextInfo.h"
-
-RegalErrorCallback RegalSetErrorCallback(RegalErrorCallback callback)
-{
-  ::REGAL_NAMESPACE_INTERNAL::RegalContext * ctx = GET_REGAL_CONTEXT();
-  RegalAssert(ctx);
-  return ctx->err.callback = callback;
-}
 
 REGAL_GLOBAL_END
 
@@ -116,62 +110,7 @@ Init::atExit()
   }
 }
 
-#if REGAL_SYS_WGL
-extern "C" { DWORD __stdcall GetCurrentThreadId(void); }
-#endif
-
-// Single-threaded RegalContext
-
-RegalContext *currentContext = NULL;
-
-#if REGAL_NO_TLS
-inline Thread RegalPrivateThreadSelf() { return 1; }
-#else
-
-#if REGAL_SYS_WGL
-#if REGAL_WIN_TLS
-    DWORD regalCurrentContextTLSIDX = DWORD(~0);
-    struct RegalPrivateTlsInit
-    {
-        RegalPrivateTlsInit()
-        {
-            regalCurrentContextTLSIDX = TlsAlloc();
-        }
-        ~RegalPrivateTlsInit()
-        {
-            TlsFree( regalCurrentContextTLSIDX );
-        }
-    };
-    RegalPrivateTlsInit regalPrivateTlsInit;
-#else
-    __declspec( thread ) void * regalCurrentContext = NULL;
-#endif
-
-    inline Thread RegalPrivateThreadSelf()
-    {
-        return GetCurrentThreadId();
-    }
-#else
-    pthread_key_t regalPrivateCurrentContextKey = 0;
-
-    struct RegalPrivateTlsInit {
-        RegalPrivateTlsInit()
-        {
-            pthread_key_create( &regalPrivateCurrentContextKey, NULL );
-        }
-    };
-    RegalPrivateTlsInit regalPrivateTlsInit;
-
-    inline Thread RegalPrivateThreadSelf()
-    {
-        return pthread_self();
-    }
-
-#endif
-#endif
-
-map<RegalSystemContext, RegalContext *> sc2rc;
-map<Thread, RegalContext *> th2rc;
+//////////////////////////////////////////////////////////////////////
 
 void RegalCheckForGLErrors( RegalContext *ctx )
 {
@@ -181,102 +120,301 @@ void RegalCheckForGLErrors( RegalContext *ctx )
         Error("GL error = ",toString(err));
 }
 
+#if REGAL_SYS_WGL
+extern "C" { DWORD __stdcall GetCurrentThreadId(void); }
+#endif
+
+namespace Thread {
+
+// Single-threaded RegalContext
+
+RegalContext *currentContext = NULL;
+
+#if REGAL_NO_TLS
+inline Thread Self() { return 1; }
+#else
+
+#if REGAL_SYS_WGL
+#if REGAL_WIN_TLS
+    DWORD currentContextIndex = DWORD(~0);
+    struct TlsInit
+    {
+        TlsInit()
+        {
+            currentContextIndex = TlsAlloc();
+        }
+        ~TlsInit()
+        {
+            TlsFree( currentContextIndex );
+        }
+    };
+    TlsInit tlsInit;
+#else
+    __declspec( thread ) void * currentContext = NULL;
+#endif
+
+    inline Thread Self()
+    {
+        return GetCurrentThreadId();
+    }
+#else
+    pthread_key_t currentContextKey = 0;
+
+    struct TlsInit
+    {
+      TlsInit()
+      {
+        pthread_key_create( &currentContextKey, NULL );
+      }
+    };
+
+    TlsInit tlsInit;
+
+    inline Thread Self()
+    {
+        return pthread_self();
+    }
+
+#endif
+#endif
+
+}
+
+static void SetContextInTls(RegalContext *ctx)
+{
+#if REGAL_NO_TLS
+  // Without thread local storage, simply set the
+  // current Regal context
+  Thread::currentContext = ctx;
+#else
+# if REGAL_SYS_WGL
+  // For Windows....
+#  if REGAL_WIN_TLS
+  if (Thread::currentContextIndex == ~0)
+    Thread::currentContextIndex = TlsAlloc();
+  TlsSetValue( Thread::currentContextIndex, ctx );
+#  else
+  Thread::currentContext = ctx;
+#  endif
+# else
+  // For Linux and Mac...
+  if (Thread::currentContextKey == 0) {
+    pthread_key_create( & Thread::currentContextKey, NULL );
+  }
+  pthread_setspecific( Thread::currentContextKey, ctx );
+# endif
+#endif
+}
+
+//
+
+typedef map<RegalSystemContext, RegalContext *> SC2RC;
+typedef map<Thread::Thread,     RegalContext *> TH2RC;
+
+SC2RC sc2rc;
+TH2RC th2rc;
+
 REGAL_NAMESPACE_END
 
 using namespace ::REGAL_NAMESPACE_INTERNAL;
 
 REGAL_GLOBAL_BEGIN
 
+//
+// RegalSetErrorCallback
+//
+
+RegalErrorCallback RegalSetErrorCallback(RegalErrorCallback callback)
+{
+  RegalContext *ctx = GET_REGAL_CONTEXT();
+  RegalAssert(ctx);
+  return ctx->err.callback = callback;
+}
+
+//
+// RegalShareContext
+//
+
+REGAL_DECL void RegalShareContext(RegalSystemContext a, RegalSystemContext b)
+{
+  ::REGAL_NAMESPACE_INTERNAL::Init::init();
+
+  // NOTE: Access to sc2rc and other parts of the function (including
+  // various one-time-init in RegalCreateContext) are not thread-safe.
+
+  SC2RC::iterator iA = sc2rc.find(a);
+  SC2RC::iterator iB = sc2rc.find(b);
+
+  RegalContext *contextA = iA!=sc2rc.end() ? iA->second : NULL;
+  RegalContext *contextB = iB!=sc2rc.end() ? iB->second : NULL;
+
+  // Either of the groups of contexts needs to be uninitialized.
+  // In principle Regal might be able to merge the shared
+  // containers together, but that's not currently implemented.
+
+  if (contextA && contextA->groupInitializedContext() && contextB && contextB->groupInitializedContext())
+  {
+    Warning("Regal can't share initialized context groups.");
+    return;
+  }
+
+  // Create the Regal contexts, as necessary
+
+  if (!contextA)
+  {
+    contextA = new RegalContext();
+    RegalAssert(contextA);
+    sc2rc[a] = contextA;
+    contextA->sysCtx = a;
+  }
+
+  if (!contextB)
+  {
+    contextB = new RegalContext();
+    RegalAssert(contextB);
+    sc2rc[b] = contextB;
+    contextB->sysCtx = b;
+  }
+
+  // Share all the Regal contexts in b into a
+
+  std::list<RegalContext *> tmp = *contextB->shareGroup;
+
+  for (std::list<RegalContext *>::iterator i = tmp.begin(); i!=tmp.end(); ++i)
+  {
+    RegalAssert(*i);
+    contextA->shareGroup->push_back(*i);
+    (*i)->shareGroup = contextA->shareGroup;
+  }
+}
+
+//
+// RegalMakeCurrent
+//
+
 #if REGAL_SYS_NACL
-REGAL_DECL void RegalMakeCurrent( PP_Resource sysCtx, PPB_OpenGLES2 *interface )
+REGAL_DECL void RegalMakeCurrent( RegalSystemContext sysCtx, PPB_OpenGLES2 *interface)
 #else
 REGAL_DECL void RegalMakeCurrent( RegalSystemContext sysCtx )
 #endif
 {
-    ::REGAL_NAMESPACE_INTERNAL::Init::init();
+  ::REGAL_NAMESPACE_INTERNAL::Init::init();
 
-//  Trace("RegalPrivateMakeCurrent ",sysCtx);
-    Thread thread = RegalPrivateThreadSelf();
-    if (sysCtx) {
-        RegalContext * ctx = sc2rc.count( sysCtx ) > 0 ? sc2rc[ sysCtx ] : NULL;
-        if (!ctx) {
-            ctx = new RegalContext();
-            currentContext = ctx;
+  ::REGAL_NAMESPACE_INTERNAL::Thread::Thread thread = ::REGAL_NAMESPACE_INTERNAL::Thread::Self();
+
+  if (sysCtx)
+  {
+    // NOTE: Access to sc2rc and other parts of the function (including
+    // various one-time-init in RegalCreateContext) are not thread-safe.
+
+    SC2RC::iterator i = sc2rc.find(sysCtx);
+    RegalContext *ctx = i!=sc2rc.end() ? i->second : NULL;
+
+    // Create the Regal context, as necessary
+
+    if (!ctx)
+    {
+      ctx = new RegalContext();
+      RegalAssert(ctx);
+      sc2rc[sysCtx] = ctx;
+      ctx->sysCtx = sysCtx;
+    }
+
+    // Set current context
+
+    SetContextInTls(ctx);
+
+    // Do RegalContext initialization, if necessary.
+
+    if (!ctx->initialized)
+    {
 #if REGAL_SYS_NACL
-            ctx->naclResource = sysCtx;
-            ctx->naclES2      = interface;
+      ctx->naclResource = sysCtx;
+      ctx->naclES2      = interface;
 #endif
-#if !REGAL_NO_TLS
-#if REGAL_SYS_WGL
-#if REGAL_WIN_TLS
-            if (regalCurrentContextTLSIDX == ~0)
-                regalCurrentContextTLSIDX = TlsAlloc();
-            TlsSetValue( regalCurrentContextTLSIDX, ctx );
-#else
-            regalCurrentContext = ctx;
-#endif
-#else
-            if (regalPrivateCurrentContextKey == 0) {
-                pthread_key_create( & regalPrivateCurrentContextKey, NULL );
-            }
-            pthread_setspecific( regalPrivateCurrentContextKey, ctx );
-#endif
-#endif
-            ctx->Init();
-            sc2rc[ sysCtx ] = ctx;
-            ctx->sysCtx = sysCtx;
-        }
 
-    if( th2rc.count( thread ) != 0 ) {
-      RegalContext * & c = th2rc[ thread ];
-      if( c ) {
-        RegalAssert( c->thread == thread );
+      // RegalContextInfo init makes GL calls, need an
+      // active OpenGL context.
+
+      ctx->Init();
+
+      RegalAssert(ctx->initialized);
+    }
+
+    // If there is another Regal context associated with
+    // this thread, disassociate it.
+
+    TH2RC::iterator j = th2rc.find(thread);
+    if (j!=th2rc.end())
+    {
+      RegalContext *&c = j->second;
+      if (c)
+      {
+        RegalAssert(c->thread==thread);
         c->thread = 0;
         c = NULL;
       }
     }
-    RegalAssert( th2rc.count( thread ) == 0 || th2rc[ thread ] == NULL );
-    RegalAssert( ctx->thread == 0 );
-    th2rc[ thread ] = ctx;
-    ctx->thread = thread;
 
-#if !REGAL_NO_TLS
-#if REGAL_SYS_WGL
-#if REGAL_WIN_TLS
-    if (regalCurrentContextTLSIDX == ~0)
-        regalCurrentContextTLSIDX = TlsAlloc();
-    TlsSetValue( regalCurrentContextTLSIDX, ctx );
-#else
-    regalCurrentContext = ctx;
-#endif
-#else
-    pthread_setspecific( regalPrivateCurrentContextKey, ctx );
-#endif
-#endif
+    RegalAssert(!th2rc.count(thread) || !th2rc[thread]);
+    RegalAssert(!ctx->thread);
+
+    // Associate this thread with the Regal context
+
+    th2rc[thread] = ctx;
+    ctx->thread = thread;
+    SetContextInTls(ctx);
+
+    //
+
     Internal("RegalMakeCurrent ",ctx," ",ctx->info->version);
   }
   else
   {
-    if( th2rc.count( thread ) ) {
-      RegalContext * & ctx = th2rc[ thread ];
-      if( ctx != NULL ) {
-        RegalAssert( ctx->thread == thread );
-        ctx->thread = 0;
-        ctx = NULL;
-        RegalAssert( th2rc[ thread ] == NULL );
+    // If there is a Regal context associated with
+    // this thread, disassociate it.
+
+    TH2RC::iterator j = th2rc.find(thread);
+    if (j!=th2rc.end())
+    {
+      RegalContext *&c = j->second;
+      if (c)
+      {
+        RegalAssert(c->thread==thread);
+        c->thread = 0;
+        c = NULL;
       }
     }
-#if !REGAL_NO_TLS
-#if REGAL_SYS_WGL
-#if REGAL_WIN_TLS
-    TlsSetValue( regalCurrentContextTLSIDX, NULL );
-#else
-    regalCurrentContext = NULL;
-#endif
-#else
-    pthread_setspecific( regalPrivateCurrentContextKey, NULL );
-#endif
-#endif
+
+    SetContextInTls(NULL);
+  }
+}
+
+//
+// RegalDestroyContext
+//
+// Cleanup all the resources associated with sysCtx
+// Otherwise, Regal contexts would never be deleted
+
+REGAL_DECL void RegalDestroyContext(RegalSystemContext sysCtx)
+{
+  if (sysCtx)
+  {
+    // NOTE: Access to sc2rc and other parts of the function (including
+    // various one-time-init in RegalCreateContext) are not thread-safe.
+
+    SC2RC::iterator i = sc2rc.find(sysCtx);
+    RegalContext *ctx = i!=sc2rc.end() ? i->second : NULL;
+
+    if (ctx)
+    {
+      RegalAssert(ctx->sysCtx==sysCtx);
+
+      th2rc.erase(ctx->thread);
+      sc2rc.erase(sysCtx);
+
+      delete ctx;
+    }
   }
 }
 

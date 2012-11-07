@@ -32,6 +32,11 @@
   OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/*
+  Intended formatting conventions:
+  $ astyle --style=allman --indent=spaces=2 --indent-switches
+*/
+
 #ifndef __REGAL_LOOKUP_H__
 #define __REGAL_LOOKUP_H__
 
@@ -53,21 +58,21 @@ inline int NameCmp(const void *a, const void *b)
   return std::strcmp(*(const char **) a, *(const char **) b);
 }
 
-extern const char * const gl_Name[2524];
-extern const void *gl_Value[2524];
-extern const size_t gl_Offset[2524];
+extern const char * const gl_Name[2632];
+extern const void *gl_Value[2632];
+extern const size_t gl_Offset[2632];
 
 template<typename T>
 T
 gl_Lookup(const char *name, T def = NULL)
 {
-  const char **res = (const char **) std::bsearch(&name, gl_Name, 2523, sizeof(const char *), NameCmp);
+  const char **res = (const char **) std::bsearch(&name, gl_Name, 2631, sizeof(const char *), NameCmp);
   return res ? reinterpret_cast<T>(const_cast<void *>(gl_Value[(size_t) (res - gl_Name)])) : def;
 }
 
 inline size_t gl_LookupOffset(const char *name)
 {
-  const char **res = (const char **) std::bsearch(&name, gl_Name, 2523, sizeof(const char *), NameCmp);
+  const char **res = (const char **) std::bsearch(&name, gl_Name, 2631, sizeof(const char *), NameCmp);
   return res ? gl_Offset[(size_t) (res - gl_Name)] : 0;
 }
 

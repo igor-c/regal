@@ -32,6 +32,11 @@
   OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/*
+  Intended formatting conventions:
+  $ astyle --style=allman --indent=spaces=2 --indent-switches
+*/
+
 #include "pch.h" /* For MS precompiled header support */
 
 #include "RegalUtil.h"
@@ -60,7 +65,8 @@ REGAL_NAMESPACE_BEGIN
 using namespace Logging;
 
 RegalContext::RegalContext()
-: dispatcher(),
+: initialized(false),
+  dispatcher(),
   dbg(NULL),
   info(NULL),
   marker(NULL),
@@ -86,10 +92,15 @@ RegalContext::RegalContext()
   depthPushAttrib(0)
 {
   Internal("RegalContext::RegalContext","()");
-  if (Config::enableDebug) {
+
+  if (Config::enableDebug)
+  {
     dbg = new DebugInfo();
     dbg->Init(this);
   }
+
+  shareGroup.push_back(this);
+
   frameTimer.restart();
 }
 
@@ -97,6 +108,8 @@ void
 RegalContext::Init()
 {
   Internal("RegalContext::Init","()");
+
+  RegalAssert(!initialized);
 
   info = new ContextInfo();
   RegalAssert(this);
@@ -180,11 +193,18 @@ RegalContext::Init()
 
   }
 #endif
+
+  initialized = true;
 }
 
 RegalContext::~RegalContext()
 {
   Internal("RegalContext::~RegalContext","()");
+
+  // Remove this context from the share group.
+
+  shareGroup->remove(this);
+
   delete info;
   delete marker;
 
@@ -197,6 +217,44 @@ RegalContext::~RegalContext()
   delete iff;
   delete vao;
 #endif
+}
+
+bool
+RegalContext::groupInitialized() const
+{
+  Internal("RegalContext::groupInitialized","()");
+
+  for (shared_list<RegalContext *>::const_iterator i = shareGroup.begin(); i!=shareGroup.end(); ++i)
+  {
+    RegalAssert(*i);
+    if ((*i)->initialized)
+      return true;
+  }
+
+  return false;
+}
+
+RegalContext *
+RegalContext::groupInitializedContext()
+{
+  Internal("RegalContext::groupInitializedContext","()");
+
+  // Look for any initialized context in the share group.
+  // The only way this would be expected to fail is if none
+  // of the contexts have been made current, triggering
+  // initialization.
+  //
+  // Note - linear search, but shouldn't need to look at too many
+  // contexts in the share group.
+
+  for (shared_list<RegalContext *>::iterator i = shareGroup.begin(); i!=shareGroup.end(); ++i)
+  {
+    RegalAssert(*i);
+    if ((*i)->initialized)
+      return *i;
+  }
+
+  return NULL;
 }
 
 REGAL_NAMESPACE_END
