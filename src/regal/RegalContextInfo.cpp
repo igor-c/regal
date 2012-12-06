@@ -97,6 +97,9 @@ ContextInfo::ContextInfo()
   glx_version_1_2(false),
   glx_version_1_3(false),
   glx_version_1_4(false),
+  egl_version_1_0(false),
+  egl_version_1_1(false),
+  egl_version_1_2(false),
   gl_3dfx_tbuffer(false),
   gl_amd_debug_output(false),
   gl_amd_draw_buffers_blend(false),
@@ -434,6 +437,22 @@ ContextInfo::ContextInfo()
   glx_sun_get_transparent_index(false),
   glx_sun_video_resize(false),
 #endif
+#if REGAL_SYS_EGL
+  egl_angle_query_surface_pointer(false),
+  egl_khr_fence_sync(false),
+  egl_khr_image_base(false),
+  egl_khr_lock_surface(false),
+  egl_khr_stream(false),
+  egl_khr_stream_consumer_gltexture(false),
+  egl_khr_stream_cross_process_fd(false),
+  egl_khr_stream_producer_eglsurface(false),
+  egl_khr_wait_sync(false),
+  egl_mesa_drm_image(false),
+  egl_nv_coverage_sample(false),
+  egl_nv_post_sub_buffer(false),
+  egl_nv_sync(false),
+  egl_nv_system_time(false),
+#endif
 
   maxVertexAttribs(0)
 {
@@ -504,9 +523,9 @@ ContextInfo::init(const RegalContext &context)
   gles   = true;
   #endif
 
-  // Detect extensions
+  // Detect driver extensions
 
-  string_list<string> extList;
+  string_list<string> driverExtensions;
 
   if (core)
   {
@@ -517,14 +536,16 @@ ContextInfo::init(const RegalContext &context)
     context.dispatcher.driver.glGetIntegerv(GL_NUM_EXTENSIONS, &n);
 
     for (GLint i=0; i<n; ++i)
-      extList.push_back(reinterpret_cast<const char *>(context.dispatcher.driver.glGetStringi(GL_EXTENSIONS,i)));
-    extensions = extList.join(" ");
+      driverExtensions.push_back(reinterpret_cast<const char *>(context.dispatcher.driver.glGetStringi(GL_EXTENSIONS,i)));
+    extensions = driverExtensions.join(" ");
   }
   else
   {
     extensions = getString(context, GL_EXTENSIONS);
-    extList.split(extensions,' ');
+    driverExtensions.split(extensions,' ');
   }
+
+  regalExtensionsSet.insert(driverExtensions.begin(),driverExtensions.end());
 
   Info("OpenGL extensions: ",extensions);
 
@@ -549,7 +570,12 @@ ContextInfo::init(const RegalContext &context)
 #endif
 
 #ifdef REGAL_GL_EXTENSIONS
-  regalExtensions = REGAL_EQUOTE(REGAL_GL_EXTENSIONS);
+  {
+    string_list<string> extList;
+    extList.split(REGAL_EQUOTE(REGAL_GL_EXTENSIONS),' ');
+    regalExtensionsSet.clear();
+    regalExtensionsSet.insert(extList.begin(),extList.end());
+  }
 #else
   static const char *ourExtensions[9] = {
     "GL_REGAL_log",
@@ -562,9 +588,7 @@ ContextInfo::init(const RegalContext &context)
     "GL_GREMEDY_string_marker",
     "GL_GREMEDY_frame_terminator"
   };
-  regalExtensionsSet.insert(extList.begin(),extList.end());
   regalExtensionsSet.insert(&ourExtensions[0],&ourExtensions[9]);
-  regalExtensions = ::boost::print::detail::join(regalExtensionsSet,string(" "));
 #endif
 
 #ifndef REGAL_NO_GETENV
@@ -579,9 +603,19 @@ ContextInfo::init(const RegalContext &context)
     if (versionEnv) regalVersion = versionEnv;
 
     const char *extensionsEnv = GetEnv("REGAL_GL_EXTENSIONS");
-    if (extensionsEnv) regalExtensions = extensionsEnv;
+    if (extensionsEnv)
+    {
+      string_list<string> extList;
+      extList.split(extensionsEnv,' ');
+      regalExtensionsSet.clear();
+      regalExtensionsSet.insert(extList.begin(),extList.end());
+    }
   }
 #endif
+
+  // Form Regal extension string from the set
+
+  regalExtensions = ::boost::print::detail::join(regalExtensionsSet,string(" "));
 
   Info("Regal vendor     : ",regalVendor);
   Info("Regal renderer   : ",regalRenderer);
@@ -613,10 +647,14 @@ ContextInfo::init(const RegalContext &context)
   glx_version_1_1 = glx_version_1_2 || (glx_version_major == 1 && glx_version_minor == 1);
   glx_version_1_0 = glx_version_1_1 || glx_version_major == 1;
 
-  // Vendor, rendering, version, extensions reported by Regal to application
+  egl_version_1_2 = egl_version_major > 1 || (egl_version_major == 1 && egl_version_minor >= 2);
+  egl_version_1_1 = egl_version_1_2 || (egl_version_major == 1 && egl_version_minor == 1);
+  egl_version_1_0 = egl_version_1_1 || egl_version_major == 1;
+
+  // Driver extensions, etc detected by Regal
 
   set<string> e;
-  e.insert(extList.begin(),extList.end());
+  e.insert(driverExtensions.begin(),driverExtensions.end());
 
   gl_3dfx_tbuffer = e.find("GL_3DFX_tbuffer")!=e.end();
   gl_amd_debug_output = e.find("GL_AMD_debug_output")!=e.end();
@@ -956,6 +994,23 @@ ContextInfo::init(const RegalContext &context)
   glx_sgi_video_sync = e.find("GLX_SGI_video_sync")!=e.end();
   glx_sun_get_transparent_index = e.find("GLX_SUN_get_transparent_index")!=e.end();
   glx_sun_video_resize = e.find("GLX_SUN_video_resize")!=e.end();
+#endif
+
+#if REGAL_SYS_EGL
+  egl_angle_query_surface_pointer = e.find("EGL_ANGLE_query_surface_pointer")!=e.end();
+  egl_khr_fence_sync = e.find("EGL_KHR_fence_sync")!=e.end();
+  egl_khr_image_base = e.find("EGL_KHR_image_base")!=e.end();
+  egl_khr_lock_surface = e.find("EGL_KHR_lock_surface")!=e.end();
+  egl_khr_stream = e.find("EGL_KHR_stream")!=e.end();
+  egl_khr_stream_consumer_gltexture = e.find("EGL_KHR_stream_consumer_gltexture")!=e.end();
+  egl_khr_stream_cross_process_fd = e.find("EGL_KHR_stream_cross_process_fd")!=e.end();
+  egl_khr_stream_producer_eglsurface = e.find("EGL_KHR_stream_producer_eglsurface")!=e.end();
+  egl_khr_wait_sync = e.find("EGL_KHR_wait_sync")!=e.end();
+  egl_mesa_drm_image = e.find("EGL_MESA_drm_image")!=e.end();
+  egl_nv_coverage_sample = e.find("EGL_NV_coverage_sample")!=e.end();
+  egl_nv_post_sub_buffer = e.find("EGL_NV_post_sub_buffer")!=e.end();
+  egl_nv_sync = e.find("EGL_NV_sync")!=e.end();
+  egl_nv_system_time = e.find("EGL_NV_system_time")!=e.end();
 #endif
 
   RegalAssert(context.dispatcher.driver.glGetIntegerv);
@@ -1312,6 +1367,23 @@ ContextInfo::getExtension(const char *ext) const
   if (!strcmp(ext,"GLX_SGI_video_sync")) return glx_sgi_video_sync;
   if (!strcmp(ext,"GLX_SUN_get_transparent_index")) return glx_sun_get_transparent_index;
   if (!strcmp(ext,"GLX_SUN_video_resize")) return glx_sun_video_resize;
+#endif
+
+#if REGAL_SYS_EGL
+  if (!strcmp(ext,"EGL_ANGLE_query_surface_pointer")) return egl_angle_query_surface_pointer;
+  if (!strcmp(ext,"EGL_KHR_fence_sync")) return egl_khr_fence_sync;
+  if (!strcmp(ext,"EGL_KHR_image_base")) return egl_khr_image_base;
+  if (!strcmp(ext,"EGL_KHR_lock_surface")) return egl_khr_lock_surface;
+  if (!strcmp(ext,"EGL_KHR_stream")) return egl_khr_stream;
+  if (!strcmp(ext,"EGL_KHR_stream_consumer_gltexture")) return egl_khr_stream_consumer_gltexture;
+  if (!strcmp(ext,"EGL_KHR_stream_cross_process_fd")) return egl_khr_stream_cross_process_fd;
+  if (!strcmp(ext,"EGL_KHR_stream_producer_eglsurface")) return egl_khr_stream_producer_eglsurface;
+  if (!strcmp(ext,"EGL_KHR_wait_sync")) return egl_khr_wait_sync;
+  if (!strcmp(ext,"EGL_MESA_drm_image")) return egl_mesa_drm_image;
+  if (!strcmp(ext,"EGL_NV_coverage_sample")) return egl_nv_coverage_sample;
+  if (!strcmp(ext,"EGL_NV_post_sub_buffer")) return egl_nv_post_sub_buffer;
+  if (!strcmp(ext,"EGL_NV_sync")) return egl_nv_sync;
+  if (!strcmp(ext,"EGL_NV_system_time")) return egl_nv_system_time;
 #endif
 
 return false;

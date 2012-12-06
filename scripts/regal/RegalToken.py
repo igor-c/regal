@@ -43,6 +43,25 @@ REGAL_NAMESPACE_END
 
 ''')
 
+# Filter out extension duplicates
+
+def filterTokens(tokens):
+
+  u = tokens
+  for i in ['_ARB','_KHR','_EXT','_NV','_ATI','_PGI','_OES','_IBM','_SUN','_SGI','_SGIX','_SGIS','_APPLE','_QCOM','_ANGLE']:
+    u = [ (j[0], [ k for k in j[1] if not k.endswith(i)  ]) for j in u ]
+
+  # Filter out _BIT duplicates
+
+  for i in ['_BIT','_BITS']:
+    u = [ (j[0], [ k for k in j[1] if not k.endswith(i)  ]) for j in u ]
+
+  u = [ (i[0], [ j for j in i[1] if not j.startswith('GL_KTX_') ]) for i in u  ]
+
+  # Form tuple of value, filtered names, all names, per GLenum
+
+  return [ (tokens[i][0], u[i][1], tokens[i][1]) for i in xrange(len(tokens)) ]
+
 def generateTokenSource(apis, args):
 
   code = []
@@ -65,25 +84,8 @@ def generateTokenSource(apis, args):
           e[value].add(k.name)
 
     e = sorted([ (i,sorted(list(e[i]))) for i in e.iterkeys() ])
-
     e = [ i for i in e if i[0] < 0xfffffffff ]
-
-    # Filter out extension duplicates
-
-    u = e
-    for i in ['_ARB','_EXT','_NV','_ATI','_PGI','_OES','_IBM','_SUN','_SGI','_SGIX','_SGIS','_APPLE']:
-      u = [ (j[0], [ k for k in j[1] if not k.endswith(i)  ]) for j in u ]
-
-    # Filter out _BIT duplicates
-
-    for i in ['_BIT','_BITS']:
-      u = [ (j[0], [ k for k in j[1] if not k.endswith(i)  ]) for j in u ]
-
-    u = [ (i[0], [ j for j in i[1] if not j.startswith('GL_KTX_') ]) for i in u  ]
-
-    # Form tuple of value, filtered names, all names, per GLenum
-
-    e = [ (e[i][0], u[i][1], e[i][1]) for i in xrange(len(e)) ]
+    e = filterTokens(e)
 
     for i in e:
       value = i[0]
@@ -145,25 +147,8 @@ def generateTokenSource(apis, args):
           e[value].add(k.name)
 
     e = sorted([ (i,sorted(list(e[i]))) for i in e.iterkeys() ])
-
     e = [ i for i in e if i[0] < 0xfffffffff ]
-
-    # Filter out extension duplicates
-
-    u = e
-    for i in ['_ARB','_EXT','_NV','_ATI','_PGI','_OES','_IBM','_SUN','_SGI','_SGIX','_SGIS','_APPLE']:
-      u = [ (j[0], [ k for k in j[1] if not k.endswith(i)  ]) for j in u ]
-
-    # Filter out _BIT duplicates
-
-    for i in ['_BIT','_BITS']:
-      u = [ (j[0], [ k for k in j[1] if not k.endswith(i)  ]) for j in u ]
-
-    u = [ (i[0], [ j for j in i[1] if not j.startswith('GL_KTX_') ]) for i in u  ]
-
-    # Form tuple of value, filtered names, all names, per GLenum
-
-    e = [ (e[i][0], u[i][1], e[i][1]) for i in xrange(len(e)) ]
+    e = filterTokens(e)
 
     for i in e:
       value = i[0]
@@ -179,6 +164,51 @@ def generateTokenSource(apis, args):
   code.append('    return "unknown_glx_enum";')
   code.append('  }')
   code.append('#endif // REGAL_SYS_GLX')
+
+  # EGL version
+
+  code.append('')
+  code.append('#if REGAL_SYS_EGL')
+  code.append('  const char * EGLenumToString(int v) {')
+  code.append('    switch( v ) {')
+
+  for i in apis:
+    if i.name != 'egl':
+      continue
+    e = {}
+    for j in i.enums:
+      if j.name != 'defines':
+        continue
+      for k in j.enumerants:
+        value = toLong(k.value)
+        if value != None:
+          if not value in e:
+            e[value] = set()
+          e[value].add(k.name)
+
+    e = sorted([ (i,sorted(list(e[i]))) for i in e.iterkeys() ])
+    e = [ i for i in e if i[0] < 0xfffffffff ]
+    e = filterTokens(e)
+
+    for i in e:
+      value = i[0]
+      if len(i[1]):
+        name = i[1][0]
+      else:
+        name = i[2][0]
+
+      if value==0:
+        name = 'EGL_FALSE'
+      if value==1:
+        name = 'EGL_TRUE'
+
+      code.append('      case %s: return "%s";'%(hexValue(value,'0x%08x'),name))
+
+  code.append('      default: break;')
+  code.append('    }')
+  code.append('    return "unknown_egl_enum";')
+  code.append('  }')
+  code.append('#endif // REGAL_SYS_EGL')
 
   substitute = {}
   substitute['LICENSE']       = args.license
@@ -214,6 +244,10 @@ namespace Token {
 
   #if REGAL_SYS_GLX
   const char * GLXenumToString       (int       v);
+  #endif
+
+  #if REGAL_SYS_EGL
+  const char * EGLenumToString       (int       v);
   #endif
 
   inline const char *toString(const GLenum    v) { return GLenumToString(v);    }

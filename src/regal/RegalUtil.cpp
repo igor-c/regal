@@ -85,12 +85,23 @@ inline const char * getEnvironment(const char * const var)
   return ret;
 }
 
+enum Library
+{
+  LIBRARY_GL,
+  LIBRARY_GLES,
+  LIBRARY_WGL,
+  LIBRARY_GLX,
+  LIBRARY_CGL,
+  LIBRARY_EGL
+};
+
 static
-const char *libraryLocation(const char *lib)
+const char *libraryLocation(const Library &library)
 {
   const char *ret = NULL;
 
-  if (!strcmp(lib, "GL") || !strcmp(lib, "WGL") || !strcmp(lib, "GLX")) {
+  if (library==LIBRARY_GL || library==LIBRARY_WGL || library==LIBRARY_GLX)
+  {
     // First, try ... variable
 
     // Second, try default installation location
@@ -153,6 +164,39 @@ const char *libraryLocation(const char *lib)
 #endif
     }
   }
+
+  // GLES
+
+  if (library==LIBRARY_GLES)
+  {
+    // First, try ... variable
+
+    // Second, try default installation location
+
+    if (!ret)
+    {
+#if REGAL_SYS_GLX
+      return "/usr/lib/libGLESv2.so";
+#endif
+    }
+  }
+
+  // EGL
+
+  if (library==LIBRARY_EGL)
+  {
+    // First, try ... variable
+
+    // Second, try default installation location
+
+    if (!ret)
+    {
+#if REGAL_SYS_GLX
+      return "/usr/lib/libEGL.so";
+#endif
+    }
+  }
+
   return ret;
 }
 
@@ -239,7 +283,9 @@ void *GetProcAddress( const char * entry )
   return NULL;
 }
 
-#elif REGAL_SYS_GLX
+#elif REGAL_SYS_GLX && REGAL_SYS_EGL
+
+// GLX and EGL
 
 #include <dlfcn.h>
 
@@ -250,14 +296,107 @@ void *GetProcAddress(const char *entry)
   if (!entry)
     return NULL;
 
-  static void       *lib_GL = NULL;
-  static const char *lib_GL_filename = NULL;
+  // EGL
+
+  static void       *lib_EGL          = NULL;
+  static const char *lib_EGL_filename = NULL;
+
+  // Search for EGL library (libEGL.so usually) as necessary
+
+  if (!lib_EGL_filename)
+  {
+    lib_EGL_filename = libraryLocation(LIBRARY_EGL);
+    if (!lib_EGL_filename)
+      Warning("EGL library not found: ",lib_EGL_filename);
+  }
+
+  // Load the EGL library as necessary
+
+  if (!lib_EGL && lib_EGL_filename)
+  {
+    Info("Loading EGL from ",lib_EGL_filename);
+    lib_EGL = dlopen( lib_EGL_filename, RTLD_LAZY );
+  }
+
+  // GL ES
+
+  static void       *lib_GLES          = NULL;
+  static const char *lib_GLES_filename = NULL;
+
+  // Search for OpenGL ES library (libGLESv2.so usually) as necessary
+
+  if (!lib_GLES_filename)
+  {
+    lib_GLES_filename = libraryLocation(LIBRARY_GLES);
+    if (!lib_GLES_filename)
+      Warning("OpenGL ES library not found: ",lib_GLES_filename);
+  }
+
+  // Load the OpenGL ES library as necessary
+
+  if (!lib_GLES && lib_GLES_filename)
+  {
+    Info("Loading OpenGL ES from ",lib_GLES_filename);
+    lib_GLES = dlopen( lib_GLES_filename, RTLD_LAZY );
+  }
+
+  // Load the entry-point by name, if possible
+
+  if (lib_EGL)
+  {
+    void *sym = dlsym(lib_EGL,entry);
+    Internal("Regal::GetProcAddress ","loading ",entry," from ",lib_EGL_filename,sym ? " succeeded." : " failed.");
+    if (sym)
+      return sym;
+  }
+
+  if (lib_GLES)
+  {
+    void *sym = dlsym(lib_GLES,entry);
+    Internal("Regal::GetProcAddress ","loading ",entry," from ",lib_GLES_filename,sym ? " succeeded." : " failed.");
+    if (sym)
+      return sym;
+  }
+
+  static PFNEGLGETPROCADDRESSPROC eglGetProcAddress = NULL;
+
+  if (lib_EGL)
+  {
+    if (!eglGetProcAddress)
+      eglGetProcAddress = (PFNEGLGETPROCADDRESSPROC) dlsym(lib_EGL, "eglGetProcAddress");
+
+    if (eglGetProcAddress)
+    {
+      void *sym = (void *) eglGetProcAddress(entry);
+      Internal("Regal::GetProcAddress ","loading ",entry," from eglGetProcAddress",sym ? " succeeded." : " failed.");
+      return sym;
+    }
+  }
+
+  return NULL;
+}
+
+#elif REGAL_SYS_GLX
+
+// Vanilla GLX
+
+#include <dlfcn.h>
+
+void *GetProcAddress(const char *entry)
+{
+  // Early-out for NULL entry name
+
+  if (!entry)
+    return NULL;
+
+  static void       *lib_GL           = NULL;
+  static const char *lib_GL_filename  = NULL;
 
   // Search for OpenGL library (libGL.so.1 usually) as necessary
 
   if (!lib_GL_filename)
   {
-    lib_GL_filename = libraryLocation("GL");
+    lib_GL_filename = libraryLocation(LIBRARY_GL);
     if (!lib_GL_filename)
       Warning("OpenGL library not found.",lib_GL_filename);
   }
@@ -333,7 +472,7 @@ void *GetProcAddress( const char * entry )
 
   static const char *lib_GL_filename = NULL;
   if (!lib_GL_filename)
-    lib_GL_filename = libraryLocation("GL");
+    lib_GL_filename = libraryLocation(LIBRARY_GL);
 
   static HMODULE lib_GL = 0;
 

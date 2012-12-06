@@ -102,7 +102,7 @@ def apiEmuFuncDefineCode(apis, args):
                 continue
 
             code += '\nstatic %sREGAL_CALL %s%s(%s) \n{\n' % (rType, 'emu_', name, params)
-            code += '  RegalContext *_context = GET_REGAL_CONTEXT();\n'
+            code += '  RegalContext *_context = REGAL_GET_CONTEXT();\n'
             code += '  RegalAssert(_context);\n'
             code += '\n'
 
@@ -177,7 +177,9 @@ def apiEmuFuncDefineCode(apis, args):
               # http://www.khronos.org/opengles/sdk/docs/man/xhtml/glEnable.xml
 
               if name=='glEnable' or name=='glDisable' or name=='glIsEnabled':
+                code += '       #if !REGAL_FORCE_ES2_PROFILE\n'
                 code += '       if (_context->info->gles)\n'
+                code += '       #endif\n'
                 code += '         switch (cap)\n'
                 code += '         {\n'
                 for i in api.enums:
@@ -198,7 +200,9 @@ def apiEmuFuncDefineCode(apis, args):
               # http://www.khronos.org/opengles/sdk/docs/man/xhtml/glHint.xml
 
               if name=='glHint':
+                code += '       #if !REGAL_FORCE_ES2_PROFILE\n'
                 code += '       if (_context->info->gles)\n'
+                code += '       #endif\n'
                 code += '         switch (target)\n'
                 code += '         {\n'
                 for i in api.enums:
@@ -208,11 +212,59 @@ def apiEmuFuncDefineCode(apis, args):
                         continue
                       if getattr(j,'hint',None)==None:
                         continue
-                      if getattr(j,'esVersions',None) != None and getattr(j,'hint',None) != None and 2.0 in j.esVersions and j.hint == True:
+                      if 2.0 in j.esVersions and j.hint == True:
                         code += '           case %s:\n'%(j.name)
                 code += '             break;\n'
                 code += '           default:\n'
                 code += '             Warning("%s does not support ",GLenumToString(target)," for ES 2.0.");\n'%(name)
+                code += '             return;\n'
+                code += '         }\n'
+
+              # glBindTexture constraints for ES 2.0
+              # http://www.khronos.org/opengles/sdk/docs/man/xhtml/glBindTexture.xml
+
+              if name=='glBindTexture':
+                code += '       #if !REGAL_FORCE_ES2_PROFILE\n'
+                code += '       if (_context->info->gles)\n'
+                code += '       #endif\n'
+                code += '         switch (target)\n'
+                code += '         {\n'
+                for i in api.enums:
+                  if i.name=='defines':
+                    for j in i.enumerants:
+                      if getattr(j,'esVersions',None)==None:
+                        continue
+                      if getattr(j,'bindTexture',None)==None:
+                        continue
+                      if 2.0 in j.esVersions and j.bindTexture == True:
+                        code += '           case %s:\n'%(j.name)
+                code += '             break;\n'
+                code += '           default:\n'
+                code += '             Warning("%s does not support ",GLenumToString(target)," for ES 2.0.");\n'%(name)
+                code += '             return;\n'
+                code += '         }\n'
+
+              # glTexSubImage2D constraints for ES 2.0
+              # http://www.khronos.org/opengles/sdk/docs/man/xhtml/glTexSubImage2D.xml
+
+              if name=='glTexSubImage2D':
+                code += '       #if !REGAL_FORCE_ES2_PROFILE\n'
+                code += '       if (_context->info->gles)\n'
+                code += '       #endif\n'
+                code += '         switch (format)\n'
+                code += '         {\n'
+                for i in api.enums:
+                  if i.name=='defines':
+                    for j in i.enumerants:
+                      if getattr(j,'esVersions',None)==None:
+                        continue
+                      if getattr(j,'bindTexture',None)==None:
+                        continue
+                      if 2.0 in j.esVersions and j.bindTexture == True:
+                        code += '           case %s:\n'%(j.name)
+                code += '             break;\n'
+                code += '           default:\n'
+                code += '             Warning("%s does not support ",GLenumToString(format)," for ES 2.0.");\n'%(name)
                 code += '             return;\n'
                 code += '         }\n'
 
@@ -237,6 +289,38 @@ def apiEmuFuncDefineCode(apis, args):
               code += '    }\n\n'
               code += '  }\n\n'
             else:
+
+              # glTexImage2D internalformat constraints for ES 2.0
+              # http://www.khronos.org/opengles/sdk/docs/man/xhtml/glTexImage2D.xml
+
+              if name=='glTexImage2D':
+                code += '  #if !REGAL_FORCE_ES2_PROFILE\n'
+                code += '  if (_context->info->gles)\n'
+                code += '  #endif\n'
+                code += '  {\n'
+                code += '    switch (internalformat)\n'
+                code += '    {\n'
+                for i in api.enums:
+                  if i.name=='defines':
+                    for j in i.enumerants:
+                      if getattr(j,'esVersions',None)==None:
+                        continue
+                      if getattr(j,'internalformat',None)==None:
+                        continue
+                      if 2.0 in j.esVersions and j.internalformat == True:
+                        code += '      case %s:\n'%(j.name)
+                code += '        break;\n'
+                code += '      default:\n'
+                code += '        Warning("%s does not support ",GLenumToString(internalformat)," for ES 2.0.");\n'%(name)
+                code += '        return;\n'
+                code += '    }\n'
+                code += '    if (format!=GLenum(internalformat))\n'
+                code += '    {\n'
+                code += '        Warning("%s does not support mismatching format and internalformat ",GLenumToString(format),"!=",GLenumToString(internalformat)," for ES 2.0.");\n'%(name)              
+                code += '        return;\n'
+                code += '    }\n'
+                code += '  }\n'
+
               code += '  DispatchTable *_next = _context->dispatcher.emulation._next;\n'
               code += '  RegalAssert(_next);\n'
               code += '  '

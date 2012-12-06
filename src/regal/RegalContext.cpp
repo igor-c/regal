@@ -49,6 +49,7 @@ REGAL_GLOBAL_BEGIN
 #include "RegalContextInfo.h"
 
 #include "RegalMarker.h"
+#include "RegalFrame.h"
 #if REGAL_EMULATION
 #include "RegalObj.h"
 #include "RegalPpa.h"
@@ -70,6 +71,7 @@ RegalContext::RegalContext()
   dbg(NULL),
   info(NULL),
   marker(NULL),
+  frame(NULL),
 #if REGAL_EMULATION
   emuLevel(0),
   obj(NULL),
@@ -86,8 +88,6 @@ RegalContext::RegalContext()
   sysCtx(NULL),
   thread(0),
   logCallback(NULL),
-  frame(0),
-  frameSamples(0),
   depthBeginEnd(0),
   depthPushAttrib(0)
 {
@@ -100,8 +100,6 @@ RegalContext::RegalContext()
   }
 
   shareGroup.push_back(this);
-
-  frameTimer.restart();
 }
 
 void
@@ -117,6 +115,7 @@ RegalContext::Init()
   info->init(*this);
 
   marker = new Marker;
+  frame = new Frame;
 
 #if REGAL_EMULATION
 #if !REGAL_FORCE_EMULATION
@@ -207,6 +206,7 @@ RegalContext::~RegalContext()
 
   delete info;
   delete marker;
+  delete frame;
 
 #if REGAL_EMULATION
   // emu

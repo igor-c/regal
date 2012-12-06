@@ -157,6 +157,14 @@ Logging
   - **GL_LOG_INTERNAL_REGAL**
   - **GL_LOG_HTTP_REGAL**
 
+  Other compile-time or runtime configuration of logging:
+  
+  - **REGAL_LOG**           --- enable or disable logging
+  - **REGAL_LOG_FILE**      --- log to specified filename
+  - **REGAL_LOG_MAX_LINES** --- limit the number of lines of multi-line messages (shaders, etc)
+  - **REGAL_LOG_JSON**      --- log in JSON mode
+  - **REGAL_LOG_JSON_FILE** --- JSON log to specified filename
+
 Multi-threading support
 -----------------------
 
@@ -172,14 +180,14 @@ Spoofing OpenGL vendor, renderer, version and extension strings
   - **REGAL_GL_VENDOR**
   - **REGAL_GL_RENDERER**
   - **REGAL_GL_VERSION**
-  - **REGAL_GL_EXTENSION**
+  - **REGAL_GL_EXTENSIONS**
 
   Environment variable configuration:
 
   - **REGAL_GL_VENDOR**
   - **REGAL_GL_RENDERER**
   - **REGAL_GL_VERSION**
-  - **REGAL_GL_EXTENSION**
+  - **REGAL_GL_EXTENSIONS**
 
   Environment variable lookup is globally disabled by defining **REGAL_NO_GETENV**
   at compile-time.
@@ -211,6 +219,14 @@ Regal OpenGL extensions
   - GL_REGAL_log_ for Regal logging configuration.
   - GL_REGAL_enable_ for Regal feature configuration.
 
+Regal API
+=========
+
+  - **RegalSetErrorCallback**  --- Optionally set the per-context error callback function.
+  - **RegalShareContext**      --- OpenGL contexts are shared.
+  - **RegalMakeCurrent**       --- Set an OpenGL context as current for the thread.
+  - **RegalDestroyContext**    --- Cleanup Regal context resources.
+
 In Progress
 ===========
 
@@ -230,6 +246,7 @@ Limitations
 ===========
 
 * Incomplete implementation, so far.
+* Shared OpenGL contexts supported for single-threaded only.
 * Limited GLSL language support.
 * GL_QUADS only works in immediate mode or with DrawArrays for ES and core profiles.
 

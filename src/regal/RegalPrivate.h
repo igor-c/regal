@@ -153,6 +153,4 @@ const GLuint RFF2ATexEnd16 = 16;
 
 REGAL_NAMESPACE_END
 
-#define GET_REGAL_CONTEXT() ((::REGAL_NAMESPACE_INTERNAL::RegalContext *) ::REGAL_NAMESPACE_INTERNAL::Thread::CurrentContext())
-
 #endif // REGAL_PRIVATE_H

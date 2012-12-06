@@ -247,7 +247,7 @@ namespace Logging {
 
   inline size_t indent()
   {
-    // For OSX we need avoid GET_REGAL_CONTEXT implicitly
+    // For OSX we need avoid REGAL_GET_CONTEXT implicitly
     // trying to create a RegalContext and triggering more
     // (recursive) logging.
 
@@ -256,7 +256,7 @@ namespace Logging {
       return 0;
 #endif
 
-    RegalContext *rCtx = GET_REGAL_CONTEXT();
+    RegalContext *rCtx = REGAL_GET_CONTEXT();
 
     size_t indent = 0;
     if (rCtx)
@@ -390,9 +390,9 @@ namespace Logging {
 
 #if !defined(REGAL_SYS_WGL) && !REGAL_NO_TLS
       if (Thread::currentContextKey && pthread_getspecific(Thread::currentContextKey))
-        rCtx = GET_REGAL_CONTEXT();
+        rCtx = REGAL_GET_CONTEXT();
 #else
-      rCtx = GET_REGAL_CONTEXT();
+      rCtx = REGAL_GET_CONTEXT();
 #endif
 
 #if REGAL_LOG_CALLBACK

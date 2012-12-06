@@ -44,7 +44,6 @@
 
 REGAL_GLOBAL_BEGIN
 
-#include "RegalTimer.h"
 #include "RegalPrivate.h"
 #include "RegalDispatcher.h"
 #include "RegalDispatchError.h"
@@ -64,6 +63,7 @@ struct DebugInfo;
 struct ContextInfo;
 
 struct Marker;
+struct Frame;
 #if REGAL_EMULATION
 struct RegalObj;
 struct RegalPpa;
@@ -91,6 +91,7 @@ struct RegalContext
   //
 
   Marker             *marker;
+  Frame              *frame;
 #if REGAL_EMULATION
   // Fixed function emulation
   int emuLevel;
@@ -127,16 +128,6 @@ struct RegalContext
   // already initialized
 
   RegalContext *groupInitializedContext();
-
-  //
-  // Per-frame state and configuration
-  //
-
-  size_t              frame;
-  Timer               frameTimer;
-
-  size_t              frameSamples;
-  Timer               frameSimpleTimeout;
 
   // State tracked via EmuContextState.py / Regal.cpp
 

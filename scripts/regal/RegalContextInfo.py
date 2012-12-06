@@ -171,9 +171,9 @@ ContextInfo::init(const RegalContext &context)
   gles   = true;
   #endif
 
-  // Detect extensions
+  // Detect driver extensions
 
-  string_list<string> extList;
+  string_list<string> driverExtensions;
 
   if (core)
   {
@@ -184,14 +184,16 @@ ContextInfo::init(const RegalContext &context)
     context.dispatcher.driver.glGetIntegerv(GL_NUM_EXTENSIONS, &n);
 
     for (GLint i=0; i<n; ++i)
-      extList.push_back(reinterpret_cast<const char *>(context.dispatcher.driver.glGetStringi(GL_EXTENSIONS,i)));
-    extensions = extList.join(" ");
+      driverExtensions.push_back(reinterpret_cast<const char *>(context.dispatcher.driver.glGetStringi(GL_EXTENSIONS,i)));
+    extensions = driverExtensions.join(" ");
   }
   else
   {
     extensions = getString(context, GL_EXTENSIONS);
-    extList.split(extensions,' ');
+    driverExtensions.split(extensions,' ');
   }
+
+  regalExtensionsSet.insert(driverExtensions.begin(),driverExtensions.end());
 
   Info("OpenGL extensions: ",extensions);
 
@@ -216,7 +218,12 @@ ContextInfo::init(const RegalContext &context)
 #endif
 
 #ifdef REGAL_GL_EXTENSIONS
-  regalExtensions = REGAL_EQUOTE(REGAL_GL_EXTENSIONS);
+  {
+    string_list<string> extList;
+    extList.split(REGAL_EQUOTE(REGAL_GL_EXTENSIONS),' ');
+    regalExtensionsSet.clear();
+    regalExtensionsSet.insert(extList.begin(),extList.end());
+  }
 #else
   static const char *ourExtensions[9] = {
     "GL_REGAL_log",
@@ -229,9 +236,7 @@ ContextInfo::init(const RegalContext &context)
     "GL_GREMEDY_string_marker",
     "GL_GREMEDY_frame_terminator"
   };
-  regalExtensionsSet.insert(extList.begin(),extList.end());
   regalExtensionsSet.insert(&ourExtensions[0],&ourExtensions[9]);
-  regalExtensions = ::boost::print::detail::join(regalExtensionsSet,string(" "));
 #endif
 
 #ifndef REGAL_NO_GETENV
@@ -246,9 +251,19 @@ ContextInfo::init(const RegalContext &context)
     if (versionEnv) regalVersion = versionEnv;
 
     const char *extensionsEnv = GetEnv("REGAL_GL_EXTENSIONS");
-    if (extensionsEnv) regalExtensions = extensionsEnv;
+    if (extensionsEnv)
+    {
+      string_list<string> extList;
+      extList.split(extensionsEnv,' ');
+      regalExtensionsSet.clear();
+      regalExtensionsSet.insert(extList.begin(),extList.end());
+    }
   }
 #endif
+
+  // Form Regal extension string from the set
+
+  regalExtensions = ::boost::print::detail::join(regalExtensionsSet,string(" "));
 
   Info("Regal vendor     : ",regalVendor);
   Info("Regal renderer   : ",regalRenderer);
@@ -257,10 +272,10 @@ ContextInfo::init(const RegalContext &context)
 
 ${VERSION_DETECT}
 
-  // Vendor, rendering, version, extensions reported by Regal to application
+  // Driver extensions, etc detected by Regal
 
   set<string> e;
-  e.insert(extList.begin(),extList.end());
+  e.insert(driverExtensions.begin(),driverExtensions.end());
 
 ${EXT_INIT}
 
@@ -292,6 +307,8 @@ def traverseContextInfo(apis, args):
       api.versions += [ [1, 5], [1, 4], [1, 3], [1, 2], [1, 1], [1, 0] ]
     if api.name == 'glx':
       api.versions = [ [1, 4], [1, 3], [1, 2], [1, 1], [1, 0] ]
+    if api.name == 'egl':
+      api.versions = [ [1, 2], [1, 1], [1, 0] ]
     c = set()
     c.update([i.category for i in api.functions])
     c.update([i.category for i in api.typedefs])
@@ -309,7 +326,7 @@ def versionDeclareCode(apis, args):
       code += '  GLboolean core   : 1;\n'
       code += '  GLboolean gles   : 1;\n\n'
 
-    if name in ['gl', 'glx']:
+    if name in ['gl', 'glx', 'egl']:
       code += '  GLint     %s_version_major;\n' % name
       code += '  GLint     %s_version_minor;\n' % name
       code += '\n'

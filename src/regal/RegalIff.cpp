@@ -36,6 +36,8 @@
 
 REGAL_GLOBAL_BEGIN
 
+#include <cstring>
+
 #include <string>
 using std::string;
 
@@ -2107,6 +2109,23 @@ void RFF::UseShaderProgram( RegalContext * ctx ) {
     Warning( "The program is 0. That can't be right.\n" );
   }
   UpdateUniforms( ctx );
+}
+
+static void stompVersion(GLchar *str)
+{
+  if (!str)
+    return;
+
+  GLchar *i = str;
+  while (i = strstr(i,"#version "))
+  {
+    if (i==str || i[-1]=='\n')
+    {
+      i[0] = '/';
+      i[1] = '/';
+    }
+    ++i;
+  }
 }
 
 void RFF::ShaderSource( RegalContext *ctx, GLuint shader, GLsizei count, const GLchar **string, const GLint *length)

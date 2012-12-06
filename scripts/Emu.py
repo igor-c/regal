@@ -103,6 +103,7 @@ def emuFindEntry( func, emuFormulae, member ) :
           subst = deepcopy( arg )
           for l in range( len(m.groups()) + 1) :
             subst['m%d' % l] = m.group( l )
+          subst['name'] = name
           emuAddSubst( name, i, subst )
           emuSubstitute( emue, i, 'impl', subst )
           emuSubstitute( emue, i, 'prefix', subst )

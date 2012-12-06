@@ -64,6 +64,8 @@
 		43FC5FA715C461AC00D0177C /* mongoose.c in Sources */ = {isa = PBXBuildFile; fileRef = 43FC5FA615C461AC00D0177C /* mongoose.c */; };
 		BC020947160D1919003FAB99 /* RegalMarker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC020946160D1919003FAB99 /* RegalMarker.cpp */; };
 		BC020958160D1C73003FAB99 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = BC020957160D1C73003FAB99 /* md5.c */; };
+		BC640CA416554AA4007DEF69 /* RegalFrame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC640CA216554AA4007DEF69 /* RegalFrame.cpp */; };
+		BC640CA516554AA4007DEF69 /* RegalFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = BC640CA316554AA4007DEF69 /* RegalFrame.h */; };
 		BC6C912A15EE3DC60056E4F7 /* RegalDispatchGlobal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC6C912915EE3DC60056E4F7 /* RegalDispatchGlobal.cpp */; };
 		BC921A5E15D5624600E52C91 /* RegalDispatchMissing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC921A5C15D5624600E52C91 /* RegalDispatchMissing.cpp */; };
 		BC921A5F15D5624600E52C91 /* RegalDispatchNacl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC921A5D15D5624600E52C91 /* RegalDispatchNacl.cpp */; };
@@ -128,6 +130,8 @@
 		43FC5FA615C461AC00D0177C /* mongoose.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mongoose.c; path = ../../../src/mongoose/mongoose.c; sourceTree = "<group>"; };
 		BC020946160D1919003FAB99 /* RegalMarker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegalMarker.cpp; path = ../../../src/regal/RegalMarker.cpp; sourceTree = "<group>"; };
 		BC020957160D1C73003FAB99 /* md5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = md5.c; path = ../../../src/md5/src/md5.c; sourceTree = "<group>"; };
+		BC640CA216554AA4007DEF69 /* RegalFrame.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegalFrame.cpp; path = ../../../src/regal/RegalFrame.cpp; sourceTree = "<group>"; };
+		BC640CA316554AA4007DEF69 /* RegalFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegalFrame.h; path = ../../../src/regal/RegalFrame.h; sourceTree = "<group>"; };
 		BC6C912915EE3DC60056E4F7 /* RegalDispatchGlobal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegalDispatchGlobal.cpp; path = ../../../src/regal/RegalDispatchGlobal.cpp; sourceTree = "<group>"; };
 		BC921A5C15D5624600E52C91 /* RegalDispatchMissing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegalDispatchMissing.cpp; path = ../../../src/regal/RegalDispatchMissing.cpp; sourceTree = "<group>"; };
 		BC921A5D15D5624600E52C91 /* RegalDispatchNacl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegalDispatchNacl.cpp; path = ../../../src/regal/RegalDispatchNacl.cpp; sourceTree = "<group>"; };
@@ -202,6 +206,8 @@
 				43FC5F5B15C4619B00D0177C /* RegalDispatchLog.cpp */,
 				43FC5F5D15C4619B00D0177C /* RegalDllMain.cpp */,
 				43FC5F5E15C4619B00D0177C /* RegalDsa.h */,
+				BC640CA216554AA4007DEF69 /* RegalFrame.cpp */,
+				BC640CA316554AA4007DEF69 /* RegalFrame.h */,
 				43FC5F5F15C4619B00D0177C /* RegalEmu.h */,
 				4366EEEA15C9B54E00211205 /* RegalEnum.h */,
 				4366EEEB15C9B54E00211205 /* RegalFavicon.cpp */,
@@ -289,6 +295,7 @@
 				4366EEF015C9B54E00211205 /* RegalFavicon.h in Headers */,
 				43EFD6FA15EAADAC004080CE /* RegalDispatcher.h in Headers */,
 				43EFD6FD15EAADAC004080CE /* RegalSystem.h in Headers */,
+				BC640CA516554AA4007DEF69 /* RegalFrame.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,6 +379,7 @@
 				BC6C912A15EE3DC60056E4F7 /* RegalDispatchGlobal.cpp in Sources */,
 				BC020947160D1919003FAB99 /* RegalMarker.cpp in Sources */,
 				BC020958160D1C73003FAB99 /* md5.c in Sources */,
+				BC640CA416554AA4007DEF69 /* RegalFrame.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

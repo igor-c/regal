@@ -20,6 +20,9 @@ LIBDIR     ?= $(REGAL_DEST)/lib
 #
 # To disable symlinks:
 #   - use LN= on gmake command-line
+#
+# To specify additional compiler flags:
+#   - use CFLAGS= on gmake command-line
 
 AR      ?= ar
 INSTALL ?= install
@@ -27,25 +30,126 @@ STRIP   ?= strip
 RM      ?= rm -f
 LN      ?= ln -sf
 
-ifeq ($(MAKECMDGOALS), debug)
+ifeq ($(MODE),debug)
 OPT = -g
 STRIP :=
 else
 OPT = $(POPT)
 endif
 INCLUDE = -Iinclude
-CFLAGS = $(OPT) $(WARN) $(INCLUDE) $(CFLAGS.EXTRA)
+
+override CFLAGS := $(CFLAGS) $(OPT) $(WARN) $(INCLUDE) $(CFLAGS.EXTRA)
 
 all: regal.lib glew.lib glu.lib glut.lib regal.bin
-
-# Debug target implies Regal targets, only
-
-debug: regal.lib
 
 # REGAL shared and static libraries
 
 export:
 	scripts/Export.py --api gl 4.2 --api wgl 4.0 --api glx 4.0 --api cgl 1.4 --api egl 1.0 --outdir src/regal
+
+lib:
+	mkdir lib
+
+
+#
+# zlib
+#
+
+ZLIB.SRCS += src/zlib/src/adler32.c
+ZLIB.SRCS += src/zlib/src/crc32.c
+ZLIB.SRCS += src/zlib/src/compress.c
+ZLIB.SRCS += src/zlib/src/deflate.c
+ZLIB.SRCS += src/zlib/src/infback.c
+ZLIB.SRCS += src/zlib/src/inffast.c
+ZLIB.SRCS += src/zlib/src/inflate.c
+ZLIB.SRCS += src/zlib/src/inftrees.c
+ZLIB.SRCS += src/zlib/src/trees.c
+ZLIB.SRCS += src/zlib/src/uncompr.c
+ZLIB.SRCS += src/zlib/src/zutil.c
+ZLIB.SRCS += src/zlib/src/gzlib.c
+ZLIB.SRCS += src/zlib/src/gzread.c
+ZLIB.SRCS += src/zlib/src/gzwrite.c
+ZLIB.SRCS += src/zlib/src/gzclose.c
+
+ZLIB.SRCS.NAMES := $(notdir $(ZLIB.SRCS))
+ZLIB.OBJS       := $(addprefix tmp/$(SYSTEM)/zlib/static/,$(ZLIB.SRCS.NAMES))
+ZLIB.OBJS       := $(ZLIB.OBJS:.c=.o)
+ZLIB.CFLAGS     := -Isrc/zlib/include
+ZLIB.STATIC     := libz.a
+
+ifneq ($(filter linux%,$(SYSTEM)),)
+ZLIB.CFLAGS     += -DHAVE_UNISTD_H
+endif
+
+ifneq ($(filter darwin%,$(SYSTEM)),)
+ZLIB.CFLAGS     += -DHAVE_UNISTD_H
+endif
+
+ifneq ($(filter nacl%,$(SYSTEM)),)
+ZLIB.CFLAGS     += -DHAVE_UNISTD_H
+endif
+
+zlib.lib: lib/$(ZLIB.STATIC)
+
+tmp/$(SYSTEM)/zlib/static/%.o: src/zlib/src/%.c
+	@mkdir -p $(dir $@)
+	$(CCACHE) $(CC) $(CFLAGS) $(ZLIB.CFLAGS) $(PICFLAG) -o $@ -c $<
+
+lib/$(ZLIB.STATIC): lib $(ZLIB.OBJS)
+	$(CCACHE) $(AR) cr $@ $(ZLIB.OBJS)
+ifneq ($(STRIP),)
+	$(STRIP) -x $@
+endif
+
+#
+# libpng
+#
+
+LIBPNG.SRCS += src/libpng/src/png.c
+LIBPNG.SRCS += src/libpng/src/pngerror.c
+LIBPNG.SRCS += src/libpng/src/pngget.c
+LIBPNG.SRCS += src/libpng/src/pngmem.c
+LIBPNG.SRCS += src/libpng/src/pngpread.c
+LIBPNG.SRCS += src/libpng/src/pngread.c
+LIBPNG.SRCS += src/libpng/src/pngrio.c
+LIBPNG.SRCS += src/libpng/src/pngrtran.c
+LIBPNG.SRCS += src/libpng/src/pngrutil.c
+LIBPNG.SRCS += src/libpng/src/pngset.c
+LIBPNG.SRCS += src/libpng/src/pngtrans.c
+LIBPNG.SRCS += src/libpng/src/pngwio.c
+LIBPNG.SRCS += src/libpng/src/pngwrite.c
+LIBPNG.SRCS += src/libpng/src/pngwtran.c
+LIBPNG.SRCS += src/libpng/src/pngwutil.c
+
+LIBPNG.SRCS.NAMES := $(notdir $(LIBPNG.SRCS))
+LIBPNG.OBJS       := $(addprefix tmp/$(SYSTEM)/libpng/static/,$(LIBPNG.SRCS.NAMES))
+LIBPNG.OBJS       := $(LIBPNG.OBJS:.c=.o)
+LIBPNG.CFLAGS     := -Isrc/zlib/include -Isrc/libpng/include
+LIBPNG.STATIC     := libpng.a
+
+ifneq ($(filter linux%,$(SYSTEM)),)
+LIBPNG.CFLAGS     += -DHAVE_UNISTD_H
+endif
+
+ifneq ($(filter darwin%,$(SYSTEM)),)
+LIBPNG.CFLAGS     += -DHAVE_UNISTD_H
+endif
+
+ifneq ($(filter nacl%,$(SYSTEM)),)
+LIBPNG.CFLAGS     += -DHAVE_UNISTD_H
+endif
+
+libpng.lib: zlib.lib lib/$(LIBPNG.STATIC)
+
+tmp/$(SYSTEM)/libpng/static/%.o: src/libpng/src/%.c
+	@mkdir -p $(dir $@)
+	$(CCACHE) $(CC) $(CFLAGS) $(LIBPNG.CFLAGS) $(PICFLAG) -o $@ -c $<
+
+lib/$(LIBPNG.STATIC): lib $(LIBPNG.OBJS)
+	$(CCACHE) $(AR) cr $@ $(LIBPNG.OBJS)
+ifneq ($(STRIP),)
+	$(STRIP) -x $@
+endif
 
 #
 
@@ -61,6 +165,7 @@ LIB.SRCS           += src/regal/RegalInit.cpp
 LIB.SRCS           += src/regal/RegalUtil.cpp
 LIB.SRCS           += src/regal/RegalConfig.cpp
 LIB.SRCS           += src/regal/RegalLookup.cpp
+LIB.SRCS           += src/regal/RegalFrame.cpp
 LIB.SRCS           += src/regal/RegalHelper.cpp
 LIB.SRCS           += src/regal/RegalMarker.cpp
 LIB.SRCS           += src/regal/RegalContext.cpp
@@ -71,13 +176,16 @@ LIB.SRCS           += src/regal/RegalDispatchEmu.cpp
 LIB.SRCS           += src/regal/RegalDispatchLog.cpp
 LIB.SRCS           += src/regal/RegalDispatchDebug.cpp
 LIB.SRCS           += src/regal/RegalDispatchError.cpp
+LIB.SRCS           += src/regal/RegalDispatchCache.cpp
 LIB.SRCS           += src/regal/RegalDispatchLoader.cpp
 LIB.SRCS           += src/regal/RegalDispatchNacl.cpp
 LIB.SRCS           += src/regal/RegalDispatchStaticES2.cpp
 LIB.SRCS           += src/regal/RegalDispatchStaticEGL.cpp
 LIB.SRCS           += src/regal/RegalDispatchMissing.cpp
+LIB.SRCS           += src/regal/RegalShaderCache.cpp
 LIB.SRCS           += src/regal/RegalHttp.cpp
 LIB.SRCS           += src/regal/RegalFavicon.cpp
+LIB.SRCS           += src/regal/RegalMac.cpp
 
 # Disable mongoose and Regal HTTP for NaCL build
 
@@ -89,17 +197,8 @@ ifeq ($(filter -DREGAL_NO_MD5%,$(CFLAGS)),)
 LIB.SRCS           += src/md5/src/md5.c
 endif
 
-# Disable zlib and PNG for OSX and NaCL only
-
-ifeq ($(filter darwin%,$(SYSTEM)),)
-ifeq ($(filter nacl%,$(SYSTEM)),)
-LIB.LIBS           += -lpng -lz
-else
-CFLAGS             += -DREGAL_NO_PNG
-endif
-else
-CFLAGS             += -DREGAL_NO_PNG
-endif
+LIB.INCLUDE        += -Isrc/zlib/include -Isrc/libpng/include
+LIB.LIBS           += -Llib -lpng -lz
 
 LIB.INCLUDE        += -Isrc/mongoose
 LIB.INCLUDE        += -Isrc/md5/include
@@ -120,10 +219,11 @@ LIB.SOBJS          := $(addprefix tmp/$(SYSTEM)/regal/shared/,$(LIB.SRCS.NAMES))
 LIB.SOBJS          := $(LIB.SOBJS:.c=.o)
 LIB.SOBJS          := $(LIB.SOBJS:.cpp=.o)
 
-regal.lib: lib lib/$(LIB.SHARED) lib/$(LIB.STATIC)
+ifneq ($(filter darwin%,$(SYSTEM)),)
+LIB.LDFLAGS        += -Wl,-reexport-lGLU -L/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries
+endif
 
-lib:
-	mkdir lib
+regal.lib: zlib.lib libpng.lib lib/$(LIB.SHARED) lib/$(LIB.STATIC)
 
 lib/$(LIB.STATIC): $(LIB.OBJS)
 	$(CCACHE) $(AR) cr $@ $^
@@ -131,8 +231,8 @@ ifneq ($(STRIP),)
 	$(STRIP) -x $@
 endif
 
-lib/$(LIB.SHARED): $(LIB.SOBJS)
-	$(CCACHE) $(LD) $(LDFLAGS.EXTRA) $(LDFLAGS.SO) -o $@ $^ $(LIB.LDFLAGS) $(LIB.LIBS)
+lib/$(LIB.SHARED): lib/$(LIBPNG.STATIC) lib/$(ZLIB.STATIC) $(LIB.SOBJS)
+	$(CCACHE) $(LD) $(LDFLAGS.EXTRA) $(LDFLAGS.SO) -o $@ $(LIB.SOBJS) $(LIB.LDFLAGS) $(LIB.LIBS)
 ifneq ($(LN),)
 	$(LN) $(LIB.SHARED) lib/$(LIB.SONAME)
 	$(LN) $(LIB.SHARED) lib/$(LIB.DEVLNK)
@@ -181,14 +281,14 @@ GLEW.LIBS       := -Llib -lRegal
 GLEW.SHARED     := libRegalGLEW.$(EXT.DYNAMIC)
 GLEW.STATIC     := libRegalGLEW.a
 
-glew.lib: lib lib/$(GLEW.SHARED)
+glew.lib: lib/$(GLEW.SHARED)
 
 tmp/$(SYSTEM)/glew/shared/%.o: src/glew/src/%.c
 	@mkdir -p $(dir $@)
 	$(CCACHE) $(CC) $(CFLAGS) $(PICFLAG) $(GLEW.CFLAGS) $(CFLAGS.SO) -o $@ -c $<
 
-lib/$(GLEW.SHARED): $(GLEW.OBJS) lib/$(LIB.SHARED)
-	$(CCACHE) $(LD) $(LDFLAGS.EXTRA) $(LDFLAGS.DYNAMIC) -o $@ $^ $(LIB.LDFLAGS) $(GLEW.LIBS)  -lpthread
+lib/$(GLEW.SHARED): lib $(GLEW.OBJS) lib/$(LIB.SHARED)
+	$(CCACHE) $(LD) $(LDFLAGS.EXTRA) $(LDFLAGS.DYNAMIC) -o $@ $(GLEW.OBJS) $(LIB.LDFLAGS) $(GLEW.LIBS)  -lpthread
 ifneq ($(STRIP),)
 	$(STRIP) -x $@
 endif
@@ -212,7 +312,7 @@ tmp/$(SYSTEM)/glewinfo/static/%.o: src/glew/src/%.c
 	@mkdir -p $(dir $@)
 	$(CCACHE) $(CC) $(CFLAGS) $(GLEWINFO.CFLAGS) $(CFLAGS.SO) -o $@ -c $<
 
-bin/glewinfo: $(GLEWINFO.OBJS) lib/$(LIB.SHARED) lib/$(GLEW.SHARED)
+bin/glewinfo: bin $(GLEWINFO.OBJS) lib/$(LIB.SHARED) lib/$(GLEW.SHARED)
 	$(CCACHE) $(LD) $(LDFLAGS.EXTRA) -o $@ $(GLEWINFO.OBJS) $(LIB.LDFLAGS) $(GLEWINFO.LIBS)
 ifneq ($(STRIP),)
 	$(STRIP) -x $@
@@ -325,12 +425,12 @@ GLU.OBJS       := $(GLU.OBJS:.c=.o) $(GLU.OBJS:.cc=.o)
 GLU.OBJS       := $(filter %.o,$(GLU.OBJS)) 
 GLU.CFLAGS     := -Isrc/glu/include -Isrc/glu/libnurbs/interface -Isrc/glu/libnurbs/internals -Isrc/glu/libnurbs/nurbtess
 GLU.CFLAGS     += -DLIBRARYBUILD
-GLU.LIBS       := -Llib 
+GLU.LIBS       := -Llib -lRegal
 GLU.LIBS       += -lpthread -lm
 GLU.SHARED     := libRegalGLU.$(EXT.DYNAMIC)
 GLU.STATIC     := libRegalGLU.a
 
-glu.lib: lib lib/$(GLU.SHARED)
+glu.lib: lib/$(GLU.SHARED)
 
 tmp/$(SYSTEM)/glu/shared/%.o: src/glu/libtess/%.c
 	@mkdir -p $(dir $@)
@@ -352,8 +452,8 @@ tmp/$(SYSTEM)/glu/shared/%.o: src/glu/libnurbs/nurbtess/%.cc
 	@mkdir -p $(dir $@)
 	$(CCACHE) $(CC) $(CFLAGS) $(PICFLAG) $(GLU.CFLAGS) $(CFLAGS.SO) -o $@ -c $<
 
-lib/$(GLU.SHARED): $(GLU.OBJS)
-	$(CCACHE) $(LD) $(LDFLAGS.EXTRA) $(LDFLAGS.DYNAMIC) -o $@ $^
+lib/$(GLU.SHARED): lib $(GLU.OBJS)
+	$(CCACHE) $(LD) $(LDFLAGS.EXTRA) $(LDFLAGS.DYNAMIC) $(GLU.LIBS) $(LIB.LDFLAGS) -o $@ $(GLU.OBJS)
 ifneq ($(STRIP),)
 	$(STRIP) -x $@
 endif
@@ -438,13 +538,13 @@ GLUT.LIBS       += -lpthread -lm
 GLUT.SHARED     := libRegalGLUT.$(EXT.DYNAMIC)
 GLUT.STATIC     := libRegalGLUT.a
 
-glut.lib: lib lib/$(GLUT.SHARED)
+glut.lib: lib/$(GLUT.SHARED)
 
 tmp/$(SYSTEM)/glut/shared/%.o: src/glut/src/%.c
 	@mkdir -p $(dir $@)
 	$(CCACHE) $(CC) $(CFLAGS) $(PICFLAG) $(GLUT.CFLAGS) $(CFLAGS.SO) -o $@ -c $<
 
-lib/$(GLUT.SHARED): $(GLUT.OBJS) lib/$(GLU.SHARED) lib/$(LIB.SHARED)
+lib/$(GLUT.SHARED): lib $(GLUT.OBJS) lib/$(GLU.SHARED) lib/$(LIB.SHARED)
 	$(CCACHE) $(LD) $(LDFLAGS.EXTRA) $(LDFLAGS.DYNAMIC) -o $@ $(GLUT.OBJS) $(GLUT.LIBS) 
 ifneq ($(STRIP),)
 	$(STRIP) -x $@
@@ -456,9 +556,9 @@ endif
 # Examples
 
 ifneq ($(filter nacl%,$(SYSTEM)),)
-regal.bin: lib bin
+regal.bin: bin/nacl$(BIN_EXTENSION) examples/nacl/nacl.nmf
 else
-regal.bin: lib bin bin/glewinfo bin/dreamtorus bin/tiger
+regal.bin: bin/glewinfo bin/dreamtorus bin/tiger
 endif
 
 bin:
@@ -485,11 +585,35 @@ tmp/$(SYSTEM)/dreamtorus/static/%.o: examples/dreamtorus/glut/code/%.cpp
 	@mkdir -p $(dir $@)
 	$(CCACHE) $(CC) $(CFLAGS) $(DREAMTORUS.CFLAGS) $(CFLAGS.SO) -o $@ -c $<
 
-bin/dreamtorus: $(DREAMTORUS.OBJS) lib/$(LIB.SHARED) 
+bin/dreamtorus: bin $(DREAMTORUS.OBJS) lib/$(LIB.SHARED) 
 	$(CCACHE) $(LD) $(LDFLAGS.EXTRA) -o $@ $(DREAMTORUS.OBJS) $(LIB.LDFLAGS) $(DREAMTORUS.LIBS)
 ifneq ($(STRIP),)
 	$(STRIP) -x $@
 endif
+
+NACL.SRCS       += examples/nacl/main.cpp
+NACL.SRCS.NAMES := $(notdir $(NACL.SRCS))
+NACL.OBJS       := $(addprefix tmp/$(SYSTEM)/nacl/static/,$(NACL.SRCS.NAMES))
+NACL.OBJS       := $(NACL.OBJS:.cpp=.o)
+NACL.CFLAGS     := -Iinclude
+NACL.LIBS       += -L./lib -Wl,-Bstatic -lRegal -Wl,-Bdynamic
+NACL.LIBS       += -lpng -lz -lm -lpthread -lppapi -lppapi_gles2 -lstdc++
+
+tmp/$(SYSTEM)/nacl/static/%.o: examples/nacl/%.cpp
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(NACL.CFLAGS) $(CFLAGS.SO) -o $@ -c $<
+
+bin/nacl$(BIN_EXTENSION): bin lib/$(LIB.STATIC) $(NACL.OBJS)
+	$(CC) $(CFLAGS) -o $@ $(NACL.OBJS) $(NACL.LIBS)
+ifneq ($(STRIP),)
+	$(STRIP) -x $@
+endif
+
+TOOLCHAIN=$(NACL_SDK_ROOT)/toolchain/linux_x86_glibc
+
+# Uncomment this to enable automatic regeneration of the nacl nmf file
+#examples/nacl/nacl.nmf: bin/nacl$(BIN_EXTENSION)
+	#$(NACL_SDK_ROOT)/tools/create_nmf.py -o $@ -D $(TOOLCHAIN)/x86_64-nacl/bin/objdump -t glibc bin/nacl* -L $(TOOLCHAIN)/x86_64-nacl/lib32 -L $(TOOLCHAIN)/x86_64-nacl/lib -s examples/nacl
 
 # GLUT and GLU dependency for non-Mac, non-Nacl builds
 
@@ -517,7 +641,7 @@ tmp/$(SYSTEM)/tiger/static/%.o: examples/tiger/%.c
 	@mkdir -p $(dir $@)
 	$(CCACHE) $(CC) $(CFLAGS) $(TIGER.CFLAGS) $(CFLAGS.SO) -o $@ -c $<
 
-bin/tiger: $(TIGER.OBJS) lib/$(GLEW.SHARED) lib/$(LIB.SHARED)
+bin/tiger: bin $(TIGER.OBJS) lib/$(GLEW.SHARED) lib/$(LIB.SHARED)
 	$(CCACHE) $(LD) $(LDFLAGS.EXTRA) -o $@ $(TIGER.OBJS) $(TIGER.LIBS)
 ifneq ($(STRIP),)
 	$(STRIP) -x $@
@@ -541,5 +665,5 @@ clean:
 
 
 .PHONY: export
-.PHONY: regal.lib regal.bin all debug
+.PHONY: regal.lib regal.bin all
 .PHONY: clean distclean tardist dist-win32 dist-src

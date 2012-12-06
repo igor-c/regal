@@ -153,6 +153,15 @@ namespace Http
           else if (!strcmp("GL_LOG_INTERNAL_REGAL",request_info->query_string)) Logging::enableInternal = true;
           else if (!strcmp("GL_LOG_HTTP_REGAL",    request_info->query_string)) Logging::enableHttp     = true;
 
+          else if (!strcmp("REGAL_FRAME_TIME",     request_info->query_string)) Logging::frameTime      = true;
+
+          else if (!strcmp("REGAL_MD5_COLOR",      request_info->query_string)) Config::frameMd5Color    = true;
+          else if (!strcmp("REGAL_MD5_STENCIL",    request_info->query_string)) Config::frameMd5Stencil  = true;
+          else if (!strcmp("REGAL_MD5_DEPTH",      request_info->query_string)) Config::frameMd5Depth    = true;
+          else if (!strcmp("REGAL_SAVE_COLOR",     request_info->query_string)) Config::frameSaveColor   = true;
+          else if (!strcmp("REGAL_SAVE_STENCIL",   request_info->query_string)) Config::frameSaveStencil = true;
+          else if (!strcmp("REGAL_SAVE_DEPTH",     request_info->query_string)) Config::frameSaveDepth   = true;
+
           body += print_string("glEnable(", request_info->query_string, ");",br,br);
           body += print_string("<a href=\"/glDisable?",request_info->query_string,"\">toggle</a>");
         }
@@ -165,6 +174,15 @@ namespace Http
           else if (!strcmp("GL_LOG_DRIVER_REGAL",  request_info->query_string)) Logging::enableDriver   = false;
           else if (!strcmp("GL_LOG_INTERNAL_REGAL",request_info->query_string)) Logging::enableInternal = false;
           else if (!strcmp("GL_LOG_HTTP_REGAL",    request_info->query_string)) Logging::enableHttp     = false;
+
+          else if (!strcmp("REGAL_FRAME_TIME",     request_info->query_string)) Logging::frameTime      = false;
+
+          else if (!strcmp("REGAL_MD5_COLOR",      request_info->query_string)) Config::frameMd5Color    = false;
+          else if (!strcmp("REGAL_MD5_STENCIL",    request_info->query_string)) Config::frameMd5Stencil  = false;
+          else if (!strcmp("REGAL_MD5_DEPTH",      request_info->query_string)) Config::frameMd5Depth    = false;
+          else if (!strcmp("REGAL_SAVE_COLOR",     request_info->query_string)) Config::frameSaveColor   = false;
+          else if (!strcmp("REGAL_SAVE_STENCIL",   request_info->query_string)) Config::frameSaveStencil = false;
+          else if (!strcmp("REGAL_SAVE_DEPTH",     request_info->query_string)) Config::frameSaveDepth   = false;
 
           body += print_string("glDisable(", request_info->query_string, ");",br,br);
           body += print_string("<a href=\"/glEnable?",request_info->query_string,"\">toggle</a>");

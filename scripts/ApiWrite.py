@@ -101,6 +101,10 @@ defines = Enum('defines')
         print >>file, '%s.enableCap = %s'%(j.name,j.enableCap)
       if getattr(j,'hint',None) != None:
         print >>file, '%s.hint = %s'%(j.name,j.hint)
+      if getattr(j,'bindTexture',None) != None:
+        print >>file, '%s.bindTexture = %s'%(j.name,j.bindTexture)
+      if getattr(j,'internalformat',None) != None:
+        print >>file, '%s.internalformat = %s'%(j.name,j.internalformat)
       if getattr(j,'gluErrorString',None) != None:
         print >>file, '%s.gluErrorString = \'%s\''%(j.name,j.gluErrorString)
     print >>file, ''

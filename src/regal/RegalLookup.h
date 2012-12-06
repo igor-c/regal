@@ -144,21 +144,21 @@ inline size_t cgl_LookupOffset(const char *name)
 
 #if REGAL_SYS_EGL
 
-extern const char * const egl_Name[35];
-extern const void *egl_Value[35];
-extern const size_t egl_Offset[35];
+extern const char * const egl_Name[64];
+extern const void *egl_Value[64];
+extern const size_t egl_Offset[64];
 
 template<typename T>
 T
 egl_Lookup(const char *name, T def = NULL)
 {
-  const char **res = (const char **) std::bsearch(&name, egl_Name, 34, sizeof(const char *), NameCmp);
+  const char **res = (const char **) std::bsearch(&name, egl_Name, 63, sizeof(const char *), NameCmp);
   return res ? reinterpret_cast<T>(const_cast<void *>(egl_Value[(size_t) (res - egl_Name)])) : def;
 }
 
 inline size_t egl_LookupOffset(const char *name)
 {
-  const char **res = (const char **) std::bsearch(&name, egl_Name, 34, sizeof(const char *), NameCmp);
+  const char **res = (const char **) std::bsearch(&name, egl_Name, 63, sizeof(const char *), NameCmp);
   return res ? egl_Offset[(size_t) (res - egl_Name)] : 0;
 }
 

@@ -35,6 +35,8 @@
 
 REGAL_GLOBAL_BEGIN
 
+#include <string>
+
 REGAL_GLOBAL_END
 
 REGAL_NAMESPACE_BEGIN
@@ -76,6 +78,13 @@ namespace Config
   extern bool frameSaveColor;   // Save color buffer to PNG file
   extern bool frameSaveStencil;
   extern bool frameSaveDepth;
+
+  // Caching
+
+  extern bool        cache;
+  extern bool        cacheShader;
+  extern bool        cacheShaderRead;
+  extern std::string cacheDirectory;
 };
 
 REGAL_NAMESPACE_END

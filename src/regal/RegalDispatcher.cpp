@@ -49,8 +49,11 @@ void InitDispatchTableLoader   (DispatchTable &tbl);
 void InitDispatchTableNacl     (DispatchTable &tbl);
 void InitDispatchTableStaticES2(DispatchTable &tbl);
 void InitDispatchTableMissing  (DispatchTable &tbl);
+void InitDispatchTableCache    (DispatchTable &tbl);
 
 Dispatcher::Dispatcher()
+: _front(NULL),
+  _size(0)
 {
   #if REGAL_DEBUG
   InitDispatchTableDebug(debug);
@@ -66,6 +69,12 @@ Dispatcher::Dispatcher()
   ::memset(&emulation,0,sizeof(DispatchTable));
   InitDispatchTableEmu(emulation);               // emulated functions only
   push_back(emulation,Config::enableEmulation || Config::forceEmulation);
+  #endif
+
+  #if REGAL_CACHE
+  ::memset(&cache,0,sizeof(DispatchTable));
+  InitDispatchTableCache(cache);
+  push_back(cache,true);
   #endif
 
   #if REGAL_LOG
@@ -111,6 +120,11 @@ Dispatcher::push_back(DispatchTable &table, bool enabled)
   }
 
    _table.push_back(&table);
+
+   // Cached front() and size()
+
+   if (!_size++)
+    _front = &table;
 }
 
 REGAL_NAMESPACE_END

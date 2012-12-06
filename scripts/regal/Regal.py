@@ -232,7 +232,7 @@ def apiFuncDefineCode(apis, args):
       emue = [ emuFindEntry( function, i['formulae'], i['member'] ) for i in emuRegal ]
 
       if function.needsContext:
-        c += '  RegalContext *_context = GET_REGAL_CONTEXT();\n'
+        c += '  RegalContext *_context = REGAL_GET_CONTEXT();\n'
         c += '  %s\n' % debugPrintFunction( function, 'App' )
         c += '  if (!_context) return'
         if typeIsVoid(rType):
@@ -257,6 +257,9 @@ def apiFuncDefineCode(apis, args):
           if getattr(function,'regalOnly',False)==False:
             c += '  DispatchTable *_next = &_context->dispatcher.front();\n'
             c += '  RegalAssert(_next);\n'
+
+            c += listToString(indent(emuCodeGen(emue,'suffix'),'  '))
+
             c += '  '
             if not typeIsVoid(rType):
               c += 'return '
@@ -295,13 +298,21 @@ def apiFuncDefineCode(apis, args):
           c += 'ret = '
         c += 'dispatchTableGlobal.%s(%s);\n' % ( name, callParams )
         if name == 'wglMakeCurrent':
-          c += '    RegalMakeCurrent(RegalSystemContext(hglrc));\n'
+          c += '    Init::makeCurrent(RegalSystemContext(hglrc));\n'
         elif name == 'CGLSetCurrentContext':
-          c += '    RegalMakeCurrent( ctx );\n'
+          c += '    Init::makeCurrent( ctx );\n'
         elif name == 'glXMakeCurrent':
-          c += '    RegalMakeCurrent( RegalSystemContext(ctx) );\n'
+          c += '    Init::makeCurrent( RegalSystemContext(ctx) );\n'
         elif name == 'eglMakeCurrent':
-          c += '    RegalMakeCurrent( ctx );\n'
+          c += '    Init::makeCurrent( ctx );\n'
+        elif name == 'wglDeleteContext':
+          c += '    Init::destroyContext( RegalSystemContext(hglrc) );\n'
+        elif name == 'CGLDestroyContext':
+          c += '    Init::destroyContext( RegalSystemContext(ctx) );\n'
+        elif name == 'glXDestroyContext':
+          c += '    Init::destroyContext( RegalSystemContext(ctx) );\n'
+        elif name == 'eglDestroyContext':
+          c += '    Init::destroyContext( RegalSystemContext(ctx) );\n'
         c += '  }\n'
         c += '  else\n'
         c += '    Warning( "%s not available." );\n' % name
@@ -323,13 +334,19 @@ def apiFuncDefineCode(apis, args):
 
   return code
 
+#
 # debug print function
-def debugPrintFunction(function, trace = 'ITrace'):
+#
+
+def debugPrintFunction(function, trace = 'ITrace', input = True, output = False, ret = None):
   c =  ''
   args = []
   for i in function.parameters:
 
-    if i.output:
+    if not output and i.output:
+      continue
+
+    if not input and not i.output:
       continue
 
     # Use a cast, if necessary
@@ -350,15 +367,19 @@ def debugPrintFunction(function, trace = 'ITrace'):
       args.append('%s'%i.regalLog)
     elif t == 'GLenum':
       args.append('toString(%s)'%n)
+    elif t == 'GLXenum':
+      args.append('GLXenumToString(%s)'%n)
+    elif t == 'EGLenum':
+      args.append('EGLenumToString(%s)'%n)
     elif t == 'GLboolean' or t == 'const GLboolean':
       args.append('toString(%s)'%n)
     elif t == 'char *' or t == 'const char *' or t == 'GLchar *' or t == 'const GLchar *' or t == 'LPCSTR':
       args.append('boost::print::quote(%s,\'"\')'%n)
-    elif i.input and i.size!=None and (isinstance(i.size,int) or isinstance(i.size, long)) and t.find('void')==-1 and t.find('PIXELFORMATDESCRIPTOR')==-1:
+    elif i.size!=None and (isinstance(i.size,int) or isinstance(i.size, long)) and t.find('void')==-1 and t.find('PIXELFORMATDESCRIPTOR')==-1:
       args.append('boost::print::array(%s,%s)'%(n,i.size))
-    elif i.input and i.size!=None and (isinstance(i.size, str) or isinstance(i.size, unicode)) and t.find('void')==-1 and t.find('PIXELFORMATDESCRIPTOR')==-1 and i.size.find('helper')==-1:
+    elif i.size!=None and (isinstance(i.size, str) or isinstance(i.size, unicode)) and t.find('void')==-1 and t.find('PIXELFORMATDESCRIPTOR')==-1 and i.size.find('helper')==-1:
       args.append('boost::print::array(%s,%s%s)'%(n,i.size,quote))
-    elif i.input and i.size!=None and (isinstance(i.size, str) or isinstance(i.size, unicode)) and t.find('void')==-1 and t.find('PIXELFORMATDESCRIPTOR')==-1 and i.size.find('helper')==0:
+    elif i.size!=None and (isinstance(i.size, str) or isinstance(i.size, unicode)) and t.find('void')==-1 and t.find('PIXELFORMATDESCRIPTOR')==-1 and i.size.find('helper')==0:
       h = i.size.split('(')[0]
       if h in helpers:
         args.append('boost::print::array(%s,%s(%s%s)'%(n,helpers[h],i.size.split('(',1)[1],quote))
@@ -375,9 +396,15 @@ def debugPrintFunction(function, trace = 'ITrace'):
   if len(args):
     c += '%s("%s","(", ' % (trace, function.name)
     c += ', ", ", '.join(args)
-    c += ', ")");'
+    c += ', ")"'
+    if ret:
+      c += ', " returned ", ret'
+    c += ');'
   else:
-    c += '%s("%s","()");' % (trace, function.name)
+    c += '%s("%s","()"' % (trace, function.name)
+    if ret:
+      c += ', " returned ", ret'
+    c += ');'
   return c
 
 def apiTypedefCode( apis, args ):
@@ -642,7 +669,9 @@ REGAL_GLOBAL_BEGIN
 #include "RegalPrivate.h"
 #include "RegalDebugInfo.h"
 #include "RegalContextInfo.h"
+#include "RegalShaderCache.h"
 
+#include "RegalFrame.h"
 #include "RegalMarker.h"
 
 using namespace REGAL_NAMESPACE_INTERNAL;
@@ -699,7 +728,8 @@ def generateDefFile(apis, args, additional_exports):
   code1.insert( 0, '  SetPixelFormat' )
   code2.insert( 0, '  SetPixelFormat' )
 
-  # RegalMakeCurrent, RegalSetErrorCallback
+  # RegalMakeCurrent, RegalSetErrorCallback, etc
+
   code1 += ['  %s' % export for export in additional_exports]
   code2 += ['  %s' % export for export in additional_exports]
   code3 += ['_%s' % export for export in additional_exports]

@@ -270,6 +270,15 @@ typedef void * EGLDisplay;
 typedef void * EGLSurface;
 typedef void * EGLClientBuffer;
 typedef void  (*__eglMustCastToProperFunctionPointerType)(void);
+typedef void * EGLSyncKHR;
+typedef uint64_t EGLTimeKHR;
+typedef void * EGLImageKHR;
+typedef void * EGLStreamKHR;
+typedef uint64_t EGLuint64KHR;
+typedef int EGLNativeFileDescriptorKHR;
+typedef void * EGLSyncNV;
+typedef uint64_t EGLTimeNV;
+typedef uint64_t EGLuint64NV;
 #endif // REGAL_SYS_EGL
 
 /* TODO: make this automatic? */
@@ -34290,6 +34299,1121 @@ REGAL_DECL CGLShareGroupObj REGAL_CALL CGLGetShareGroup(CGLContextObj ctx);
 #define EGLAPIENTRY                     KHRONOS_APIENTRY
 
 /**
+ ** EGL_ANGLE_query_surface_pointer
+ **/
+
+#if (defined(EGL_ANGLE_QUERY_SURFACE_POINTER) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_ANGLE_QUERY_SURFACE_POINTER)) && !defined(REGAL_NO_ENUM_EGL_ANGLE_QUERY_SURFACE_POINTER)
+#define REGAL_NO_ENUM_EGL_ANGLE_QUERY_SURFACE_POINTER
+#endif
+
+#if (defined(EGL_ANGLE_QUERY_SURFACE_POINTER) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_ANGLE_QUERY_SURFACE_POINTER)) && !defined(REGAL_NO_TYPEDEF_EGL_ANGLE_QUERY_SURFACE_POINTER)
+#define REGAL_NO_TYPEDEF_EGL_ANGLE_QUERY_SURFACE_POINTER
+#endif
+
+#if (defined(EGL_ANGLE_QUERY_SURFACE_POINTER) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_ANGLE_QUERY_SURFACE_POINTER)) && !defined(REGAL_NO_NAMESPACE_EGL_ANGLE_QUERY_SURFACE_POINTER)
+#define REGAL_NO_NAMESPACE_EGL_ANGLE_QUERY_SURFACE_POINTER
+#endif
+
+#if (defined(EGL_ANGLE_QUERY_SURFACE_POINTER) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_ANGLE_QUERY_SURFACE_POINTER)) && !defined(REGAL_NO_DECLARATION_EGL_ANGLE_QUERY_SURFACE_POINTER)
+#define REGAL_NO_DECLARATION_EGL_ANGLE_QUERY_SURFACE_POINTER
+#endif
+
+#ifndef EGL_ANGLE_query_surface_pointer
+#define EGL_ANGLE_query_surface_pointer 1
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_ANGLE_QUERY_SURFACE_POINTER
+typedef EGLBoolean (REGAL_CALL *PFNEGLQUERYSURFACEPOINTERANGLEPROC)(EGLDisplay dpy, EGLSurface surface, EGLint attribute, GLvoid **value);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_ANGLE_QUERY_SURFACE_POINTER
+#define eglQuerySurfacePointerANGLE         reglQuerySurfacePointerANGLE
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_ANGLE_QUERY_SURFACE_POINTER
+REGAL_DECL EGLBoolean REGAL_CALL eglQuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surface, EGLint attribute, GLvoid **value);
+#endif
+
+/**
+ ** EGL_ANGLE_surface_d3d_texture_2d_share_handle
+ **/
+
+#if (defined(EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE)) && !defined(REGAL_NO_ENUM_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE)
+#define REGAL_NO_ENUM_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE
+#endif
+
+#if (defined(EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE)) && !defined(REGAL_NO_TYPEDEF_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE)
+#define REGAL_NO_TYPEDEF_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE
+#endif
+
+#if (defined(EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE)) && !defined(REGAL_NO_NAMESPACE_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE)
+#define REGAL_NO_NAMESPACE_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE
+#endif
+
+#if (defined(EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE)) && !defined(REGAL_NO_DECLARATION_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE)
+#define REGAL_NO_DECLARATION_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE
+#endif
+
+#ifndef EGL_ANGLE_surface_d3d_texture_2d_share_handle
+#define EGL_ANGLE_surface_d3d_texture_2d_share_handle 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_ANGLE_SURFACE_D3D_TEXTURE_2D_SHARE_HANDLE
+#define EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE 0x3200     /* 12800 */
+#define EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE 0x3200     /* 12800 */
+#endif
+
+/**
+ ** EGL_EXT_create_context_robustness
+ **/
+
+#if (defined(EGL_EXT_CREATE_CONTEXT_ROBUSTNESS) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS)) && !defined(REGAL_NO_ENUM_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS)
+#define REGAL_NO_ENUM_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS
+#endif
+
+#if (defined(EGL_EXT_CREATE_CONTEXT_ROBUSTNESS) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS)) && !defined(REGAL_NO_TYPEDEF_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS)
+#define REGAL_NO_TYPEDEF_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS
+#endif
+
+#if (defined(EGL_EXT_CREATE_CONTEXT_ROBUSTNESS) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS)) && !defined(REGAL_NO_NAMESPACE_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS)
+#define REGAL_NO_NAMESPACE_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS
+#endif
+
+#if (defined(EGL_EXT_CREATE_CONTEXT_ROBUSTNESS) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS)) && !defined(REGAL_NO_DECLARATION_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS)
+#define REGAL_NO_DECLARATION_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS
+#endif
+
+#ifndef EGL_EXT_create_context_robustness
+#define EGL_EXT_create_context_robustness 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_EXT_CREATE_CONTEXT_ROBUSTNESS
+#define EGL_CONTEXT_OPENGL_ROBUST_ACCESS_EXT               0x30bf     /* 12479 */
+#define EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT 0x3138     /* 12600 */
+#define EGL_NO_RESET_NOTIFICATION_EXT                      0x31be     /* 12734 */
+#define EGL_LOSE_CONTEXT_ON_RESET_EXT                      0x31bf     /* 12735 */
+#endif
+
+/**
+ ** EGL_EXT_multiview_window
+ **/
+
+#if (defined(EGL_EXT_MULTIVIEW_WINDOW) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_EXT_MULTIVIEW_WINDOW)) && !defined(REGAL_NO_ENUM_EGL_EXT_MULTIVIEW_WINDOW)
+#define REGAL_NO_ENUM_EGL_EXT_MULTIVIEW_WINDOW
+#endif
+
+#if (defined(EGL_EXT_MULTIVIEW_WINDOW) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_EXT_MULTIVIEW_WINDOW)) && !defined(REGAL_NO_TYPEDEF_EGL_EXT_MULTIVIEW_WINDOW)
+#define REGAL_NO_TYPEDEF_EGL_EXT_MULTIVIEW_WINDOW
+#endif
+
+#if (defined(EGL_EXT_MULTIVIEW_WINDOW) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_EXT_MULTIVIEW_WINDOW)) && !defined(REGAL_NO_NAMESPACE_EGL_EXT_MULTIVIEW_WINDOW)
+#define REGAL_NO_NAMESPACE_EGL_EXT_MULTIVIEW_WINDOW
+#endif
+
+#if (defined(EGL_EXT_MULTIVIEW_WINDOW) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_EXT_MULTIVIEW_WINDOW)) && !defined(REGAL_NO_DECLARATION_EGL_EXT_MULTIVIEW_WINDOW)
+#define REGAL_NO_DECLARATION_EGL_EXT_MULTIVIEW_WINDOW
+#endif
+
+#ifndef EGL_EXT_multiview_window
+#define EGL_EXT_multiview_window 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_EXT_MULTIVIEW_WINDOW
+#define EGL_MULTIVIEW_VIEW_COUNT_EXT 0x3134 /* 12596 */
+#endif
+
+/**
+ ** EGL_HI_colorformats
+ **/
+
+#if (defined(EGL_HI_COLORFORMATS) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_HI_COLORFORMATS)) && !defined(REGAL_NO_ENUM_EGL_HI_COLORFORMATS)
+#define REGAL_NO_ENUM_EGL_HI_COLORFORMATS
+#endif
+
+#if (defined(EGL_HI_COLORFORMATS) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_HI_COLORFORMATS)) && !defined(REGAL_NO_TYPEDEF_EGL_HI_COLORFORMATS)
+#define REGAL_NO_TYPEDEF_EGL_HI_COLORFORMATS
+#endif
+
+#if (defined(EGL_HI_COLORFORMATS) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_HI_COLORFORMATS)) && !defined(REGAL_NO_NAMESPACE_EGL_HI_COLORFORMATS)
+#define REGAL_NO_NAMESPACE_EGL_HI_COLORFORMATS
+#endif
+
+#if (defined(EGL_HI_COLORFORMATS) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_HI_COLORFORMATS)) && !defined(REGAL_NO_DECLARATION_EGL_HI_COLORFORMATS)
+#define REGAL_NO_DECLARATION_EGL_HI_COLORFORMATS
+#endif
+
+#ifndef EGL_HI_colorformats
+#define EGL_HI_colorformats 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_HI_COLORFORMATS
+#define EGL_COLOR_FORMAT_HI 0x8f70     /* 36720 */
+#define EGL_COLOR_RGB_HI    0x8f71     /* 36721 */
+#define EGL_COLOR_RGBA_HI   0x8f72     /* 36722 */
+#define EGL_COLOR_ARGB_HI   0x8f73     /* 36723 */
+#endif
+
+/**
+ ** EGL_IMG_context_priority
+ **/
+
+#if (defined(EGL_IMG_CONTEXT_PRIORITY) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_IMG_CONTEXT_PRIORITY)) && !defined(REGAL_NO_ENUM_EGL_IMG_CONTEXT_PRIORITY)
+#define REGAL_NO_ENUM_EGL_IMG_CONTEXT_PRIORITY
+#endif
+
+#if (defined(EGL_IMG_CONTEXT_PRIORITY) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_IMG_CONTEXT_PRIORITY)) && !defined(REGAL_NO_TYPEDEF_EGL_IMG_CONTEXT_PRIORITY)
+#define REGAL_NO_TYPEDEF_EGL_IMG_CONTEXT_PRIORITY
+#endif
+
+#if (defined(EGL_IMG_CONTEXT_PRIORITY) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_IMG_CONTEXT_PRIORITY)) && !defined(REGAL_NO_NAMESPACE_EGL_IMG_CONTEXT_PRIORITY)
+#define REGAL_NO_NAMESPACE_EGL_IMG_CONTEXT_PRIORITY
+#endif
+
+#if (defined(EGL_IMG_CONTEXT_PRIORITY) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_IMG_CONTEXT_PRIORITY)) && !defined(REGAL_NO_DECLARATION_EGL_IMG_CONTEXT_PRIORITY)
+#define REGAL_NO_DECLARATION_EGL_IMG_CONTEXT_PRIORITY
+#endif
+
+#ifndef EGL_IMG_context_priority
+#define EGL_IMG_context_priority 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_IMG_CONTEXT_PRIORITY
+#define EGL_CONTEXT_PRIORITY_LEVEL_IMG  0x3100     /* 12544 */
+#define EGL_CONTEXT_PRIORITY_HIGH_IMG   0x3101     /* 12545 */
+#define EGL_CONTEXT_PRIORITY_MEDIUM_IMG 0x3102     /* 12546 */
+#define EGL_CONTEXT_PRIORITY_LOW_IMG    0x3103     /* 12547 */
+#endif
+
+/**
+ ** EGL_KHR_config_attribs
+ **/
+
+#if (defined(EGL_KHR_CONFIG_ATTRIBS) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_CONFIG_ATTRIBS)) && !defined(REGAL_NO_ENUM_EGL_KHR_CONFIG_ATTRIBS)
+#define REGAL_NO_ENUM_EGL_KHR_CONFIG_ATTRIBS
+#endif
+
+#if (defined(EGL_KHR_CONFIG_ATTRIBS) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_CONFIG_ATTRIBS)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_CONFIG_ATTRIBS)
+#define REGAL_NO_TYPEDEF_EGL_KHR_CONFIG_ATTRIBS
+#endif
+
+#if (defined(EGL_KHR_CONFIG_ATTRIBS) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_CONFIG_ATTRIBS)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_CONFIG_ATTRIBS)
+#define REGAL_NO_NAMESPACE_EGL_KHR_CONFIG_ATTRIBS
+#endif
+
+#if (defined(EGL_KHR_CONFIG_ATTRIBS) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_CONFIG_ATTRIBS)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_CONFIG_ATTRIBS)
+#define REGAL_NO_DECLARATION_EGL_KHR_CONFIG_ATTRIBS
+#endif
+
+#ifndef EGL_KHR_config_attribs
+#define EGL_KHR_config_attribs 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_CONFIG_ATTRIBS
+#define EGL_VG_COLORSPACE_LINEAR_BIT_KHR 0x20       /* 32 */
+#define EGL_CONFORMANT_KHR               0x3042     /* 12354 */
+#define EGL_VG_ALPHA_FORMAT_PRE_BIT_KHR  0x40       /* 64 */
+#endif
+
+/**
+ ** EGL_KHR_create_context
+ **/
+
+#if (defined(EGL_KHR_CREATE_CONTEXT) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_CREATE_CONTEXT)) && !defined(REGAL_NO_ENUM_EGL_KHR_CREATE_CONTEXT)
+#define REGAL_NO_ENUM_EGL_KHR_CREATE_CONTEXT
+#endif
+
+#if (defined(EGL_KHR_CREATE_CONTEXT) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_CREATE_CONTEXT)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_CREATE_CONTEXT)
+#define REGAL_NO_TYPEDEF_EGL_KHR_CREATE_CONTEXT
+#endif
+
+#if (defined(EGL_KHR_CREATE_CONTEXT) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_CREATE_CONTEXT)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_CREATE_CONTEXT)
+#define REGAL_NO_NAMESPACE_EGL_KHR_CREATE_CONTEXT
+#endif
+
+#if (defined(EGL_KHR_CREATE_CONTEXT) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_CREATE_CONTEXT)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_CREATE_CONTEXT)
+#define REGAL_NO_DECLARATION_EGL_KHR_CREATE_CONTEXT
+#endif
+
+#ifndef EGL_KHR_create_context
+#define EGL_KHR_create_context 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_CREATE_CONTEXT
+#define EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR            0x1
+#define EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR                   0x1
+#define EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR   0x2
+#define EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE_BIT_KHR      0x2
+#define EGL_CONTEXT_MAJOR_VERSION_KHR                      0x3098     /* 12440 */
+#define EGL_CONTEXT_MINOR_VERSION_KHR                      0x30fb     /* 12539 */
+#define EGL_CONTEXT_FLAGS_KHR                              0x30fc     /* 12540 */
+#define EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR                0x30fd     /* 12541 */
+#define EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_KHR 0x31bd     /* 12733 */
+#define EGL_NO_RESET_NOTIFICATION_KHR                      0x31be     /* 12734 */
+#define EGL_LOSE_CONTEXT_ON_RESET_KHR                      0x31bf     /* 12735 */
+#define EGL_CONTEXT_OPENGL_ROBUST_ACCESS_BIT_KHR           0x4
+#define EGL_OPENGL_ES3_BIT_KHR                             0x40       /* 64 */
+#endif
+
+/**
+ ** EGL_KHR_fence_sync
+ **/
+
+#if (defined(EGL_KHR_FENCE_SYNC) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_FENCE_SYNC)) && !defined(REGAL_NO_ENUM_EGL_KHR_FENCE_SYNC)
+#define REGAL_NO_ENUM_EGL_KHR_FENCE_SYNC
+#endif
+
+#if (defined(EGL_KHR_FENCE_SYNC) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_FENCE_SYNC)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_FENCE_SYNC)
+#define REGAL_NO_TYPEDEF_EGL_KHR_FENCE_SYNC
+#endif
+
+#if (defined(EGL_KHR_FENCE_SYNC) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_FENCE_SYNC)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_FENCE_SYNC)
+#define REGAL_NO_NAMESPACE_EGL_KHR_FENCE_SYNC
+#endif
+
+#if (defined(EGL_KHR_FENCE_SYNC) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_FENCE_SYNC)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_FENCE_SYNC)
+#define REGAL_NO_DECLARATION_EGL_KHR_FENCE_SYNC
+#endif
+
+#ifndef EGL_KHR_fence_sync
+#define EGL_KHR_fence_sync 1
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_KHR_FENCE_SYNC
+typedef EGLBoolean (REGAL_CALL *PFNEGLDESTROYSYNCKHRPROC)(EGLDisplay dpy, EGLSyncKHR GLsync);
+typedef EGLBoolean (REGAL_CALL *PFNEGLGETSYNCATTRIBKHRPROC)(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint attribute, EGLint *value);
+typedef EGLSyncKHR (REGAL_CALL *PFNEGLCREATESYNCKHRPROC)(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
+typedef EGLint (REGAL_CALL *PFNEGLCLIENTWAITSYNCKHRPROC)(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint flags, EGLTimeKHR timeout);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_KHR_FENCE_SYNC
+#define eglClientWaitSyncKHR                reglClientWaitSyncKHR
+#define eglCreateSyncKHR                    reglCreateSyncKHR
+#define eglDestroySyncKHR                   reglDestroySyncKHR
+#define eglGetSyncAttribKHR                 reglGetSyncAttribKHR
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_KHR_FENCE_SYNC
+REGAL_DECL EGLBoolean REGAL_CALL eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR GLsync);
+REGAL_DECL EGLBoolean REGAL_CALL eglGetSyncAttribKHR(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint attribute, EGLint *value);
+REGAL_DECL EGLSyncKHR REGAL_CALL eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
+REGAL_DECL EGLint REGAL_CALL eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint flags, EGLTimeKHR timeout);
+#endif
+
+/**
+ ** EGL_KHR_gl_texture_cubemap_image
+ **/
+
+#if (defined(EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE)) && !defined(REGAL_NO_ENUM_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE)
+#define REGAL_NO_ENUM_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE
+#endif
+
+#if (defined(EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE)
+#define REGAL_NO_TYPEDEF_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE
+#endif
+
+#if (defined(EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE)
+#define REGAL_NO_NAMESPACE_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE
+#endif
+
+#if (defined(EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE)
+#define REGAL_NO_DECLARATION_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE
+#endif
+
+#ifndef EGL_KHR_gl_texture_cubemap_image
+#define EGL_KHR_gl_texture_cubemap_image 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_GL_TEXTURE_CUBEMAP_IMAGE
+#define EGL_GL_TEXTURE_2D_KHR                  0x30b1     /* 12465 */
+#define EGL_GL_TEXTURE_2D_KHR                  0x30b1     /* 12465 */
+#define EGL_GL_TEXTURE_2D_KHR                  0x30b1     /* 12465 */
+#define EGL_GL_TEXTURE_2D_KHR                  0x30b1     /* 12465 */
+#define EGL_GL_TEXTURE_3D_KHR                  0x30b2     /* 12466 */
+#define EGL_GL_TEXTURE_3D_KHR                  0x30b2     /* 12466 */
+#define EGL_GL_TEXTURE_3D_KHR                  0x30b2     /* 12466 */
+#define EGL_GL_TEXTURE_3D_KHR                  0x30b2     /* 12466 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_X_KHR 0x30b3     /* 12467 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_X_KHR 0x30b3     /* 12467 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_X_KHR 0x30b3     /* 12467 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_X_KHR 0x30b3     /* 12467 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_X_KHR 0x30b4     /* 12468 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_X_KHR 0x30b4     /* 12468 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_X_KHR 0x30b4     /* 12468 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_X_KHR 0x30b4     /* 12468 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Y_KHR 0x30b5     /* 12469 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Y_KHR 0x30b5     /* 12469 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Y_KHR 0x30b5     /* 12469 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Y_KHR 0x30b5     /* 12469 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_KHR 0x30b6     /* 12470 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_KHR 0x30b6     /* 12470 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_KHR 0x30b6     /* 12470 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_KHR 0x30b6     /* 12470 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Z_KHR 0x30b7     /* 12471 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Z_KHR 0x30b7     /* 12471 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Z_KHR 0x30b7     /* 12471 */
+#define EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Z_KHR 0x30b7     /* 12471 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_KHR 0x30b8     /* 12472 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_KHR 0x30b8     /* 12472 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_KHR 0x30b8     /* 12472 */
+#define EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_KHR 0x30b8     /* 12472 */
+#define EGL_GL_RENDERBUFFER_KHR                0x30b9     /* 12473 */
+#define EGL_GL_RENDERBUFFER_KHR                0x30b9     /* 12473 */
+#define EGL_GL_RENDERBUFFER_KHR                0x30b9     /* 12473 */
+#define EGL_GL_RENDERBUFFER_KHR                0x30b9     /* 12473 */
+#define EGL_GL_TEXTURE_LEVEL_KHR               0x30bc     /* 12476 */
+#define EGL_GL_TEXTURE_LEVEL_KHR               0x30bc     /* 12476 */
+#define EGL_GL_TEXTURE_LEVEL_KHR               0x30bc     /* 12476 */
+#define EGL_GL_TEXTURE_LEVEL_KHR               0x30bc     /* 12476 */
+#define EGL_GL_TEXTURE_ZOFFSET_KHR             0x30bd     /* 12477 */
+#define EGL_GL_TEXTURE_ZOFFSET_KHR             0x30bd     /* 12477 */
+#define EGL_GL_TEXTURE_ZOFFSET_KHR             0x30bd     /* 12477 */
+#define EGL_GL_TEXTURE_ZOFFSET_KHR             0x30bd     /* 12477 */
+#endif
+
+/**
+ ** EGL_KHR_image_base
+ **/
+
+#if (defined(EGL_KHR_IMAGE_BASE) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_IMAGE_BASE)) && !defined(REGAL_NO_ENUM_EGL_KHR_IMAGE_BASE)
+#define REGAL_NO_ENUM_EGL_KHR_IMAGE_BASE
+#endif
+
+#if (defined(EGL_KHR_IMAGE_BASE) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_IMAGE_BASE)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_IMAGE_BASE)
+#define REGAL_NO_TYPEDEF_EGL_KHR_IMAGE_BASE
+#endif
+
+#if (defined(EGL_KHR_IMAGE_BASE) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_IMAGE_BASE)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_IMAGE_BASE)
+#define REGAL_NO_NAMESPACE_EGL_KHR_IMAGE_BASE
+#endif
+
+#if (defined(EGL_KHR_IMAGE_BASE) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_IMAGE_BASE)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_IMAGE_BASE)
+#define REGAL_NO_DECLARATION_EGL_KHR_IMAGE_BASE
+#endif
+
+#ifndef EGL_KHR_image_base
+#define EGL_KHR_image_base 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_IMAGE_BASE
+#define EGL_IMAGE_PRESERVED_KHR 0x30d2 /* 12498 */
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_KHR_IMAGE_BASE
+typedef EGLBoolean (REGAL_CALL *PFNEGLDESTROYIMAGEKHRPROC)(EGLDisplay dpy, EGLImageKHR image);
+typedef EGLImageKHR (REGAL_CALL *PFNEGLCREATEIMAGEKHRPROC)(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_KHR_IMAGE_BASE
+#define eglCreateImageKHR                   reglCreateImageKHR
+#define eglDestroyImageKHR                  reglDestroyImageKHR
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_KHR_IMAGE_BASE
+REGAL_DECL EGLBoolean REGAL_CALL eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR image);
+REGAL_DECL EGLImageKHR REGAL_CALL eglCreateImageKHR(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list);
+#endif
+
+/**
+ ** EGL_KHR_image_pixmap
+ **/
+
+#if (defined(EGL_KHR_IMAGE_PIXMAP) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_IMAGE_PIXMAP)) && !defined(REGAL_NO_ENUM_EGL_KHR_IMAGE_PIXMAP)
+#define REGAL_NO_ENUM_EGL_KHR_IMAGE_PIXMAP
+#endif
+
+#if (defined(EGL_KHR_IMAGE_PIXMAP) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_IMAGE_PIXMAP)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_IMAGE_PIXMAP)
+#define REGAL_NO_TYPEDEF_EGL_KHR_IMAGE_PIXMAP
+#endif
+
+#if (defined(EGL_KHR_IMAGE_PIXMAP) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_IMAGE_PIXMAP)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_IMAGE_PIXMAP)
+#define REGAL_NO_NAMESPACE_EGL_KHR_IMAGE_PIXMAP
+#endif
+
+#if (defined(EGL_KHR_IMAGE_PIXMAP) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_IMAGE_PIXMAP)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_IMAGE_PIXMAP)
+#define REGAL_NO_DECLARATION_EGL_KHR_IMAGE_PIXMAP
+#endif
+
+#ifndef EGL_KHR_image_pixmap
+#define EGL_KHR_image_pixmap 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_IMAGE_PIXMAP
+#define EGL_NATIVE_PIXMAP_KHR 0x30b0 /* 12464 */
+#endif
+
+/**
+ ** EGL_KHR_lock_surface
+ **/
+
+#if (defined(EGL_KHR_LOCK_SURFACE) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_LOCK_SURFACE)) && !defined(REGAL_NO_ENUM_EGL_KHR_LOCK_SURFACE)
+#define REGAL_NO_ENUM_EGL_KHR_LOCK_SURFACE
+#endif
+
+#if (defined(EGL_KHR_LOCK_SURFACE) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_LOCK_SURFACE)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_LOCK_SURFACE)
+#define REGAL_NO_TYPEDEF_EGL_KHR_LOCK_SURFACE
+#endif
+
+#if (defined(EGL_KHR_LOCK_SURFACE) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_LOCK_SURFACE)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_LOCK_SURFACE)
+#define REGAL_NO_NAMESPACE_EGL_KHR_LOCK_SURFACE
+#endif
+
+#if (defined(EGL_KHR_LOCK_SURFACE) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_LOCK_SURFACE)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_LOCK_SURFACE)
+#define REGAL_NO_DECLARATION_EGL_KHR_LOCK_SURFACE
+#endif
+
+#ifndef EGL_KHR_lock_surface
+#define EGL_KHR_lock_surface 1
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_KHR_LOCK_SURFACE
+typedef EGLBoolean (REGAL_CALL *PFNEGLLOCKSURFACEKHRPROC)(EGLDisplay display, EGLSurface surface, const EGLint *attrib_list);
+typedef EGLBoolean (REGAL_CALL *PFNEGLUNLOCKSURFACEKHRPROC)(EGLDisplay display, EGLSurface surface);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_KHR_LOCK_SURFACE
+#define eglLockSurfaceKHR                   reglLockSurfaceKHR
+#define eglUnlockSurfaceKHR                 reglUnlockSurfaceKHR
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_KHR_LOCK_SURFACE
+REGAL_DECL EGLBoolean REGAL_CALL eglLockSurfaceKHR(EGLDisplay display, EGLSurface surface, const EGLint *attrib_list);
+REGAL_DECL EGLBoolean REGAL_CALL eglUnlockSurfaceKHR(EGLDisplay display, EGLSurface surface);
+#endif
+
+/**
+ ** EGL_KHR_lock_surface2
+ **/
+
+#if (defined(EGL_KHR_LOCK_SURFACE2) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_LOCK_SURFACE2)) && !defined(REGAL_NO_ENUM_EGL_KHR_LOCK_SURFACE2)
+#define REGAL_NO_ENUM_EGL_KHR_LOCK_SURFACE2
+#endif
+
+#if (defined(EGL_KHR_LOCK_SURFACE2) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_LOCK_SURFACE2)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_LOCK_SURFACE2)
+#define REGAL_NO_TYPEDEF_EGL_KHR_LOCK_SURFACE2
+#endif
+
+#if (defined(EGL_KHR_LOCK_SURFACE2) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_LOCK_SURFACE2)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_LOCK_SURFACE2)
+#define REGAL_NO_NAMESPACE_EGL_KHR_LOCK_SURFACE2
+#endif
+
+#if (defined(EGL_KHR_LOCK_SURFACE2) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_LOCK_SURFACE2)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_LOCK_SURFACE2)
+#define REGAL_NO_DECLARATION_EGL_KHR_LOCK_SURFACE2
+#endif
+
+#ifndef EGL_KHR_lock_surface2
+#define EGL_KHR_lock_surface2 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_LOCK_SURFACE2
+#define EGL_READ_SURFACE_BIT_KHR              0x1
+#define EGL_READ_SURFACE_BIT_KHR              0x1
+#define EGL_OPTIMAL_FORMAT_BIT_KHR            0x100      /* 256 */
+#define EGL_OPTIMAL_FORMAT_BIT_KHR            0x100      /* 256 */
+#define EGL_WRITE_SURFACE_BIT_KHR             0x2
+#define EGL_WRITE_SURFACE_BIT_KHR             0x2
+#define EGL_MATCH_FORMAT_KHR                  0x3043     /* 12355 */
+#define EGL_MATCH_FORMAT_KHR                  0x3043     /* 12355 */
+#define EGL_FORMAT_RGB_565_EXACT_KHR          0x30c0     /* 12480 */
+#define EGL_FORMAT_RGB_565_EXACT_KHR          0x30c0     /* 12480 */
+#define EGL_FORMAT_RGB_565_KHR                0x30c1     /* 12481 */
+#define EGL_FORMAT_RGB_565_KHR                0x30c1     /* 12481 */
+#define EGL_FORMAT_RGBA_8888_EXACT_KHR        0x30c2     /* 12482 */
+#define EGL_FORMAT_RGBA_8888_EXACT_KHR        0x30c2     /* 12482 */
+#define EGL_FORMAT_RGBA_8888_KHR              0x30c3     /* 12483 */
+#define EGL_FORMAT_RGBA_8888_KHR              0x30c3     /* 12483 */
+#define EGL_MAP_PRESERVE_PIXELS_KHR           0x30c4     /* 12484 */
+#define EGL_MAP_PRESERVE_PIXELS_KHR           0x30c4     /* 12484 */
+#define EGL_LOCK_USAGE_HINT_KHR               0x30c5     /* 12485 */
+#define EGL_LOCK_USAGE_HINT_KHR               0x30c5     /* 12485 */
+#define EGL_BITMAP_POINTER_KHR                0x30c6     /* 12486 */
+#define EGL_BITMAP_POINTER_KHR                0x30c6     /* 12486 */
+#define EGL_BITMAP_PITCH_KHR                  0x30c7     /* 12487 */
+#define EGL_BITMAP_PITCH_KHR                  0x30c7     /* 12487 */
+#define EGL_BITMAP_ORIGIN_KHR                 0x30c8     /* 12488 */
+#define EGL_BITMAP_ORIGIN_KHR                 0x30c8     /* 12488 */
+#define EGL_BITMAP_PIXEL_RED_OFFSET_KHR       0x30c9     /* 12489 */
+#define EGL_BITMAP_PIXEL_RED_OFFSET_KHR       0x30c9     /* 12489 */
+#define EGL_BITMAP_PIXEL_GREEN_OFFSET_KHR     0x30ca     /* 12490 */
+#define EGL_BITMAP_PIXEL_GREEN_OFFSET_KHR     0x30ca     /* 12490 */
+#define EGL_BITMAP_PIXEL_BLUE_OFFSET_KHR      0x30cb     /* 12491 */
+#define EGL_BITMAP_PIXEL_BLUE_OFFSET_KHR      0x30cb     /* 12491 */
+#define EGL_BITMAP_PIXEL_ALPHA_OFFSET_KHR     0x30cc     /* 12492 */
+#define EGL_BITMAP_PIXEL_ALPHA_OFFSET_KHR     0x30cc     /* 12492 */
+#define EGL_BITMAP_PIXEL_LUMINANCE_OFFSET_KHR 0x30cd     /* 12493 */
+#define EGL_BITMAP_PIXEL_LUMINANCE_OFFSET_KHR 0x30cd     /* 12493 */
+#define EGL_LOWER_LEFT_KHR                    0x30ce     /* 12494 */
+#define EGL_LOWER_LEFT_KHR                    0x30ce     /* 12494 */
+#define EGL_UPPER_LEFT_KHR                    0x30cf     /* 12495 */
+#define EGL_UPPER_LEFT_KHR                    0x30cf     /* 12495 */
+#define EGL_BITMAP_PIXEL_SIZE_KHR             0x3110     /* 12560 */
+#define EGL_LOCK_SURFACE_BIT_KHR              0x80       /* 128 */
+#define EGL_LOCK_SURFACE_BIT_KHR              0x80       /* 128 */
+#endif
+
+/**
+ ** EGL_KHR_reusable_sync
+ **/
+
+#if (defined(EGL_KHR_REUSABLE_SYNC) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_REUSABLE_SYNC)) && !defined(REGAL_NO_ENUM_EGL_KHR_REUSABLE_SYNC)
+#define REGAL_NO_ENUM_EGL_KHR_REUSABLE_SYNC
+#endif
+
+#if (defined(EGL_KHR_REUSABLE_SYNC) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_REUSABLE_SYNC)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_REUSABLE_SYNC)
+#define REGAL_NO_TYPEDEF_EGL_KHR_REUSABLE_SYNC
+#endif
+
+#if (defined(EGL_KHR_REUSABLE_SYNC) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_REUSABLE_SYNC)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_REUSABLE_SYNC)
+#define REGAL_NO_NAMESPACE_EGL_KHR_REUSABLE_SYNC
+#endif
+
+#if (defined(EGL_KHR_REUSABLE_SYNC) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_REUSABLE_SYNC)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_REUSABLE_SYNC)
+#define REGAL_NO_DECLARATION_EGL_KHR_REUSABLE_SYNC
+#endif
+
+#ifndef EGL_KHR_reusable_sync
+#define EGL_KHR_reusable_sync 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_REUSABLE_SYNC
+#define EGL_SYNC_REUSABLE_KHR 0x30fa /* 12538 */
+#endif
+
+/**
+ ** EGL_KHR_stream
+ **/
+
+#if (defined(EGL_KHR_STREAM) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_STREAM)) && !defined(REGAL_NO_ENUM_EGL_KHR_STREAM)
+#define REGAL_NO_ENUM_EGL_KHR_STREAM
+#endif
+
+#if (defined(EGL_KHR_STREAM) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_STREAM)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_STREAM)
+#define REGAL_NO_TYPEDEF_EGL_KHR_STREAM
+#endif
+
+#if (defined(EGL_KHR_STREAM) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_STREAM)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_STREAM)
+#define REGAL_NO_NAMESPACE_EGL_KHR_STREAM
+#endif
+
+#if (defined(EGL_KHR_STREAM) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_STREAM)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_STREAM)
+#define REGAL_NO_DECLARATION_EGL_KHR_STREAM
+#endif
+
+#ifndef EGL_KHR_stream
+#define EGL_KHR_stream 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_STREAM
+#define EGL_CONSUMER_LATENCY_USEC_KHR            0x3210     /* 12816 */
+#define EGL_PRODUCER_FRAME_KHR                   0x3212     /* 12818 */
+#define EGL_CONSUMER_FRAME_KHR                   0x3213     /* 12819 */
+#define EGL_STREAM_STATE_KHR                     0x3214     /* 12820 */
+#define EGL_STREAM_STATE_CREATED_KHR             0x3215     /* 12821 */
+#define EGL_STREAM_STATE_CONNECTING_KHR          0x3216     /* 12822 */
+#define EGL_STREAM_STATE_EMPTY_KHR               0x3217     /* 12823 */
+#define EGL_STREAM_STATE_NEW_FRAME_AVAILABLE_KHR 0x3218     /* 12824 */
+#define EGL_STREAM_STATE_OLD_FRAME_AVAILABLE_KHR 0x3219     /* 12825 */
+#define EGL_STREAM_STATE_DISCONNECTED_KHR        0x321a     /* 12826 */
+#define EGL_BAD_STREAM_KHR                       0x321b     /* 12827 */
+#define EGL_BAD_STATE_KHR                        0x321c     /* 12828 */
+#endif
+
+/**
+ ** EGL_KHR_stream_consumer_gltexture
+ **/
+
+#if (defined(EGL_KHR_STREAM_CONSUMER_GLTEXTURE) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_STREAM_CONSUMER_GLTEXTURE)) && !defined(REGAL_NO_ENUM_EGL_KHR_STREAM_CONSUMER_GLTEXTURE)
+#define REGAL_NO_ENUM_EGL_KHR_STREAM_CONSUMER_GLTEXTURE
+#endif
+
+#if (defined(EGL_KHR_STREAM_CONSUMER_GLTEXTURE) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_STREAM_CONSUMER_GLTEXTURE)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_STREAM_CONSUMER_GLTEXTURE)
+#define REGAL_NO_TYPEDEF_EGL_KHR_STREAM_CONSUMER_GLTEXTURE
+#endif
+
+#if (defined(EGL_KHR_STREAM_CONSUMER_GLTEXTURE) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_STREAM_CONSUMER_GLTEXTURE)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_STREAM_CONSUMER_GLTEXTURE)
+#define REGAL_NO_NAMESPACE_EGL_KHR_STREAM_CONSUMER_GLTEXTURE
+#endif
+
+#if (defined(EGL_KHR_STREAM_CONSUMER_GLTEXTURE) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_STREAM_CONSUMER_GLTEXTURE)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_STREAM_CONSUMER_GLTEXTURE)
+#define REGAL_NO_DECLARATION_EGL_KHR_STREAM_CONSUMER_GLTEXTURE
+#endif
+
+#ifndef EGL_KHR_stream_consumer_gltexture
+#define EGL_KHR_stream_consumer_gltexture 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_STREAM_CONSUMER_GLTEXTURE
+#define EGL_CONSUMER_ACQUIRE_TIMEOUT_USEC_KHR 0x321e /* 12830 */
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_KHR_STREAM_CONSUMER_GLTEXTURE
+typedef EGLBoolean (REGAL_CALL *PFNEGLSTREAMCONSUMERACQUIREKHRPROC)(EGLDisplay dpy, EGLStreamKHR stream);
+typedef EGLBoolean (REGAL_CALL *PFNEGLSTREAMCONSUMERGLTEXTUREEXTERNALKHRPROC)(EGLDisplay dpy, EGLStreamKHR stream);
+typedef EGLBoolean (REGAL_CALL *PFNEGLSTREAMCONSUMERRELEASEKHRPROC)(EGLDisplay dpy, EGLStreamKHR stream);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_KHR_STREAM_CONSUMER_GLTEXTURE
+#define eglStreamConsumerAcquireKHR         reglStreamConsumerAcquireKHR
+#define eglStreamConsumerGLTextureExternalKHR reglStreamConsumerGLTextureExternalKHR
+#define eglStreamConsumerReleaseKHR         reglStreamConsumerReleaseKHR
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_KHR_STREAM_CONSUMER_GLTEXTURE
+REGAL_DECL EGLBoolean REGAL_CALL eglStreamConsumerAcquireKHR(EGLDisplay dpy, EGLStreamKHR stream);
+REGAL_DECL EGLBoolean REGAL_CALL eglStreamConsumerGLTextureExternalKHR(EGLDisplay dpy, EGLStreamKHR stream);
+REGAL_DECL EGLBoolean REGAL_CALL eglStreamConsumerReleaseKHR(EGLDisplay dpy, EGLStreamKHR stream);
+#endif
+
+/**
+ ** EGL_KHR_stream_cross_process_fd
+ **/
+
+#if (defined(EGL_KHR_STREAM_CROSS_PROCESS_FD) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_STREAM_CROSS_PROCESS_FD)) && !defined(REGAL_NO_ENUM_EGL_KHR_STREAM_CROSS_PROCESS_FD)
+#define REGAL_NO_ENUM_EGL_KHR_STREAM_CROSS_PROCESS_FD
+#endif
+
+#if (defined(EGL_KHR_STREAM_CROSS_PROCESS_FD) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_STREAM_CROSS_PROCESS_FD)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_STREAM_CROSS_PROCESS_FD)
+#define REGAL_NO_TYPEDEF_EGL_KHR_STREAM_CROSS_PROCESS_FD
+#endif
+
+#if (defined(EGL_KHR_STREAM_CROSS_PROCESS_FD) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_STREAM_CROSS_PROCESS_FD)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_STREAM_CROSS_PROCESS_FD)
+#define REGAL_NO_NAMESPACE_EGL_KHR_STREAM_CROSS_PROCESS_FD
+#endif
+
+#if (defined(EGL_KHR_STREAM_CROSS_PROCESS_FD) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_STREAM_CROSS_PROCESS_FD)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_STREAM_CROSS_PROCESS_FD)
+#define REGAL_NO_DECLARATION_EGL_KHR_STREAM_CROSS_PROCESS_FD
+#endif
+
+#ifndef EGL_KHR_stream_cross_process_fd
+#define EGL_KHR_stream_cross_process_fd 1
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_KHR_STREAM_CROSS_PROCESS_FD
+typedef EGLNativeFileDescriptorKHR (REGAL_CALL *PFNEGLGETSTREAMFILEDESCRIPTORKHRPROC)(EGLDisplay dpy, EGLStreamKHR stream);
+typedef EGLStreamKHR (REGAL_CALL *PFNEGLCREATESTREAMFROMFILEDESCRIPTORKHRPROC)(EGLDisplay dpy, EGLNativeFileDescriptorKHR file_descriptor);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_KHR_STREAM_CROSS_PROCESS_FD
+#define eglCreateStreamFromFileDescriptorKHR reglCreateStreamFromFileDescriptorKHR
+#define eglGetStreamFileDescriptorKHR       reglGetStreamFileDescriptorKHR
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_KHR_STREAM_CROSS_PROCESS_FD
+REGAL_DECL EGLNativeFileDescriptorKHR REGAL_CALL eglGetStreamFileDescriptorKHR(EGLDisplay dpy, EGLStreamKHR stream);
+REGAL_DECL EGLStreamKHR REGAL_CALL eglCreateStreamFromFileDescriptorKHR(EGLDisplay dpy, EGLNativeFileDescriptorKHR file_descriptor);
+#endif
+
+/**
+ ** EGL_KHR_stream_fifo
+ **/
+
+#if (defined(EGL_KHR_STREAM_FIFO) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_STREAM_FIFO)) && !defined(REGAL_NO_ENUM_EGL_KHR_STREAM_FIFO)
+#define REGAL_NO_ENUM_EGL_KHR_STREAM_FIFO
+#endif
+
+#if (defined(EGL_KHR_STREAM_FIFO) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_STREAM_FIFO)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_STREAM_FIFO)
+#define REGAL_NO_TYPEDEF_EGL_KHR_STREAM_FIFO
+#endif
+
+#if (defined(EGL_KHR_STREAM_FIFO) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_STREAM_FIFO)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_STREAM_FIFO)
+#define REGAL_NO_NAMESPACE_EGL_KHR_STREAM_FIFO
+#endif
+
+#if (defined(EGL_KHR_STREAM_FIFO) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_STREAM_FIFO)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_STREAM_FIFO)
+#define REGAL_NO_DECLARATION_EGL_KHR_STREAM_FIFO
+#endif
+
+#ifndef EGL_KHR_stream_fifo
+#define EGL_KHR_stream_fifo 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_STREAM_FIFO
+#define EGL_STREAM_FIFO_LENGTH_KHR   0x31fc     /* 12796 */
+#define EGL_STREAM_TIME_NOW_KHR      0x31fd     /* 12797 */
+#define EGL_STREAM_TIME_CONSUMER_KHR 0x31fe     /* 12798 */
+#define EGL_STREAM_TIME_PRODUCER_KHR 0x31ff     /* 12799 */
+#endif
+
+/**
+ ** EGL_KHR_stream_producer_eglsurface
+ **/
+
+#if (defined(EGL_KHR_STREAM_PRODUCER_EGLSURFACE) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_STREAM_PRODUCER_EGLSURFACE)) && !defined(REGAL_NO_ENUM_EGL_KHR_STREAM_PRODUCER_EGLSURFACE)
+#define REGAL_NO_ENUM_EGL_KHR_STREAM_PRODUCER_EGLSURFACE
+#endif
+
+#if (defined(EGL_KHR_STREAM_PRODUCER_EGLSURFACE) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_STREAM_PRODUCER_EGLSURFACE)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_STREAM_PRODUCER_EGLSURFACE)
+#define REGAL_NO_TYPEDEF_EGL_KHR_STREAM_PRODUCER_EGLSURFACE
+#endif
+
+#if (defined(EGL_KHR_STREAM_PRODUCER_EGLSURFACE) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_STREAM_PRODUCER_EGLSURFACE)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_STREAM_PRODUCER_EGLSURFACE)
+#define REGAL_NO_NAMESPACE_EGL_KHR_STREAM_PRODUCER_EGLSURFACE
+#endif
+
+#if (defined(EGL_KHR_STREAM_PRODUCER_EGLSURFACE) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_STREAM_PRODUCER_EGLSURFACE)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_STREAM_PRODUCER_EGLSURFACE)
+#define REGAL_NO_DECLARATION_EGL_KHR_STREAM_PRODUCER_EGLSURFACE
+#endif
+
+#ifndef EGL_KHR_stream_producer_eglsurface
+#define EGL_KHR_stream_producer_eglsurface 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_STREAM_PRODUCER_EGLSURFACE
+#define EGL_STREAM_BIT_KHR 0x800 /* 2048 */
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_KHR_STREAM_PRODUCER_EGLSURFACE
+typedef EGLSurface (REGAL_CALL *PFNEGLCREATESTREAMPRODUCERSURFACEKHRPROC)(EGLDisplay dpy, EGLConfig config, EGLStreamKHR stream, const EGLint *attrib_list);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_KHR_STREAM_PRODUCER_EGLSURFACE
+#define eglCreateStreamProducerSurfaceKHR   reglCreateStreamProducerSurfaceKHR
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_KHR_STREAM_PRODUCER_EGLSURFACE
+REGAL_DECL EGLSurface REGAL_CALL eglCreateStreamProducerSurfaceKHR(EGLDisplay dpy, EGLConfig config, EGLStreamKHR stream, const EGLint *attrib_list);
+#endif
+
+/**
+ ** EGL_KHR_vg_parent_image
+ **/
+
+#if (defined(EGL_KHR_VG_PARENT_IMAGE) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_VG_PARENT_IMAGE)) && !defined(REGAL_NO_ENUM_EGL_KHR_VG_PARENT_IMAGE)
+#define REGAL_NO_ENUM_EGL_KHR_VG_PARENT_IMAGE
+#endif
+
+#if (defined(EGL_KHR_VG_PARENT_IMAGE) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_VG_PARENT_IMAGE)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_VG_PARENT_IMAGE)
+#define REGAL_NO_TYPEDEF_EGL_KHR_VG_PARENT_IMAGE
+#endif
+
+#if (defined(EGL_KHR_VG_PARENT_IMAGE) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_VG_PARENT_IMAGE)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_VG_PARENT_IMAGE)
+#define REGAL_NO_NAMESPACE_EGL_KHR_VG_PARENT_IMAGE
+#endif
+
+#if (defined(EGL_KHR_VG_PARENT_IMAGE) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_VG_PARENT_IMAGE)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_VG_PARENT_IMAGE)
+#define REGAL_NO_DECLARATION_EGL_KHR_VG_PARENT_IMAGE
+#endif
+
+#ifndef EGL_KHR_vg_parent_image
+#define EGL_KHR_vg_parent_image 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_KHR_VG_PARENT_IMAGE
+#define EGL_VG_PARENT_IMAGE_KHR 0x30ba /* 12474 */
+#endif
+
+/**
+ ** EGL_KHR_wait_sync
+ **/
+
+#if (defined(EGL_KHR_WAIT_SYNC) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_KHR_WAIT_SYNC)) && !defined(REGAL_NO_ENUM_EGL_KHR_WAIT_SYNC)
+#define REGAL_NO_ENUM_EGL_KHR_WAIT_SYNC
+#endif
+
+#if (defined(EGL_KHR_WAIT_SYNC) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_KHR_WAIT_SYNC)) && !defined(REGAL_NO_TYPEDEF_EGL_KHR_WAIT_SYNC)
+#define REGAL_NO_TYPEDEF_EGL_KHR_WAIT_SYNC
+#endif
+
+#if (defined(EGL_KHR_WAIT_SYNC) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_KHR_WAIT_SYNC)) && !defined(REGAL_NO_NAMESPACE_EGL_KHR_WAIT_SYNC)
+#define REGAL_NO_NAMESPACE_EGL_KHR_WAIT_SYNC
+#endif
+
+#if (defined(EGL_KHR_WAIT_SYNC) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_KHR_WAIT_SYNC)) && !defined(REGAL_NO_DECLARATION_EGL_KHR_WAIT_SYNC)
+#define REGAL_NO_DECLARATION_EGL_KHR_WAIT_SYNC
+#endif
+
+#ifndef EGL_KHR_wait_sync
+#define EGL_KHR_wait_sync 1
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_KHR_WAIT_SYNC
+typedef EGLint (REGAL_CALL *PFNEGLWAITSYNCKHRPROC)(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint flags);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_KHR_WAIT_SYNC
+#define eglWaitSyncKHR                      reglWaitSyncKHR
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_KHR_WAIT_SYNC
+REGAL_DECL EGLint REGAL_CALL eglWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint flags);
+#endif
+
+/**
+ ** EGL_MESA_drm_image
+ **/
+
+#if (defined(EGL_MESA_DRM_IMAGE) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_MESA_DRM_IMAGE)) && !defined(REGAL_NO_ENUM_EGL_MESA_DRM_IMAGE)
+#define REGAL_NO_ENUM_EGL_MESA_DRM_IMAGE
+#endif
+
+#if (defined(EGL_MESA_DRM_IMAGE) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_MESA_DRM_IMAGE)) && !defined(REGAL_NO_TYPEDEF_EGL_MESA_DRM_IMAGE)
+#define REGAL_NO_TYPEDEF_EGL_MESA_DRM_IMAGE
+#endif
+
+#if (defined(EGL_MESA_DRM_IMAGE) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_MESA_DRM_IMAGE)) && !defined(REGAL_NO_NAMESPACE_EGL_MESA_DRM_IMAGE)
+#define REGAL_NO_NAMESPACE_EGL_MESA_DRM_IMAGE
+#endif
+
+#if (defined(EGL_MESA_DRM_IMAGE) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_MESA_DRM_IMAGE)) && !defined(REGAL_NO_DECLARATION_EGL_MESA_DRM_IMAGE)
+#define REGAL_NO_DECLARATION_EGL_MESA_DRM_IMAGE
+#endif
+
+#ifndef EGL_MESA_drm_image
+#define EGL_MESA_drm_image 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_MESA_DRM_IMAGE
+#define EGL_DRM_BUFFER_USE_SCANOUT_MESA   0x1
+#define EGL_DRM_BUFFER_USE_SHARE_MESA     0x2
+#define EGL_DRM_BUFFER_FORMAT_MESA        0x31d0     /* 12752 */
+#define EGL_DRM_BUFFER_USE_MESA           0x31d1     /* 12753 */
+#define EGL_DRM_BUFFER_FORMAT_ARGB32_MESA 0x31d2     /* 12754 */
+#define EGL_DRM_BUFFER_MESA               0x31d3     /* 12755 */
+#define EGL_DRM_BUFFER_STRIDE_MESA        0x31d4     /* 12756 */
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_MESA_DRM_IMAGE
+typedef EGLBoolean (REGAL_CALL *PFNEGLEXPORTDRMIMAGEMESAPROC)(EGLDisplay dpy, EGLImageKHR image, EGLint *name, EGLint *handle, EGLint *stride);
+typedef EGLImageKHR (REGAL_CALL *PFNEGLCREATEDRMIMAGEMESAPROC)(EGLDisplay dpy, const EGLint *attrib_list);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_MESA_DRM_IMAGE
+#define eglCreateDRMImageMESA               reglCreateDRMImageMESA
+#define eglExportDRMImageMESA               reglExportDRMImageMESA
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_MESA_DRM_IMAGE
+REGAL_DECL EGLBoolean REGAL_CALL eglExportDRMImageMESA(EGLDisplay dpy, EGLImageKHR image, EGLint *name, EGLint *handle, EGLint *stride);
+REGAL_DECL EGLImageKHR REGAL_CALL eglCreateDRMImageMESA(EGLDisplay dpy, const EGLint *attrib_list);
+#endif
+
+/**
+ ** EGL_NV_coverage_sample
+ **/
+
+#if (defined(EGL_NV_COVERAGE_SAMPLE) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_NV_COVERAGE_SAMPLE)) && !defined(REGAL_NO_ENUM_EGL_NV_COVERAGE_SAMPLE)
+#define REGAL_NO_ENUM_EGL_NV_COVERAGE_SAMPLE
+#endif
+
+#if (defined(EGL_NV_COVERAGE_SAMPLE) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_NV_COVERAGE_SAMPLE)) && !defined(REGAL_NO_TYPEDEF_EGL_NV_COVERAGE_SAMPLE)
+#define REGAL_NO_TYPEDEF_EGL_NV_COVERAGE_SAMPLE
+#endif
+
+#if (defined(EGL_NV_COVERAGE_SAMPLE) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_NV_COVERAGE_SAMPLE)) && !defined(REGAL_NO_NAMESPACE_EGL_NV_COVERAGE_SAMPLE)
+#define REGAL_NO_NAMESPACE_EGL_NV_COVERAGE_SAMPLE
+#endif
+
+#if (defined(EGL_NV_COVERAGE_SAMPLE) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_NV_COVERAGE_SAMPLE)) && !defined(REGAL_NO_DECLARATION_EGL_NV_COVERAGE_SAMPLE)
+#define REGAL_NO_DECLARATION_EGL_NV_COVERAGE_SAMPLE
+#endif
+
+#ifndef EGL_NV_coverage_sample
+#define EGL_NV_coverage_sample 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_NV_COVERAGE_SAMPLE
+#define EGL_COVERAGE_BUFFERS_NV       0x30e0     /* 12512 */
+#define EGL_COVERAGE_SAMPLES_NV       0x30e1     /* 12513 */
+#define GL_COVERAGE_BUFFER_BIT_NV     0x8000     /* 32768 */
+#define GL_COVERAGE_COMPONENT_NV      0x8ed0     /* 36560 */
+#define GL_COVERAGE_COMPONENT4_NV     0x8ed1     /* 36561 */
+#define GL_COVERAGE_ATTACHMENT_NV     0x8ed2     /* 36562 */
+#define GL_COVERAGE_BUFFERS_NV        0x8ed3     /* 36563 */
+#define GL_COVERAGE_ALL_FRAGMENTS_NV  0x8ed5     /* 36565 */
+#define GL_COVERAGE_EDGE_FRAGMENTS_NV 0x8ed6     /* 36566 */
+#define GL_COVERAGE_AUTOMATIC_NV      0x8ed7     /* 36567 */
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_NV_COVERAGE_SAMPLE
+typedef void (REGAL_CALL *PFNEGLCOVERAGEMASKNVPROC)(GLboolean mask);
+typedef void (REGAL_CALL *PFNEGLCOVERAGEOPERATIONNVPROC)(GLenum operation);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_NV_COVERAGE_SAMPLE
+#define eglCoverageMaskNV                   reglCoverageMaskNV
+#define eglCoverageOperationNV              reglCoverageOperationNV
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_NV_COVERAGE_SAMPLE
+REGAL_DECL void REGAL_CALL eglCoverageMaskNV(GLboolean mask);
+REGAL_DECL void REGAL_CALL eglCoverageOperationNV(GLenum operation);
+#endif
+
+/**
+ ** EGL_NV_coverage_sample_resolve
+ **/
+
+#if (defined(EGL_NV_COVERAGE_SAMPLE_RESOLVE) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_NV_COVERAGE_SAMPLE_RESOLVE)) && !defined(REGAL_NO_ENUM_EGL_NV_COVERAGE_SAMPLE_RESOLVE)
+#define REGAL_NO_ENUM_EGL_NV_COVERAGE_SAMPLE_RESOLVE
+#endif
+
+#if (defined(EGL_NV_COVERAGE_SAMPLE_RESOLVE) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_NV_COVERAGE_SAMPLE_RESOLVE)) && !defined(REGAL_NO_TYPEDEF_EGL_NV_COVERAGE_SAMPLE_RESOLVE)
+#define REGAL_NO_TYPEDEF_EGL_NV_COVERAGE_SAMPLE_RESOLVE
+#endif
+
+#if (defined(EGL_NV_COVERAGE_SAMPLE_RESOLVE) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_NV_COVERAGE_SAMPLE_RESOLVE)) && !defined(REGAL_NO_NAMESPACE_EGL_NV_COVERAGE_SAMPLE_RESOLVE)
+#define REGAL_NO_NAMESPACE_EGL_NV_COVERAGE_SAMPLE_RESOLVE
+#endif
+
+#if (defined(EGL_NV_COVERAGE_SAMPLE_RESOLVE) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_NV_COVERAGE_SAMPLE_RESOLVE)) && !defined(REGAL_NO_DECLARATION_EGL_NV_COVERAGE_SAMPLE_RESOLVE)
+#define REGAL_NO_DECLARATION_EGL_NV_COVERAGE_SAMPLE_RESOLVE
+#endif
+
+#ifndef EGL_NV_coverage_sample_resolve
+#define EGL_NV_coverage_sample_resolve 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_NV_COVERAGE_SAMPLE_RESOLVE
+#define EGL_COVERAGE_SAMPLE_RESOLVE_NV         0x3131     /* 12593 */
+#define EGL_COVERAGE_SAMPLE_RESOLVE_DEFAULT_NV 0x3132     /* 12594 */
+#define EGL_COVERAGE_SAMPLE_RESOLVE_NONE_NV    0x3133     /* 12595 */
+#endif
+
+/**
+ ** EGL_NV_post_sub_buffer
+ **/
+
+#if (defined(EGL_NV_POST_SUB_BUFFER) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_NV_POST_SUB_BUFFER)) && !defined(REGAL_NO_ENUM_EGL_NV_POST_SUB_BUFFER)
+#define REGAL_NO_ENUM_EGL_NV_POST_SUB_BUFFER
+#endif
+
+#if (defined(EGL_NV_POST_SUB_BUFFER) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_NV_POST_SUB_BUFFER)) && !defined(REGAL_NO_TYPEDEF_EGL_NV_POST_SUB_BUFFER)
+#define REGAL_NO_TYPEDEF_EGL_NV_POST_SUB_BUFFER
+#endif
+
+#if (defined(EGL_NV_POST_SUB_BUFFER) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_NV_POST_SUB_BUFFER)) && !defined(REGAL_NO_NAMESPACE_EGL_NV_POST_SUB_BUFFER)
+#define REGAL_NO_NAMESPACE_EGL_NV_POST_SUB_BUFFER
+#endif
+
+#if (defined(EGL_NV_POST_SUB_BUFFER) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_NV_POST_SUB_BUFFER)) && !defined(REGAL_NO_DECLARATION_EGL_NV_POST_SUB_BUFFER)
+#define REGAL_NO_DECLARATION_EGL_NV_POST_SUB_BUFFER
+#endif
+
+#ifndef EGL_NV_post_sub_buffer
+#define EGL_NV_post_sub_buffer 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_NV_POST_SUB_BUFFER
+#define EGL_POST_SUB_BUFFER_SUPPORTED_NV 0x30be /* 12478 */
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_NV_POST_SUB_BUFFER
+typedef EGLBoolean (REGAL_CALL *PFNEGLPOSTSUBBUFFERNVPROC)(EGLDisplay dpy, EGLSurface surface, EGLint x, EGLint y, EGLint width, EGLint height);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_NV_POST_SUB_BUFFER
+#define eglPostSubBufferNV                  reglPostSubBufferNV
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_NV_POST_SUB_BUFFER
+REGAL_DECL EGLBoolean REGAL_CALL eglPostSubBufferNV(EGLDisplay dpy, EGLSurface surface, EGLint x, EGLint y, EGLint width, EGLint height);
+#endif
+
+/**
+ ** EGL_NV_sync
+ **/
+
+#if (defined(EGL_NV_SYNC) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_NV_SYNC)) && !defined(REGAL_NO_ENUM_EGL_NV_SYNC)
+#define REGAL_NO_ENUM_EGL_NV_SYNC
+#endif
+
+#if (defined(EGL_NV_SYNC) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_NV_SYNC)) && !defined(REGAL_NO_TYPEDEF_EGL_NV_SYNC)
+#define REGAL_NO_TYPEDEF_EGL_NV_SYNC
+#endif
+
+#if (defined(EGL_NV_SYNC) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_NV_SYNC)) && !defined(REGAL_NO_NAMESPACE_EGL_NV_SYNC)
+#define REGAL_NO_NAMESPACE_EGL_NV_SYNC
+#endif
+
+#if (defined(EGL_NV_SYNC) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_NV_SYNC)) && !defined(REGAL_NO_DECLARATION_EGL_NV_SYNC)
+#define REGAL_NO_DECLARATION_EGL_NV_SYNC
+#endif
+
+#ifndef EGL_NV_sync
+#define EGL_NV_sync 1
+#endif
+
+#ifndef REGAL_NO_ENUM_EGL_NV_SYNC
+#define EGL_SYNC_FLUSH_COMMANDS_BIT_NV      0x1
+#define EGL_SYNC_PRIOR_COMMANDS_COMPLETE_NV 0x30e6                 /* 12518 */
+#define EGL_SYNC_STATUS_NV                  0x30e7                 /* 12519 */
+#define EGL_SIGNALED_NV                     0x30e8                 /* 12520 */
+#define EGL_UNSIGNALED_NV                   0x30e9                 /* 12521 */
+#define EGL_ALREADY_SIGNALED_NV             0x30ea                 /* 12522 */
+#define EGL_TIMEOUT_EXPIRED_NV              0x30eb                 /* 12523 */
+#define EGL_CONDITION_SATISFIED_NV          0x30ec                 /* 12524 */
+#define EGL_SYNC_TYPE_NV                    0x30ed                 /* 12525 */
+#define EGL_SYNC_CONDITION_NV               0x30ee                 /* 12526 */
+#define EGL_SYNC_FENCE_NV                   0x30ef                 /* 12527 */
+#define EGL_FOREVER_NV                      0xffffffffffffffff     /* 18446744073709551615 */
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_NV_SYNC
+typedef EGLBoolean (REGAL_CALL *PFNEGLDESTROYSYNCNVPROC)(EGLSyncNV GLsync);
+typedef EGLBoolean (REGAL_CALL *PFNEGLFENCENVPROC)(EGLSyncNV GLsync);
+typedef EGLBoolean (REGAL_CALL *PFNEGLGETSYNCATTRIBNVPROC)(EGLSyncNV GLsync, EGLint attribute, EGLint *value);
+typedef EGLBoolean (REGAL_CALL *PFNEGLSIGNALSYNCNVPROC)(EGLSyncNV GLsync, EGLenum mode);
+typedef EGLSyncNV (REGAL_CALL *PFNEGLCREATEFENCESYNCNVPROC)(EGLDisplay dpy, EGLenum condition, const EGLint *attrib_list);
+typedef EGLint (REGAL_CALL *PFNEGLCLIENTWAITSYNCNVPROC)(EGLSyncNV GLsync, EGLint flags, EGLTimeNV timeout);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_NV_SYNC
+#define eglClientWaitSyncNV                 reglClientWaitSyncNV
+#define eglCreateFenceSyncNV                reglCreateFenceSyncNV
+#define eglDestroySyncNV                    reglDestroySyncNV
+#define eglFenceNV                          reglFenceNV
+#define eglGetSyncAttribNV                  reglGetSyncAttribNV
+#define eglSignalSyncNV                     reglSignalSyncNV
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_NV_SYNC
+REGAL_DECL EGLBoolean REGAL_CALL eglDestroySyncNV(EGLSyncNV GLsync);
+REGAL_DECL EGLBoolean REGAL_CALL eglFenceNV(EGLSyncNV GLsync);
+REGAL_DECL EGLBoolean REGAL_CALL eglGetSyncAttribNV(EGLSyncNV GLsync, EGLint attribute, EGLint *value);
+REGAL_DECL EGLBoolean REGAL_CALL eglSignalSyncNV(EGLSyncNV GLsync, EGLenum mode);
+REGAL_DECL EGLSyncNV REGAL_CALL eglCreateFenceSyncNV(EGLDisplay dpy, EGLenum condition, const EGLint *attrib_list);
+REGAL_DECL EGLint REGAL_CALL eglClientWaitSyncNV(EGLSyncNV GLsync, EGLint flags, EGLTimeNV timeout);
+#endif
+
+/**
+ ** EGL_NV_system_time
+ **/
+
+#if (defined(EGL_NV_SYSTEM_TIME) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_EGL_NV_SYSTEM_TIME)) && !defined(REGAL_NO_ENUM_EGL_NV_SYSTEM_TIME)
+#define REGAL_NO_ENUM_EGL_NV_SYSTEM_TIME
+#endif
+
+#if (defined(EGL_NV_SYSTEM_TIME) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_EGL_NV_SYSTEM_TIME)) && !defined(REGAL_NO_TYPEDEF_EGL_NV_SYSTEM_TIME)
+#define REGAL_NO_TYPEDEF_EGL_NV_SYSTEM_TIME
+#endif
+
+#if (defined(EGL_NV_SYSTEM_TIME) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_EGL_NV_SYSTEM_TIME)) && !defined(REGAL_NO_NAMESPACE_EGL_NV_SYSTEM_TIME)
+#define REGAL_NO_NAMESPACE_EGL_NV_SYSTEM_TIME
+#endif
+
+#if (defined(EGL_NV_SYSTEM_TIME) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_EGL_NV_SYSTEM_TIME)) && !defined(REGAL_NO_DECLARATION_EGL_NV_SYSTEM_TIME)
+#define REGAL_NO_DECLARATION_EGL_NV_SYSTEM_TIME
+#endif
+
+#ifndef EGL_NV_system_time
+#define EGL_NV_system_time 1
+#endif
+
+#ifndef REGAL_NO_TYPEDEF_EGL_NV_SYSTEM_TIME
+typedef EGLuint64NV (REGAL_CALL *PFNEGLGETSYSTEMTIMEFREQUENCYNVPROC)(void);
+typedef EGLuint64NV (REGAL_CALL *PFNEGLGETSYSTEMTIMENVPROC)(void);
+#endif
+
+#ifndef REGAL_NO_NAMESPACE_EGL_NV_SYSTEM_TIME
+#define eglGetSystemTimeFrequencyNV         reglGetSystemTimeFrequencyNV
+#define eglGetSystemTimeNV                  reglGetSystemTimeNV
+#endif
+
+#ifndef REGAL_NO_DECLARATION_EGL_NV_SYSTEM_TIME
+REGAL_DECL EGLuint64NV REGAL_CALL eglGetSystemTimeFrequencyNV(void);
+REGAL_DECL EGLuint64NV REGAL_CALL eglGetSystemTimeNV(void);
+#endif
+
+/**
  ** EGL_VERSION_1_0
  **/
 
@@ -34488,6 +35612,109 @@ REGAL_DECL EGLBoolean REGAL_CALL eglSwapInterval(EGLDisplay dpy, EGLint interval
 REGAL_DECL EGLBoolean REGAL_CALL eglWaitClient(void);
 REGAL_DECL EGLSurface REGAL_CALL eglCreatePbufferFromClientBuffer(EGLDisplay dpy, EGLenum buftype, EGLClientBuffer buffer, EGLConfig config, const EGLint *attrib_list);
 REGAL_DECL EGLenum REGAL_CALL eglQueryAPI(void);
+#endif
+
+/**
+ ** GL_NV_depth_nonlinear
+ **/
+
+#if (defined(GL_NV_DEPTH_NONLINEAR) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_GL_NV_DEPTH_NONLINEAR)) && !defined(REGAL_NO_ENUM_GL_NV_DEPTH_NONLINEAR)
+#define REGAL_NO_ENUM_GL_NV_DEPTH_NONLINEAR
+#endif
+
+#if (defined(GL_NV_DEPTH_NONLINEAR) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_GL_NV_DEPTH_NONLINEAR)) && !defined(REGAL_NO_TYPEDEF_GL_NV_DEPTH_NONLINEAR)
+#define REGAL_NO_TYPEDEF_GL_NV_DEPTH_NONLINEAR
+#endif
+
+#if (defined(GL_NV_DEPTH_NONLINEAR) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_GL_NV_DEPTH_NONLINEAR)) && !defined(REGAL_NO_NAMESPACE_GL_NV_DEPTH_NONLINEAR)
+#define REGAL_NO_NAMESPACE_GL_NV_DEPTH_NONLINEAR
+#endif
+
+#if (defined(GL_NV_DEPTH_NONLINEAR) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_GL_NV_DEPTH_NONLINEAR)) && !defined(REGAL_NO_DECLARATION_GL_NV_DEPTH_NONLINEAR)
+#define REGAL_NO_DECLARATION_GL_NV_DEPTH_NONLINEAR
+#endif
+
+#ifndef GL_NV_depth_nonlinear
+#define GL_NV_depth_nonlinear 1
+#endif
+
+#ifndef REGAL_NO_ENUM_GL_NV_DEPTH_NONLINEAR
+#define EGL_DEPTH_ENCODING_NONE_NV        0x0
+#define EGL_DEPTH_ENCODING_NONE_NV        0x0
+#define EGL_DEPTH_ENCODING_NV             0x30e2     /* 12514 */
+#define EGL_DEPTH_ENCODING_NV             0x30e2     /* 12514 */
+#define EGL_DEPTH_ENCODING_NONLINEAR_NV   0x30e3     /* 12515 */
+#define EGL_DEPTH_ENCODING_NONLINEAR_NV   0x30e3     /* 12515 */
+#define GL_DEPTH_COMPONENT16_NONLINEAR_NV 0x8e2c     /* 36396 */
+#define GL_DEPTH_COMPONENT16_NONLINEAR_NV 0x8e2c     /* 36396 */
+#endif
+
+/**
+ ** GL_VG_KHR_EGL_sync
+ **/
+
+#if (defined(GL_VG_KHR_EGL_SYNC) || defined(REGAL_NO_ENUM) || defined(REGAL_NO_GL_VG_KHR_EGL_SYNC)) && !defined(REGAL_NO_ENUM_GL_VG_KHR_EGL_SYNC)
+#define REGAL_NO_ENUM_GL_VG_KHR_EGL_SYNC
+#endif
+
+#if (defined(GL_VG_KHR_EGL_SYNC) || defined(REGAL_NO_TYPEDEF) || defined(REGAL_NO_GL_VG_KHR_EGL_SYNC)) && !defined(REGAL_NO_TYPEDEF_GL_VG_KHR_EGL_SYNC)
+#define REGAL_NO_TYPEDEF_GL_VG_KHR_EGL_SYNC
+#endif
+
+#if (defined(GL_VG_KHR_EGL_SYNC) || !defined(REGAL_NAMESPACE) || defined(REGAL_NO_GL_VG_KHR_EGL_SYNC)) && !defined(REGAL_NO_NAMESPACE_GL_VG_KHR_EGL_SYNC)
+#define REGAL_NO_NAMESPACE_GL_VG_KHR_EGL_SYNC
+#endif
+
+#if (defined(GL_VG_KHR_EGL_SYNC) || defined(REGAL_NO_DECLARATION) || defined(REGAL_NO_GL_VG_KHR_EGL_SYNC)) && !defined(REGAL_NO_DECLARATION_GL_VG_KHR_EGL_SYNC)
+#define REGAL_NO_DECLARATION_GL_VG_KHR_EGL_SYNC
+#endif
+
+#ifndef GL_VG_KHR_EGL_sync
+#define GL_VG_KHR_EGL_sync 1
+#endif
+
+#ifndef REGAL_NO_ENUM_GL_VG_KHR_EGL_SYNC
+#define EGL_SYNC_FLUSH_COMMANDS_BIT_KHR      0x1
+#define EGL_SYNC_FLUSH_COMMANDS_BIT_KHR      0x1
+#define EGL_SYNC_FLUSH_COMMANDS_BIT_KHR      0x1
+#define EGL_SYNC_FLUSH_COMMANDS_BIT_KHR      0x1
+#define EGL_SYNC_PRIOR_COMMANDS_COMPLETE_KHR 0x30f0                 /* 12528 */
+#define EGL_SYNC_PRIOR_COMMANDS_COMPLETE_KHR 0x30f0                 /* 12528 */
+#define EGL_SYNC_PRIOR_COMMANDS_COMPLETE_KHR 0x30f0                 /* 12528 */
+#define EGL_SYNC_STATUS_KHR                  0x30f1                 /* 12529 */
+#define EGL_SYNC_STATUS_KHR                  0x30f1                 /* 12529 */
+#define EGL_SYNC_STATUS_KHR                  0x30f1                 /* 12529 */
+#define EGL_SYNC_STATUS_KHR                  0x30f1                 /* 12529 */
+#define EGL_SIGNALED_KHR                     0x30f2                 /* 12530 */
+#define EGL_SIGNALED_KHR                     0x30f2                 /* 12530 */
+#define EGL_SIGNALED_KHR                     0x30f2                 /* 12530 */
+#define EGL_SIGNALED_KHR                     0x30f2                 /* 12530 */
+#define EGL_UNSIGNALED_KHR                   0x30f3                 /* 12531 */
+#define EGL_UNSIGNALED_KHR                   0x30f3                 /* 12531 */
+#define EGL_UNSIGNALED_KHR                   0x30f3                 /* 12531 */
+#define EGL_UNSIGNALED_KHR                   0x30f3                 /* 12531 */
+#define EGL_TIMEOUT_EXPIRED_KHR              0x30f5                 /* 12533 */
+#define EGL_TIMEOUT_EXPIRED_KHR              0x30f5                 /* 12533 */
+#define EGL_TIMEOUT_EXPIRED_KHR              0x30f5                 /* 12533 */
+#define EGL_TIMEOUT_EXPIRED_KHR              0x30f5                 /* 12533 */
+#define EGL_CONDITION_SATISFIED_KHR          0x30f6                 /* 12534 */
+#define EGL_CONDITION_SATISFIED_KHR          0x30f6                 /* 12534 */
+#define EGL_CONDITION_SATISFIED_KHR          0x30f6                 /* 12534 */
+#define EGL_CONDITION_SATISFIED_KHR          0x30f6                 /* 12534 */
+#define EGL_SYNC_TYPE_KHR                    0x30f7                 /* 12535 */
+#define EGL_SYNC_TYPE_KHR                    0x30f7                 /* 12535 */
+#define EGL_SYNC_TYPE_KHR                    0x30f7                 /* 12535 */
+#define EGL_SYNC_TYPE_KHR                    0x30f7                 /* 12535 */
+#define EGL_SYNC_CONDITION_KHR               0x30f8                 /* 12536 */
+#define EGL_SYNC_CONDITION_KHR               0x30f8                 /* 12536 */
+#define EGL_SYNC_CONDITION_KHR               0x30f8                 /* 12536 */
+#define EGL_SYNC_FENCE_KHR                   0x30f9                 /* 12537 */
+#define EGL_SYNC_FENCE_KHR                   0x30f9                 /* 12537 */
+#define EGL_SYNC_FENCE_KHR                   0x30f9                 /* 12537 */
+#define EGL_FOREVER_KHR                      0xffffffffffffffff     /* 18446744073709551615 */
+#define EGL_FOREVER_KHR                      0xffffffffffffffff     /* 18446744073709551615 */
+#define EGL_FOREVER_KHR                      0xffffffffffffffff     /* 18446744073709551615 */
+#define EGL_FOREVER_KHR                      0xffffffffffffffff     /* 18446744073709551615 */
 #endif
 
 #endif /* REGAL_SYS_EGL */

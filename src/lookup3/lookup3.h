@@ -5,10 +5,6 @@
 // #define VALGRIND
 // #endif
 
-#ifdef __cplusplus
-namespace Lookup3 {
-#endif
-
 /*
 -------------------------------------------------------------------------------
 lookup3.c, by Bob Jenkins, May 2006, Public Domain.
@@ -49,12 +45,15 @@ on 1 byte), but shoehorning those bytes into integers efficiently is messy.
 #include <time.h>       /* defines time_t for timings in the test */
 
 #ifdef _WIN32
+# if defined(_MSC_VER) && _MSC_VER>=1600
+#else
 typedef          __int8  int8_t;
 typedef unsigned __int8  uint8_t;
 typedef          __int16 int16_t;
 typedef unsigned __int16 uint16_t;
 typedef          __int32 int32_t;
 typedef unsigned __int32 uint32_t;
+#endif
 #else
 #include <stdint.h>     /* defines uint32_t etc */
 #include <sys/param.h>  /* attempt to define endianness */
@@ -86,6 +85,10 @@ typedef unsigned __int32 uint32_t;
 
 #define hashsize(n) ((uint32_t)1<<(n))
 #define hashmask(n) (hashsize(n)-1)
+
+#ifdef __cplusplus
+namespace Lookup3 {
+#endif
 
 inline uint32_t rot(uint32_t x,uint32_t k) { return (x<<k) | (x>>(32-k)); }
 

@@ -56,7 +56,7 @@ def apiErrorFuncDefineCode(apis, args):
 
       code += 'static %sREGAL_CALL %s%s(%s) \n{\n' % (rType, 'error_', name, params)
       code += '  Internal("error_%s","()");\n' % name
-      code += '  RegalContext *_context = GET_REGAL_CONTEXT();\n'
+      code += '  RegalContext *_context = REGAL_GET_CONTEXT();\n'
       code += '  RegalAssert(_context);\n'
       code += '  DispatchTable *_next = _context->dispatcher.error._next;\n'
       code += '  RegalAssert(_next);\n'

@@ -125,6 +125,13 @@ struct ContextInfo
   GLboolean glx_version_1_3 : 1;
   GLboolean glx_version_1_4 : 1;
 
+  GLint     egl_version_major;
+  GLint     egl_version_minor;
+
+  GLboolean egl_version_1_0 : 1;
+  GLboolean egl_version_1_1 : 1;
+  GLboolean egl_version_1_2 : 1;
+
   GLboolean gl_3dfx_tbuffer : 1;
   GLboolean gl_amd_debug_output : 1;
   GLboolean gl_amd_draw_buffers_blend : 1;
@@ -463,6 +470,23 @@ struct ContextInfo
   GLboolean glx_sgi_video_sync : 1;
   GLboolean glx_sun_get_transparent_index : 1;
   GLboolean glx_sun_video_resize : 1;
+#endif
+
+#if REGAL_SYS_EGL
+  GLboolean egl_angle_query_surface_pointer : 1;
+  GLboolean egl_khr_fence_sync : 1;
+  GLboolean egl_khr_image_base : 1;
+  GLboolean egl_khr_lock_surface : 1;
+  GLboolean egl_khr_stream : 1;
+  GLboolean egl_khr_stream_consumer_gltexture : 1;
+  GLboolean egl_khr_stream_cross_process_fd : 1;
+  GLboolean egl_khr_stream_producer_eglsurface : 1;
+  GLboolean egl_khr_wait_sync : 1;
+  GLboolean egl_mesa_drm_image : 1;
+  GLboolean egl_nv_coverage_sample : 1;
+  GLboolean egl_nv_post_sub_buffer : 1;
+  GLboolean egl_nv_sync : 1;
+  GLboolean egl_nv_system_time : 1;
 #endif
 
   GLuint maxVertexAttribs;

@@ -179,6 +179,26 @@
 
 //
 
+// Caching enabled by default
+
+#ifndef REGAL_CACHE
+#define REGAL_CACHE 1
+#endif
+
+// Shader caching support by default
+
+#ifndef REGAL_CACHE_SHADER
+#define REGAL_CACHE_SHADER REGAL_CACHE
+#endif
+
+// Shader cache readback support by default
+
+#ifndef REGAL_CACHE_SHADER_READ
+#define REGAL_CACHE_SHADER_READ REGAL_CACHE
+#endif
+
+//
+
 #ifndef REGAL_FORCE_CORE_PROFILE
 #define REGAL_FORCE_CORE_PROFILE 0
 #endif
@@ -235,7 +255,7 @@ inline const char * GetEnv(const char * const varname)
 #ifdef NDEBUG
 #  define RegalCheckGLError( ctx )
 #else
-#  define RegalCheckGLError( ctx ) RegalCheckForGLErrors( (ctx) )
+#  define RegalCheckGLError( ctx ) ::REGAL_NAMESPACE_INTERNAL::Init::checkForGLErrors(ctx)
 #endif
 
 //
@@ -277,6 +297,18 @@ T *GetProcAddress(T *&f, const char *entry )
 
 inline bool starts_with(const std::string &input, const std::string &test) { return std::strncmp(input.c_str(),test.c_str(),test.length())==0; }
 inline bool starts_with(const std::string &input, const char * const test) { return std::strncmp(input.c_str(),test,        strlen(test) )==0; }
+
+// Mac OSX lacks strndup
+
+inline char *
+strndup(const char *str, size_t n)
+{
+  char *tmp = static_cast<char *>(malloc(n+1));
+  if (n)
+    memcpy(tmp,str,n);
+  tmp[n] = '\0';
+  return tmp;
+}
 
 //
 

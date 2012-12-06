@@ -598,6 +598,74 @@ struct DispatchTableGlobal {
 
 #if REGAL_SYS_EGL
 
+    // EGL_ANGLE_query_surface_pointer
+
+    EGLBoolean (REGAL_CALL *eglQuerySurfacePointerANGLE)(EGLDisplay dpy, EGLSurface surface, EGLint attribute, GLvoid **value);
+
+    // EGL_KHR_fence_sync
+
+    EGLint (REGAL_CALL *eglClientWaitSyncKHR)(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint flags, EGLTimeKHR timeout);
+    EGLSyncKHR (REGAL_CALL *eglCreateSyncKHR)(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
+    EGLBoolean (REGAL_CALL *eglDestroySyncKHR)(EGLDisplay dpy, EGLSyncKHR GLsync);
+    EGLBoolean (REGAL_CALL *eglGetSyncAttribKHR)(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint attribute, EGLint *value);
+
+    // EGL_KHR_image_base
+
+    EGLImageKHR (REGAL_CALL *eglCreateImageKHR)(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list);
+    EGLBoolean (REGAL_CALL *eglDestroyImageKHR)(EGLDisplay dpy, EGLImageKHR image);
+
+    // EGL_KHR_lock_surface
+
+    EGLBoolean (REGAL_CALL *eglLockSurfaceKHR)(EGLDisplay display, EGLSurface surface, const EGLint *attrib_list);
+    EGLBoolean (REGAL_CALL *eglUnlockSurfaceKHR)(EGLDisplay display, EGLSurface surface);
+
+    // EGL_KHR_stream_consumer_gltexture
+
+    EGLBoolean (REGAL_CALL *eglStreamConsumerAcquireKHR)(EGLDisplay dpy, EGLStreamKHR stream);
+    EGLBoolean (REGAL_CALL *eglStreamConsumerGLTextureExternalKHR)(EGLDisplay dpy, EGLStreamKHR stream);
+    EGLBoolean (REGAL_CALL *eglStreamConsumerReleaseKHR)(EGLDisplay dpy, EGLStreamKHR stream);
+
+    // EGL_KHR_stream_cross_process_fd
+
+    EGLStreamKHR (REGAL_CALL *eglCreateStreamFromFileDescriptorKHR)(EGLDisplay dpy, EGLNativeFileDescriptorKHR file_descriptor);
+    EGLNativeFileDescriptorKHR (REGAL_CALL *eglGetStreamFileDescriptorKHR)(EGLDisplay dpy, EGLStreamKHR stream);
+
+    // EGL_KHR_stream_producer_eglsurface
+
+    EGLSurface (REGAL_CALL *eglCreateStreamProducerSurfaceKHR)(EGLDisplay dpy, EGLConfig config, EGLStreamKHR stream, const EGLint *attrib_list);
+
+    // EGL_KHR_wait_sync
+
+    EGLint (REGAL_CALL *eglWaitSyncKHR)(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint flags);
+
+    // EGL_MESA_drm_image
+
+    EGLImageKHR (REGAL_CALL *eglCreateDRMImageMESA)(EGLDisplay dpy, const EGLint *attrib_list);
+    EGLBoolean (REGAL_CALL *eglExportDRMImageMESA)(EGLDisplay dpy, EGLImageKHR image, EGLint *name, EGLint *handle, EGLint *stride);
+
+    // EGL_NV_coverage_sample
+
+    void (REGAL_CALL *eglCoverageMaskNV)(GLboolean mask);
+    void (REGAL_CALL *eglCoverageOperationNV)(GLenum operation);
+
+    // EGL_NV_post_sub_buffer
+
+    EGLBoolean (REGAL_CALL *eglPostSubBufferNV)(EGLDisplay dpy, EGLSurface surface, EGLint x, EGLint y, EGLint width, EGLint height);
+
+    // EGL_NV_sync
+
+    EGLint (REGAL_CALL *eglClientWaitSyncNV)(EGLSyncNV GLsync, EGLint flags, EGLTimeNV timeout);
+    EGLSyncNV (REGAL_CALL *eglCreateFenceSyncNV)(EGLDisplay dpy, EGLenum condition, const EGLint *attrib_list);
+    EGLBoolean (REGAL_CALL *eglDestroySyncNV)(EGLSyncNV GLsync);
+    EGLBoolean (REGAL_CALL *eglFenceNV)(EGLSyncNV GLsync);
+    EGLBoolean (REGAL_CALL *eglGetSyncAttribNV)(EGLSyncNV GLsync, EGLint attribute, EGLint *value);
+    EGLBoolean (REGAL_CALL *eglSignalSyncNV)(EGLSyncNV GLsync, EGLenum mode);
+
+    // EGL_NV_system_time
+
+    EGLuint64NV (REGAL_CALL *eglGetSystemTimeFrequencyNV)(void);
+    EGLuint64NV (REGAL_CALL *eglGetSystemTimeNV)(void);
+
     // EGL_VERSION_1_0
 
     EGLBoolean (REGAL_CALL *eglChooseConfig)(EGLDisplay dpy, const EGLint *attrib_list, EGLConfig *configs, EGLint config_size, EGLint *num_config);

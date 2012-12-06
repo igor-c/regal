@@ -29,5 +29,17 @@ formulae = {
                   'if (ret)',
                   '  return ret;',
                    ]
+    },
+
+    'eglGetProcAddress' : {
+        'entries' : [ 'eglGetProcAddress','eglGetProcAddressARB' ],
+        'impl' : [
+                  'ret = Lookup::gl_Lookup<__eglMustCastToProperFunctionPointerType>(reinterpret_cast<const char *>(procname));',
+                  'if (ret)',
+                  '  return ret;',
+                  'ret = Lookup::egl_Lookup<__eglMustCastToProperFunctionPointerType>(reinterpret_cast<const char *>(procname));',
+                  'if (ret)',
+                  '  return ret;',
+                   ]
     }
 }

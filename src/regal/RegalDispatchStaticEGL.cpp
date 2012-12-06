@@ -54,6 +54,35 @@ using namespace std;
 #error REGAL_STATIC_EGL requires REGAL_NAMESPACE
 #endif
 
+#undef eglQuerySurfacePointerANGLE
+#undef eglClientWaitSyncKHR
+#undef eglCreateSyncKHR
+#undef eglDestroySyncKHR
+#undef eglGetSyncAttribKHR
+#undef eglCreateImageKHR
+#undef eglDestroyImageKHR
+#undef eglLockSurfaceKHR
+#undef eglUnlockSurfaceKHR
+#undef eglStreamConsumerAcquireKHR
+#undef eglStreamConsumerGLTextureExternalKHR
+#undef eglStreamConsumerReleaseKHR
+#undef eglCreateStreamFromFileDescriptorKHR
+#undef eglGetStreamFileDescriptorKHR
+#undef eglCreateStreamProducerSurfaceKHR
+#undef eglWaitSyncKHR
+#undef eglCreateDRMImageMESA
+#undef eglExportDRMImageMESA
+#undef eglCoverageMaskNV
+#undef eglCoverageOperationNV
+#undef eglPostSubBufferNV
+#undef eglClientWaitSyncNV
+#undef eglCreateFenceSyncNV
+#undef eglDestroySyncNV
+#undef eglFenceNV
+#undef eglGetSyncAttribNV
+#undef eglSignalSyncNV
+#undef eglGetSystemTimeFrequencyNV
+#undef eglGetSystemTimeNV
 #undef eglChooseConfig
 #undef eglCopyBuffers
 #undef eglCreateContext
@@ -91,6 +120,35 @@ using namespace std;
 
 extern "C"
 {
+  extern EGLBoolean  REGAL_CALL eglQuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surface, EGLint attribute, GLvoid **value);
+  extern EGLint  REGAL_CALL eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint flags, EGLTimeKHR timeout);
+  extern EGLSyncKHR  REGAL_CALL eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
+  extern EGLBoolean  REGAL_CALL eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR GLsync);
+  extern EGLBoolean  REGAL_CALL eglGetSyncAttribKHR(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint attribute, EGLint *value);
+  extern EGLImageKHR  REGAL_CALL eglCreateImageKHR(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list);
+  extern EGLBoolean  REGAL_CALL eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR image);
+  extern EGLBoolean  REGAL_CALL eglLockSurfaceKHR(EGLDisplay display, EGLSurface surface, const EGLint *attrib_list);
+  extern EGLBoolean  REGAL_CALL eglUnlockSurfaceKHR(EGLDisplay display, EGLSurface surface);
+  extern EGLBoolean  REGAL_CALL eglStreamConsumerAcquireKHR(EGLDisplay dpy, EGLStreamKHR stream);
+  extern EGLBoolean  REGAL_CALL eglStreamConsumerGLTextureExternalKHR(EGLDisplay dpy, EGLStreamKHR stream);
+  extern EGLBoolean  REGAL_CALL eglStreamConsumerReleaseKHR(EGLDisplay dpy, EGLStreamKHR stream);
+  extern EGLStreamKHR  REGAL_CALL eglCreateStreamFromFileDescriptorKHR(EGLDisplay dpy, EGLNativeFileDescriptorKHR file_descriptor);
+  extern EGLNativeFileDescriptorKHR  REGAL_CALL eglGetStreamFileDescriptorKHR(EGLDisplay dpy, EGLStreamKHR stream);
+  extern EGLSurface  REGAL_CALL eglCreateStreamProducerSurfaceKHR(EGLDisplay dpy, EGLConfig config, EGLStreamKHR stream, const EGLint *attrib_list);
+  extern EGLint  REGAL_CALL eglWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR GLsync, EGLint flags);
+  extern EGLImageKHR  REGAL_CALL eglCreateDRMImageMESA(EGLDisplay dpy, const EGLint *attrib_list);
+  extern EGLBoolean  REGAL_CALL eglExportDRMImageMESA(EGLDisplay dpy, EGLImageKHR image, EGLint *name, EGLint *handle, EGLint *stride);
+  extern void  REGAL_CALL eglCoverageMaskNV(GLboolean mask);
+  extern void  REGAL_CALL eglCoverageOperationNV(GLenum operation);
+  extern EGLBoolean  REGAL_CALL eglPostSubBufferNV(EGLDisplay dpy, EGLSurface surface, EGLint x, EGLint y, EGLint width, EGLint height);
+  extern EGLint  REGAL_CALL eglClientWaitSyncNV(EGLSyncNV GLsync, EGLint flags, EGLTimeNV timeout);
+  extern EGLSyncNV  REGAL_CALL eglCreateFenceSyncNV(EGLDisplay dpy, EGLenum condition, const EGLint *attrib_list);
+  extern EGLBoolean  REGAL_CALL eglDestroySyncNV(EGLSyncNV GLsync);
+  extern EGLBoolean  REGAL_CALL eglFenceNV(EGLSyncNV GLsync);
+  extern EGLBoolean  REGAL_CALL eglGetSyncAttribNV(EGLSyncNV GLsync, EGLint attribute, EGLint *value);
+  extern EGLBoolean  REGAL_CALL eglSignalSyncNV(EGLSyncNV GLsync, EGLenum mode);
+  extern EGLuint64NV  REGAL_CALL eglGetSystemTimeFrequencyNV(void);
+  extern EGLuint64NV  REGAL_CALL eglGetSystemTimeNV(void);
   extern EGLBoolean  REGAL_CALL eglChooseConfig(EGLDisplay dpy, const EGLint *attrib_list, EGLConfig *configs, EGLint config_size, EGLint *num_config);
   extern EGLBoolean  REGAL_CALL eglCopyBuffers(EGLDisplay dpy, EGLSurface surface, EGLNativePixmapType target);
   extern EGLContext  REGAL_CALL eglCreateContext(EGLDisplay dpy, EGLConfig config, EGLContext share_context, const EGLint *attrib_list);
@@ -134,6 +192,35 @@ REGAL_NAMESPACE_BEGIN
 void InitDispatchTableStaticEGL(DispatchTableGlobal &tbl)
 {
   // EGL global dispatch
+  tbl.reglQuerySurfacePointerANGLE = ::eglQuerySurfacePointerANGLE;
+  tbl.reglClientWaitSyncKHR = ::eglClientWaitSyncKHR;
+  tbl.reglCreateSyncKHR = ::eglCreateSyncKHR;
+  tbl.reglDestroySyncKHR = ::eglDestroySyncKHR;
+  tbl.reglGetSyncAttribKHR = ::eglGetSyncAttribKHR;
+  tbl.reglCreateImageKHR = ::eglCreateImageKHR;
+  tbl.reglDestroyImageKHR = ::eglDestroyImageKHR;
+  tbl.reglLockSurfaceKHR = ::eglLockSurfaceKHR;
+  tbl.reglUnlockSurfaceKHR = ::eglUnlockSurfaceKHR;
+  tbl.reglStreamConsumerAcquireKHR = ::eglStreamConsumerAcquireKHR;
+  tbl.reglStreamConsumerGLTextureExternalKHR = ::eglStreamConsumerGLTextureExternalKHR;
+  tbl.reglStreamConsumerReleaseKHR = ::eglStreamConsumerReleaseKHR;
+  tbl.reglCreateStreamFromFileDescriptorKHR = ::eglCreateStreamFromFileDescriptorKHR;
+  tbl.reglGetStreamFileDescriptorKHR = ::eglGetStreamFileDescriptorKHR;
+  tbl.reglCreateStreamProducerSurfaceKHR = ::eglCreateStreamProducerSurfaceKHR;
+  tbl.reglWaitSyncKHR = ::eglWaitSyncKHR;
+  tbl.reglCreateDRMImageMESA = ::eglCreateDRMImageMESA;
+  tbl.reglExportDRMImageMESA = ::eglExportDRMImageMESA;
+  tbl.reglCoverageMaskNV = ::eglCoverageMaskNV;
+  tbl.reglCoverageOperationNV = ::eglCoverageOperationNV;
+  tbl.reglPostSubBufferNV = ::eglPostSubBufferNV;
+  tbl.reglClientWaitSyncNV = ::eglClientWaitSyncNV;
+  tbl.reglCreateFenceSyncNV = ::eglCreateFenceSyncNV;
+  tbl.reglDestroySyncNV = ::eglDestroySyncNV;
+  tbl.reglFenceNV = ::eglFenceNV;
+  tbl.reglGetSyncAttribNV = ::eglGetSyncAttribNV;
+  tbl.reglSignalSyncNV = ::eglSignalSyncNV;
+  tbl.reglGetSystemTimeFrequencyNV = ::eglGetSystemTimeFrequencyNV;
+  tbl.reglGetSystemTimeNV = ::eglGetSystemTimeNV;
   tbl.reglChooseConfig = ::eglChooseConfig;
   tbl.reglCopyBuffers = ::eglCopyBuffers;
   tbl.reglCreateContext = ::eglCreateContext;

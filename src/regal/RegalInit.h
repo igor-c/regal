@@ -35,17 +35,64 @@
 
 REGAL_GLOBAL_BEGIN
 
+#include <GL/Regal.h>  // Needed for RegalSystemContext, mainly
+
 REGAL_GLOBAL_END
 
 REGAL_NAMESPACE_BEGIN
 
+struct RegalContext;
+
 struct Init
 {
+public:
+
   Init();
   ~Init();
 
   static void init();
   static void atExit();
+  
+  //
+  // Internal methods
+  //
+
+private:
+  
+  // Factory method for RegalContext lookup and/or construction.
+  // Initialization of Regal contexts is deferred.
+
+  static inline RegalContext *getContext(RegalSystemContext sysCtx);
+  
+  // Set the per-thread Regal context
+  
+  static inline void setContext(RegalContext *context);
+  
+  // Set current TLS Regal context
+  
+  static inline void setContextTLS(RegalContext *context);
+  
+  // Check for OpenGL errors
+
+  static void checkForGLErrors(RegalContext *context);
+  
+  //
+  // API methods
+  //
+
+public:
+
+  static RegalErrorCallback setErrorCallback(RegalErrorCallback callback);
+
+  static void               shareContext(RegalSystemContext a, RegalSystemContext b);
+  
+  #if REGAL_SYS_NACL
+  static void              makeCurrent(RegalSystemContext sysCtx, PPB_OpenGLES2 *interface);
+  #else
+  static void              makeCurrent(RegalSystemContext sysCtx);
+  #endif
+
+  static void              destroyContext(RegalSystemContext sysCtx);
 };
 
 REGAL_NAMESPACE_END

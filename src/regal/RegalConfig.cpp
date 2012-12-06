@@ -73,6 +73,11 @@ bool frameSaveColor   = false;
 bool frameSaveStencil = false;
 bool frameSaveDepth   = false;
 
+bool        cache           = REGAL_CACHE;
+bool        cacheShader     = false;
+bool        cacheShaderRead = false;
+std::string cacheDirectory("./");
+
 void Init()
 {
   Internal("Config::Init","()");
@@ -178,6 +183,27 @@ void Init()
 
   tmp = GetEnv( "REGAL_SAVE_DEPTH" );
   if (tmp) frameSaveDepth = atoi(tmp)!=0;
+
+  // Caching
+
+#if REGAL_CACHE
+  tmp = GetEnv( "REGAL_CACHE" );
+  if (tmp) cache = atoi(tmp)!=0;
+
+#if REGAL_CACHE_SHADER
+  tmp = GetEnv( "REGAL_CACHE_SHADER" );
+  if (tmp) cacheShader = atoi(tmp)!=0;
+#endif
+
+#if REGAL_CACHE_SHADER_READ
+  tmp = GetEnv( "REGAL_CACHE_SHADER_READ" );
+  if (tmp) cacheShaderRead = atoi(tmp)!=0;
+#endif
+
+  tmp = GetEnv( "REGAL_CACHE_DIRECTORY" );
+  if (tmp) cacheDirectory = tmp;
+#endif
+
 #endif
 
   // REGAL_NO_EMULATION is deprecated, use REGAL_EMULATION=0 instead.
