@@ -37,6 +37,7 @@ REGAL_GLOBAL_BEGIN
 
 #include <string>
 #include <list>
+#include <set>
 
 #include <boost/print/json.hpp>           // Note - shouldn't need this in RegalLog.h
 #include <boost/print/print_string.hpp>
@@ -44,6 +45,8 @@ REGAL_GLOBAL_BEGIN
 REGAL_GLOBAL_END
 
 REGAL_NAMESPACE_BEGIN
+
+namespace Json { struct Output; }
 
 // Compile-time logging control
 
@@ -99,6 +102,22 @@ REGAL_NAMESPACE_BEGIN
 # define REGAL_LOG_MAX_LINES -1 // unlimited by default
 #endif
 
+#ifndef REGAL_LOG_MAX_BYTES
+# define REGAL_LOG_MAX_BYTES -1 // unlimited by default
+#endif
+
+#ifndef REGAL_LOG_POINTERS
+# define REGAL_LOG_POINTERS 1
+#endif
+
+#ifndef REGAL_LOG_THREAD
+# define REGAL_LOG_THREAD 1
+#endif
+
+#ifndef REGAL_LOG_ONCE
+# define REGAL_LOG_ONCE 1
+#endif
+
 #ifndef REGAL_LOG_JSON
 # define REGAL_LOG_JSON 1
 #endif
@@ -129,7 +148,24 @@ namespace Logging
   extern void Init();
   extern void Cleanup();
 
-  extern void Output(const char *prefix, const char *delim, const char *name, const std::string &str = std::string());
+  extern void writeJSON(Json::Output &jo);
+
+  // GL_REGAL_log
+
+  enum Mode
+  {
+    LOG_ERROR    = 0,
+    LOG_WARNING,
+    LOG_INFO,
+    LOG_APP,
+    LOG_DRIVER,
+    LOG_INTERNAL,
+    LOG_DEBUG,
+    LOG_STATUS,
+    LOG_HTTP
+  };
+
+  extern void Output(const Mode mode, const char *file, const int line, const char *prefix, const char *delim, const char *name, const std::string &str = std::string());
 
   // Runtime control of logging
 
@@ -144,8 +180,18 @@ namespace Logging
   // Logging configuration
 
   extern int  maxLines;
+  extern int  maxBytes;
 
   extern bool frameTime;        // Per-frame elapsed time to info log
+
+  extern bool pointers;         // Enabled by default, otherwise empty
+  extern bool thread;           // Disabled by default
+
+#if REGAL_LOG_ONCE
+  extern bool once;             // Warning and error message logged once only
+  extern std::set<std::string> uniqueErrors;
+  extern std::set<std::string> uniqueWarnings;
+#endif
 
   // Callback output
 
@@ -172,12 +218,17 @@ namespace Logging
   // Internal housekeeping
 
   extern bool initialized;
+
+  //
+
+  template<typename T>
+  T rawLimit(const T size) { return maxBytes<0 ? size : ( size < maxBytes ? size : maxBytes ); }
 }
 
 #if REGAL_LOG_ERROR
 #define Error(...)   { \
   if (::REGAL_NAMESPACE_INTERNAL::Logging::enableError) \
-    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( "error   ", " | ", NULL, ::boost::print::print_string( __VA_ARGS__) ); }
+    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( ::REGAL_NAMESPACE_INTERNAL::Logging::LOG_ERROR, __FILE__, __LINE__, "error   ", " | ", NULL, ::boost::print::print_string( __VA_ARGS__) ); }
 #else
 #define Error(...) {}
 #endif
@@ -185,7 +236,7 @@ namespace Logging
 #if REGAL_LOG_WARNING
 #define Warning(...) { \
   if (::REGAL_NAMESPACE_INTERNAL::Logging::enableWarning) \
-    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( "warning ", " | ", NULL, ::boost::print::print_string( __VA_ARGS__) ); }
+    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( ::REGAL_NAMESPACE_INTERNAL::Logging::LOG_WARNING, __FILE__, __LINE__, "warning ", " | ", NULL, ::boost::print::print_string( __VA_ARGS__) ); }
 #else
 #define Warning(...) {}
 #endif
@@ -193,7 +244,7 @@ namespace Logging
 #if REGAL_LOG_INFO
 #define Info(...) { \
   if (::REGAL_NAMESPACE_INTERNAL::Logging::enableInfo) \
-    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( "info    ", " | ", NULL, ::boost::print::print_string( __VA_ARGS__) ); }
+    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( ::REGAL_NAMESPACE_INTERNAL::Logging::LOG_INFO, __FILE__, __LINE__, "info    ", " | ", NULL, ::boost::print::print_string( __VA_ARGS__) ); }
 #else
 #define Info(...) {}
 #endif
@@ -201,7 +252,7 @@ namespace Logging
 #if REGAL_LOG_APP
 #define App(name,...) { \
   if (::REGAL_NAMESPACE_INTERNAL::Logging::enableApp) \
-    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( "app     ", " | ", name, ::boost::print::print_string( __VA_ARGS__) ); }
+    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( ::REGAL_NAMESPACE_INTERNAL::Logging::LOG_APP, __FILE__, __LINE__, "app     ", " | ", name, ::boost::print::print_string( __VA_ARGS__) ); }
 #else
 #define App(...) {}
 #endif
@@ -209,7 +260,7 @@ namespace Logging
 #if REGAL_LOG_DRIVER
 #define Driver(name,...) { \
   if (::REGAL_NAMESPACE_INTERNAL::Logging::enableDriver) \
-    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( "driver  ", " | ", name, ::boost::print::print_string( __VA_ARGS__) ); }
+    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( ::REGAL_NAMESPACE_INTERNAL::Logging::LOG_DRIVER, __FILE__, __LINE__, "driver  ", " | ", name, ::boost::print::print_string( __VA_ARGS__) ); }
 #else
 #define Driver(...) {}
 #endif
@@ -217,7 +268,7 @@ namespace Logging
 #if REGAL_LOG_INTERNAL
 #define Internal(name,...) { \
   if (::REGAL_NAMESPACE_INTERNAL::Logging::enableInternal) \
-    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( "internal", " | ", name, ::boost::print::print_string( __VA_ARGS__) ); }
+    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( ::REGAL_NAMESPACE_INTERNAL::Logging::LOG_INTERNAL, __FILE__, __LINE__, "internal", " | ", name, ::boost::print::print_string( __VA_ARGS__) ); }
 #else
 #define Internal(...) {}
 #endif
@@ -225,7 +276,7 @@ namespace Logging
 #if REGAL_LOG_HTTP
 #define HTrace(...) { \
   if (::REGAL_NAMESPACE_INTERNAL::Logging::enableHttp) \
-    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( "http    ", " | ", NULL, ::boost::print::print_string( __VA_ARGS__) ); }
+    ::REGAL_NAMESPACE_INTERNAL::Logging::Output( ::REGAL_NAMESPACE_INTERNAL::Logging::LOG_HTTP, __FILE__, __LINE__, "http    ", " | ", NULL, ::boost::print::print_string( __VA_ARGS__) ); }
 #else
 #define HTrace(...) {}
 #endif

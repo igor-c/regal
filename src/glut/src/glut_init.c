@@ -13,6 +13,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifndef __APPLE__
+
 #if !defined(_WIN32)
 #include <X11/Xlib.h>
 #endif
@@ -25,11 +27,15 @@
 #define XSGIFastInternAtom(dpy,string,fast_name,how) XInternAtom(dpy,string,how)
 #endif
 
+#endif // __APPLE___
+
 #include "glutint.h"
 
 /* GLUT inter-file variables */
 /* *INDENT-OFF* */
 char *__glutProgramName = NULL;
+
+#ifndef __APPLE__
 int __glutArgc = 0;
 char **__glutArgv = NULL;
 char *__glutGeometry = NULL;
@@ -395,5 +401,7 @@ glutInitDisplayMode(unsigned int mask)
 {
   __glutDisplayMode = mask;
 }
+
+#endif // __APPLE___
 
 /* ENDCENTRY */

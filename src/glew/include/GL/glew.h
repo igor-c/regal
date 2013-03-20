@@ -86,6 +86,9 @@
 #if defined(__gl2_h_)
 #error gl2.h included before glew.h
 #endif
+#if defined(__gltypes_h_)
+#error gltypes.h included before glew.h
+#endif
 #if defined(__REGAL_H__)
 #error Regal.h included before glew.h
 #endif
@@ -99,6 +102,7 @@
 #define __gl_h_
 #define __gl2_h_
 #define __GL_H__
+#define __gltypes_h_
 #define __REGAL_H__
 #define __X_GL_H
 #define __glext_h_
@@ -3175,6 +3179,7 @@ typedef void (GLAPIENTRY * PFNGLSHADERBINARYPROC) (GLsizei count, const GLuint* 
 #ifndef GL_ARB_ES3_compatibility
 #define GL_ARB_ES3_compatibility 1
 
+#define GL_TEXTURE_IMMUTABLE_LEVELS 0x82DF
 #define GL_PRIMITIVE_RESTART_FIXED_INDEX 0x8D69
 #define GL_ANY_SAMPLES_PASSED_CONSERVATIVE 0x8D6A
 #define GL_MAX_ELEMENT_INDEX 0x8D6B

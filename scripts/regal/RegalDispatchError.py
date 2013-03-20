@@ -77,6 +77,9 @@ def apiErrorFuncDefineCode(apis, args):
         code += '    _error = _next->call(&_next->glGetError)();\n'
         code += '    if (_error!=GL_NO_ERROR) {\n'
         code += '      Error("%s : ",Token::GLerrorToString(_error));\n'%(name)
+        code += '      #if REGAL_BREAK\n'
+        code += '      Break::ErrorCB(_error);\n'
+        code += '      #endif\n'
         code += '      if (_context->err.callback)\n'
         code += '        _context->err.callback( _error );\n'
         code += '    }\n'
@@ -114,4 +117,4 @@ def generateErrorSource(apis, args):
   substitute['API_DISPATCH_FUNC_INIT'] = funcInit
   substitute['IFDEF'] = '#if REGAL_ERROR\n\n'
   substitute['ENDIF'] = '#endif\n'
-  outputCode( '%s/RegalDispatchError.cpp' % args.outdir, dispatchSourceTemplate.substitute(substitute))
+  outputCode( '%s/RegalDispatchError.cpp' % args.srcdir, dispatchSourceTemplate.substitute(substitute))

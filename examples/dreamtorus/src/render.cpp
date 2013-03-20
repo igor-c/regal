@@ -236,7 +236,7 @@ void dreamTorusDisplay( bool clear )
     }
     glEnable( GL_DEPTH_TEST );
 
-    for( int i = 0; i < 8; i++ ) {
+    for( int i = 0; i < 4; i++ ) {
         glActiveTexture( GL_TEXTURE0 + i );
         glDisable( GL_TEXTURE_2D );
     }

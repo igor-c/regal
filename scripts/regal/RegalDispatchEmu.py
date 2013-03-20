@@ -7,7 +7,6 @@ from ApiUtil import typeIsVoid
 
 from ApiCodeGen import *
 
-from Regal            import debugPrintFunction
 from RegalContext     import emu
 from RegalContextInfo import cond
 
@@ -28,6 +27,7 @@ ${IFDEF}REGAL_GLOBAL_BEGIN
 using namespace std;
 
 #include "RegalLog.h"
+#include "RegalBreak.h"
 #include "RegalPush.h"
 #include "RegalToken.h"
 #include "RegalHelper.h"
@@ -138,7 +138,7 @@ def apiEmuFuncDefineCode(apis, args):
             # Remap, as necessary
             remap = getattr(function, 'regalRemap', None)
             es2Name = None
-            if remap != None:
+            if remap!=None and isinstance(remap, dict):
               es2Name = remap.get('ES2.0',None)
               es2Params = callParams
               if es2Name != None:
@@ -165,7 +165,7 @@ def apiEmuFuncDefineCode(apis, args):
                       for j in e['impl'] :
                           code += '        %s\n' % j
                       if l['member'] :
-                          if typeIsVoid(rType):
+                          if l['member'] != "filt" and typeIsVoid(rType):
                               code += '        return;\n'
                           code += '      }\n'
                   if l['ifdef']:
@@ -178,7 +178,7 @@ def apiEmuFuncDefineCode(apis, args):
 
               if name=='glEnable' or name=='glDisable' or name=='glIsEnabled':
                 code += '       #if !REGAL_FORCE_ES2_PROFILE\n'
-                code += '       if (_context->info->gles)\n'
+                code += '       if (_context->info->es2)\n'
                 code += '       #endif\n'
                 code += '         switch (cap)\n'
                 code += '         {\n'
@@ -201,7 +201,7 @@ def apiEmuFuncDefineCode(apis, args):
 
               if name=='glHint':
                 code += '       #if !REGAL_FORCE_ES2_PROFILE\n'
-                code += '       if (_context->info->gles)\n'
+                code += '       if (_context->info->es2)\n'
                 code += '       #endif\n'
                 code += '         switch (target)\n'
                 code += '         {\n'
@@ -225,7 +225,7 @@ def apiEmuFuncDefineCode(apis, args):
 
               if name=='glBindTexture':
                 code += '       #if !REGAL_FORCE_ES2_PROFILE\n'
-                code += '       if (_context->info->gles)\n'
+                code += '       if (_context->info->es2)\n'
                 code += '       #endif\n'
                 code += '         switch (target)\n'
                 code += '         {\n'
@@ -249,9 +249,9 @@ def apiEmuFuncDefineCode(apis, args):
 
               if name=='glTexSubImage2D':
                 code += '       #if !REGAL_FORCE_ES2_PROFILE\n'
-                code += '       if (_context->info->gles)\n'
+                code += '       if (_context->info->es2)\n'
                 code += '       #endif\n'
-                code += '         switch (format)\n'
+                code += '         switch (target)\n'
                 code += '         {\n'
                 for i in api.enums:
                   if i.name=='defines':
@@ -273,7 +273,7 @@ def apiEmuFuncDefineCode(apis, args):
 
               if es2Name != None:
                 code += '      '
-                code += 'if (_context->info->gles)\n'
+                code += 'if (_context->info->es2)\n'
                 code += '        '
                 if not typeIsVoid(rType):
                     code += 'return '
@@ -295,7 +295,7 @@ def apiEmuFuncDefineCode(apis, args):
 
               if name=='glTexImage2D':
                 code += '  #if !REGAL_FORCE_ES2_PROFILE\n'
-                code += '  if (_context->info->gles)\n'
+                code += '  if (_context->info->es2)\n'
                 code += '  #endif\n'
                 code += '  {\n'
                 code += '    switch (internalformat)\n'
@@ -316,7 +316,7 @@ def apiEmuFuncDefineCode(apis, args):
                 code += '    }\n'
                 code += '    if (format!=GLenum(internalformat))\n'
                 code += '    {\n'
-                code += '        Warning("%s does not support mismatching format and internalformat ",GLenumToString(format),"!=",GLenumToString(internalformat)," for ES 2.0.");\n'%(name)              
+                code += '        Warning("%s does not support mismatching format and internalformat ",GLenumToString(format),"!=",GLenumToString(internalformat)," for ES 2.0.");\n'%(name)
                 code += '        return;\n'
                 code += '    }\n'
                 code += '  }\n'
@@ -326,7 +326,7 @@ def apiEmuFuncDefineCode(apis, args):
               code += '  '
 
               if es2Name != None:
-                code += 'if (_context->info->gles)\n'
+                code += 'if (_context->info->es2)\n'
                 code += '    '
                 if not typeIsVoid(rType):
                     code += 'return '
@@ -424,14 +424,20 @@ def generateEmuSource(apis, args):
 
   emuLocalInclude = '''
 
+#include "RegalBreak.h"
 #include "RegalBin.h"
+#include "RegalXfer.h"
 #include "RegalEmu.h"
 #include "RegalPpa.h"
+#include "RegalPpca.h"
 #include "RegalIff.h"
 #include "RegalMarker.h"
 #include "RegalObj.h"
 #include "RegalDsa.h"
-#include "RegalVao.h"'''
+#include "RegalSo.h"
+#include "RegalTexC.h"
+#include "RegalVao.h"
+#include "RegalFilt.h"'''
 
   # Output
 
@@ -447,4 +453,4 @@ def generateEmuSource(apis, args):
   substitute['IFDEF'] = '#if REGAL_EMULATION\n\n'
   substitute['ENDIF'] = '#endif\n'
 
-  outputCode( '%s/RegalDispatchEmu.cpp' % args.outdir, dispatchSourceTemplate.substitute(substitute))
+  outputCode( '%s/RegalDispatchEmu.cpp' % args.srcdir, dispatchSourceTemplate.substitute(substitute))

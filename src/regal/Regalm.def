@@ -126,6 +126,7 @@ EXPORTS
   rglBlitFramebuffer
   rglBlitFramebufferANGLE
   rglBlitFramebufferEXT
+  rglBlitFramebufferNV
   rglBufferAddressRangeNV
   rglBufferData
   rglBufferDataARB

@@ -43,6 +43,7 @@ REGAL_GLOBAL_BEGIN
 #include <boost/print/print_string.hpp>
 #include <boost/print/string_list.hpp>
 
+#include "RegalIff.h"
 #include "RegalToken.h"
 #include "RegalDispatch.h"
 
@@ -771,6 +772,140 @@ namespace State {
       tmp << print_string(offsetFill    ? "glEnable" : "glDisable","(GL_POLYGON_OFFSET_FILL);",delim);
       tmp << print_string(offsetLine    ? "glEnable" : "glDisable","(GL_POLYGON_OFFSET_LINE);",delim);
       tmp << print_string(offsetPoint   ? "glEnable" : "glDisable","(GL_POLYGON_OFFSET_POINT);",delim);
+      return tmp;
+    }
+  };
+
+  //
+  // glPushAttrib(GL_TRANSFORM_BIT)
+  //
+
+  struct ClipPlaneEquation
+  {
+    GLdouble data[4];
+
+    inline ClipPlaneEquation()
+    {
+      data[0] = data[1] = data[2] = data[3] = 0;
+    }
+
+    bool operator!= (const ClipPlaneEquation& other) const
+    {
+      return (data[0] != other.data[0]) || (data[1] != other.data[1]) || (data[2] != other.data[2]) || (data[3] != other.data[3]);
+    }
+  };
+
+  struct ClipPlane
+  {
+    GLboolean enabled;
+    ClipPlaneEquation equation;
+
+    inline ClipPlane()
+    : enabled(false)
+    {
+    }
+
+    inline ClipPlane &swap(ClipPlane &other)
+    {
+      std::swap(enabled,other.enabled);
+      std::swap(equation,other.equation);
+      return *this;
+    }
+  };
+
+  struct Transform
+  {
+    // This state matches glspec43.compatability.20120806.pdf Table 23.10,
+    // except possibly extended a bit to allow for extra clip planes.
+
+    ClipPlane   clipPlane[REGAL_FIXED_FUNCTION_MAX_CLIP_PLANES];
+    GLenum      matrixMode;
+    GLboolean   normalize;
+    GLboolean   rescaleNormal;
+    GLboolean   depthClamp;
+
+    inline Transform()
+    : matrixMode(GL_MODELVIEW), normalize(GL_FALSE), rescaleNormal(GL_FALSE), depthClamp(GL_FALSE)
+    {
+    }
+
+    inline size_t maxPlanes() const
+    {
+      return sizeof(clipPlane)/sizeof(ClipPlane);
+    }
+
+    inline Transform &swap(Transform &other)
+    {
+      std::swap_ranges(clipPlane,clipPlane+REGAL_FIXED_FUNCTION_MAX_CLIP_PLANES,other.clipPlane);
+      std::swap(matrixMode,other.matrixMode);
+      std::swap(normalize,other.normalize);
+      std::swap(rescaleNormal,other.rescaleNormal);
+      std::swap(depthClamp,other.depthClamp);
+      return *this;
+    }
+
+    inline void glMatrixMode(GLenum mode)
+    {
+      matrixMode = mode;
+    }
+
+    inline void glClipPlane(GLenum plane, const GLdouble* equation)
+    {
+      GLuint planeIndex = plane - GL_CLIP_PLANE0;
+      RegalAssert(planeIndex < REGAL_FIXED_FUNCTION_MAX_CLIP_PLANES);
+      if (planeIndex < REGAL_FIXED_FUNCTION_MAX_CLIP_PLANES)
+      {
+        clipPlane[planeIndex].equation.data[0] = equation[0];
+        clipPlane[planeIndex].equation.data[1] = equation[1];
+        clipPlane[planeIndex].equation.data[2] = equation[2];
+        clipPlane[planeIndex].equation.data[3] = equation[3];
+      }
+    }
+
+    inline const Transform &transition(DispatchTable &dt, Transform& current) const
+    {
+      RegalAssert(dt.glEnable);
+      RegalAssert(dt.glDisable);
+      RegalAssert(dt.glMatrixMode);
+      RegalAssert(dt.glClipPlane);
+
+      for (GLint i = 0; i < REGAL_FIXED_FUNCTION_MAX_CLIP_PLANES; i++)
+      {
+        if (current.clipPlane[i].enabled != clipPlane[i].enabled)
+          Enable::setEnable(dt, GL_CLIP_PLANE0 + i, clipPlane[i].enabled);
+
+        if (current.clipPlane[i].equation != clipPlane[i].equation)
+          dt.glClipPlane(GL_CLIP_PLANE0 + i, clipPlane[i].equation.data);
+      }
+
+      if (current.matrixMode != matrixMode)
+        dt.glMatrixMode(matrixMode);
+
+      if (current.normalize != normalize)
+        Enable::setEnable(dt, GL_NORMALIZE, normalize);
+
+      if (current.rescaleNormal != rescaleNormal)
+        Enable::setEnable(dt, GL_RESCALE_NORMAL, rescaleNormal);
+
+      if (current.depthClamp != depthClamp )
+        Enable::setEnable(dt, GL_DEPTH_CLAMP, depthClamp );
+
+      return *this;
+    }
+
+    inline std::string toString(const char *delim = "\n") const
+    {
+      string_list tmp;
+      for (GLint i = 0; i < REGAL_FIXED_FUNCTION_MAX_CLIP_PLANES; i++)
+      {
+        GLenum plane = GL_CLIP_PLANE0 + i;
+        tmp << print_string(clipPlane[i].enabled ? "glEnable(" : "glDisable(",Token::toString(plane),")",delim);
+        tmp << print_string("glClipPlane(",Token::toString(plane),clipPlane[i].equation.data[0],clipPlane[i].equation.data[1],clipPlane[i].equation.data[2],clipPlane[i].equation.data[3],")",delim);
+      }
+      tmp << print_string("glMatrixMode(",Token::toString(matrixMode),");",delim);
+      tmp << print_string(normalize     ? "glEnable" : "glDisable","(GL_NORMALIZE);",delim);
+      tmp << print_string(rescaleNormal ? "glEnable" : "glDisable","(GL_RESCALE_NORMAL);",delim);
+      tmp << print_string(depthClamp    ? "glEnable" : "glDisable","(GL_DEPTH_CLAMP);",delim);
       return tmp;
     }
   };

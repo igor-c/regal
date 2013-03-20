@@ -42,14 +42,14 @@ vaoFormulae = {
         'entries' : [ 'glGetVertexAttrib(d|f|i|Pointer)v(ARB|)' ],
         'impl' : [ '_context->vao->GetAttrib( ${arg0}, ${arg1}, ${arg2} );' ],
     },
-    'GetVertexAttribPointerv' : {
-        'entries' : [ 'glGetVertexAttribPointerv(ARB|)' ],
-        'impl' : [
-            'if ( !_context->vao->GetVertexAttribPointerv( ${arg0}, ${arg1plus} ) ) {',
-            '   _context->dispatcher.emulation.glGetVertexAttribPointerv${m1}( ${arg0}, ${arg1plus} );',
-            '}',
-        ]
-    },
+#    'GetVertexAttribPointerv' : {
+#        'entries' : [ 'glGetVertexAttribPointerv(ARB|)' ],
+#        'impl' : [
+#            'if ( !_context->vao->GetVertexAttribPointerv( ${arg0}, ${arg1plus} ) ) {',
+#            '   _context->dispatcher.emulation.glGetVertexAttribPointerv${m1}( ${arg0}, ${arg1plus} );',
+#            '}',
+#        ]
+#    },
     'Get' : {
         'entries' : [ 'glGet(Boolean|Double|Float|Integer|Integer64)v' ],
         'impl' : [
@@ -62,9 +62,25 @@ vaoFormulae = {
         'entries' : [ 'glInterleavedArrays' ],
         'impl' : [ '_context->vao->InterleavedArrays( _context, ${arg0}, ${arg1plus} );' ],
     },
+    'Pointer4EXT' : {
+        'entries' : [ 'gl(Color|TexCoord|Vertex)PointerEXT' ],
+        'impl' : [ '_context->vao->${m1}Pointer( _context, ${arg0}, ${arg1}, ${arg2}, ${arg4} );' ],
+    },
     'Pointer4' : {
         'entries' : [ 'gl(Color|SecondaryColor|TexCoord|Vertex)Pointer' ],
         'impl' : [ '_context->vao->${m1}Pointer( _context, ${arg0}, ${arg1}, ${arg2}, ${arg3} );' ],
+    },
+    'glSecondaryColorPointerEXT' : {
+        'entries' : [ 'gl(SecondaryColor)PointerEXT' ],
+        'impl' : [ '_context->vao->${m1}Pointer( _context, ${arg0}, ${arg1}, ${arg2}, ${arg3} );' ],
+    },
+    'NormalPointer3EXT' : {
+        'entries' : [ 'glNormalPointerEXT' ],
+        'impl' : [ '_context->vao->NormalPointer( _context, ${arg0}, ${arg1}, ${arg3} );' ],
+    },
+    'FogCoordPointer3EXT' : {
+        'entries' : [ 'glFogCoordPointerEXT' ],
+        'impl' : [ '_context->vao->FogCoordPointer( _context, ${arg0}, ${arg1}, ${arg2} );' ],
     },
     'Pointer3' : {
         'entries' : [ 'gl(FogCoord|Normal)Pointer' ],

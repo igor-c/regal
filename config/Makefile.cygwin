@@ -9,15 +9,11 @@ LDFLAGS.GLUT = -lRegalGLUT
 LDFLAGS.STATIC = -Wl,-Bstatic
 LDFLAGS.DYNAMIC = -Wl,-Bdynamic
 WARN = -Wall -W
-POPT = -O2
+CFLAGS.DEBUG   = -g
+CFLAGS.RELEASE = -O2
 BIN.SUFFIX =
 LIB.SONAME = lib$(NAME).so.$(SO_MAJOR)
 LIB.DEVLNK = lib$(NAME).so
 LIB.SHARED = lib$(NAME).so.$(SO_VERSION)
 LIB.STATIC = lib$(NAME).a
 LDFLAGS.SO = -shared -Wl,-soname=$(LIB.SONAME)
-LIB.SONAME.MX = lib$(NAME)mx.so.$(SO_MAJOR)
-LIB.DEVLNK.MX = lib$(NAME)mx.so
-LIB.SHARED.MX = lib$(NAME)mx.so.$(SO_VERSION)
-LIB.STATIC.MX = lib$(NAME)mx.a
-LDFLAGS.SO.MX = -shared -Wl,-soname=$(LIB.SONAME.MX)

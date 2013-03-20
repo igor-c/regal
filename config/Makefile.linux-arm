@@ -5,21 +5,19 @@ AR    = arm-linux-gnueabihf-ar
 STRIP = arm-linux-gnueabihf-strip
 EXT.DYNAMIC = so
 PICFLAG = -fPIC
-LDFLAGS.GL = -lXmu -lXi -lGL -lXext -lX11
+LDFLAGS.X11 = -lXmu -lXi -lXext -lX11
+LDFLAGS.GL = -lGL
 LDFLAGS.GLU = -lRegalGLU
 LDFLAGS.GLUT = -lRegalGLUT
 LDFLAGS.STATIC =
 LDFLAGS.DYNAMIC = -shared
 WARN = -Wall -W -Wno-unused-parameter
-POPT = -O1
+CFLAGS.DEBUG   = -g -O0
+CFLAGS.RELEASE = -O1
+LIB.CFLAGS    += -DREGAL_SYS_GLX=1 -DREGAL_SYS_EGL=1
 BIN.SUFFIX =
 LIB.SONAME = lib$(NAME).so.$(SO_MAJOR)
 LIB.DEVLNK = lib$(NAME).so
 LIB.SHARED = lib$(NAME).so.$(SO_VERSION)
 LIB.STATIC = lib$(NAME).a
 LDFLAGS.SO = $(LDFLAGS.DYNAMIC) -Wl,-soname=$(LIB.SONAME)
-LIB.SONAME.MX = lib$(NAME)mx.so.$(SO_MAJOR)
-LIB.DEVLNK.MX = lib$(NAME)mx.so
-LIB.SHARED.MX = lib$(NAME)mx.so.$(SO_VERSION)
-LIB.STATIC.MX = lib$(NAME)mx.a
-LDFLAGS.SO.MX = $(LDFLAGS.DYNAMIC) -Wl,-soname=$(LIB.SONAME.MX)

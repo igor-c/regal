@@ -46,8 +46,8 @@ struct DispatchErrorState
 {
 public:
   DispatchErrorState()
-  : callback(NULL)
-  , inBeginEnd( false )
+  : callback(NULL),
+    inBeginEnd(false)
   {
   }
 

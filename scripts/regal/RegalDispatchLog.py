@@ -5,8 +5,8 @@ from string import Template, upper, replace
 from ApiCodeGen   import *
 from ApiUtil      import outputCode
 from ApiUtil      import typeIsVoid
+from ApiRegal     import logFunction
 
-from Regal            import debugPrintFunction
 from RegalContextInfo import cond
 
 # CodeGen for dispatch table init.
@@ -144,9 +144,34 @@ def generateDispatchLog(apis, args):
       categoryPrev = category
 
       code += 'static %sREGAL_CALL %s%s(%s) \n{\n' % (rType, 'log_', name, params)
-#     code += '    %s\n' % debugPrintFunction( function, 'Driver', True, False )
+#     code += '    %s\n' % logFunction( function, 'Driver', True, False )
       code += '    RegalContext *_context = REGAL_GET_CONTEXT();\n'
       code += '    RegalAssert(_context);\n'
+
+      # Temporarily adjust the context begin/end depth for proper indentation
+      # of the glBegin call
+
+      if name=='glBegin':
+        code += '    RegalAssert(_context->depthBeginEnd>0);\n'
+        code += '    Push<size_t> pushDepth(_context->depthBeginEnd);\n'
+        code += '    _context->depthBeginEnd--;\n'
+
+      # Temporarily adjust the context push/pop matrix depth for proper indentation
+      # of the glPushMatrix call
+
+      if name=='glPushMatrix':
+        code += '    RegalAssert(_context->depthPushMatrix>0);\n'
+        code += '    Push<size_t> pushDepth(_context->depthPushMatrix);\n'
+        code += '    _context->depthPushMatrix--;\n'
+
+      # Temporarily adjust the depth for proper indentation
+      # of the glNewList call
+
+      if name=='glNewList':
+        code += '    RegalAssert(_context->depthNewList>0);\n'
+        code += '    Push<size_t> pushDepth(_context->depthNewList);\n'
+        code += '    _context->depthNewList--;\n'
+
       code += '    DispatchTable *_next = _context->dispatcher.logging._next;\n'
       code += '    RegalAssert(_next);\n'
       code += '    '
@@ -155,9 +180,9 @@ def generateDispatchLog(apis, args):
       code += '_next->call(&_next->%s)(%s);\n' % ( name, callParams )
 
       if typeIsVoid(rType):
-        code += '    %s\n' % debugPrintFunction( function, 'Driver', True, True )
+        code += '    %s\n' % logFunction( function, 'Driver', True, True )
       else:
-        code += '    %s\n' % debugPrintFunction( function, 'Driver', True, True, "ret" )
+        code += '    %s\n' % logFunction( function, 'Driver', True, True, "ret" )
 
       # Special handling for glUseProgram - log the attached shaders.
 
@@ -192,4 +217,4 @@ def generateDispatchLog(apis, args):
   substitute['API_FUNC_DEFINE'] = code
   substitute['API_GLOBAL_DISPATCH_INIT'] = funcInit
 
-  outputCode( '%s/RegalDispatchLog.cpp' % args.outdir, dispatchLogTemplate.substitute(substitute))
+  outputCode( '%s/RegalDispatchLog.cpp' % args.srcdir, dispatchLogTemplate.substitute(substitute))

@@ -34,22 +34,16 @@
 
 REGAL_GLOBAL_BEGIN
 
+#include <algorithm>
+
 #include "RegalConfig.h"
 #include "RegalDispatcher.h"
+
+using namespace ::std;
 
 REGAL_GLOBAL_END
 
 REGAL_NAMESPACE_BEGIN
-
-void InitDispatchTableDebug    (DispatchTable &tbl);
-void InitDispatchTableError    (DispatchTable &tbl);
-void InitDispatchTableEmu      (DispatchTable &tbl);
-void InitDispatchTableLog      (DispatchTable &tbl);
-void InitDispatchTableLoader   (DispatchTable &tbl);
-void InitDispatchTableNacl     (DispatchTable &tbl);
-void InitDispatchTableStaticES2(DispatchTable &tbl);
-void InitDispatchTableMissing  (DispatchTable &tbl);
-void InitDispatchTableCache    (DispatchTable &tbl);
 
 Dispatcher::Dispatcher()
 : _front(NULL),
@@ -77,6 +71,12 @@ Dispatcher::Dispatcher()
   push_back(cache,true);
   #endif
 
+  #if REGAL_CODE
+  ::memset(&code,0,sizeof(DispatchTable));
+  InitDispatchTableCode(code);
+  push_back(code,Config::enableCode);
+  #endif
+
   #if REGAL_LOG
   InitDispatchTableLog(logging);
   push_back(logging,Config::enableLog);
@@ -86,9 +86,9 @@ Dispatcher::Dispatcher()
   #if REGAL_STATIC_ES2
   ::memset(&driver,0,sizeof(DispatchTable));
   InitDispatchTableStaticES2(driver);           // ES 2.0 functions only
-  #elif defined(__native_client__)
+  #elif REGAL_SYS_PPAPI
   ::memset(&driver,0,sizeof(DispatchTable));
-  InitDispatchTableNacl(driver);                // ES 2.0 functions only
+  InitDispatchTablePpapi(driver);               // ES 2.0 functions only
   #else
   InitDispatchTableLoader(driver);              // Desktop/ES2.0 lazy loader
   #endif
@@ -97,6 +97,13 @@ Dispatcher::Dispatcher()
 
   InitDispatchTableMissing(missing);
   push_back(missing,true);
+
+  // Optionally move the error checking dispatch to downstream of emulation.
+
+  #if REGAL_ERROR_POST_EMU
+  if (erase(error))
+    insert(cache,error);
+  #endif
 }
 
 Dispatcher::~Dispatcher()
@@ -119,12 +126,61 @@ Dispatcher::push_back(DispatchTable &table, bool enabled)
     back()._next = &table;
   }
 
-   _table.push_back(&table);
+  _table.push_back(&table);
 
-   // Cached front() and size()
+  // Cached front() and size()
 
-   if (!_size++)
+  if (!_size++)
     _front = &table;
+}
+
+bool
+Dispatcher::erase(DispatchTable &table)
+{
+  // O(n) time, oh well.
+
+  vector<DispatchTable *>::iterator i = find(_table.begin(),_table.end(),&table);
+  if (i!=_table.end())
+  {
+    // Linked list adjustment
+
+    if (table._next)
+      table._next->_prev = table._prev;
+    if (table._prev)
+      table._prev->_next = table._next;
+    table._next = NULL;
+    table._prev = NULL;
+
+    _table.erase(i);
+
+    _size--;
+    _front = _size ? _table.front() : NULL;
+    return true;
+  }
+
+  return false;
+}
+
+bool
+Dispatcher::insert(DispatchTable &other, DispatchTable &table)
+{
+  vector<DispatchTable *>::iterator i = find(_table.begin(),_table.end(),&other);
+  if (i!=_table.end())
+  {
+    table._next = &other;
+    table._prev = other._prev;
+    if (table._next)
+      table._next->_prev = &table;
+    if (table._prev)
+      table._prev->_next = &table;
+
+    _table.insert(i,&table);
+
+    _size++;
+    _front = _table.front();
+    return true;
+  }
+  return false;
 }
 
 REGAL_NAMESPACE_END

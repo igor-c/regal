@@ -126,6 +126,7 @@ EXPORTS
   glBlitFramebuffer
   glBlitFramebufferANGLE
   glBlitFramebufferEXT
+  glBlitFramebufferNV
   glBufferAddressRangeNV
   glBufferData
   glBufferDataARB

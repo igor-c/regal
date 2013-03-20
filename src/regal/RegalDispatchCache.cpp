@@ -37,12 +37,15 @@
 
 #include "RegalUtil.h"
 
+#if REGAL_CACHE && REGAL_CACHE_SHADER
+
 REGAL_GLOBAL_BEGIN
 
+#include "RegalConfig.h"
 #include "RegalThread.h"
 #include "RegalContext.h"
 #include "RegalDispatcher.h"
-#include "RegalShaderCache.h"
+#include "RegalCacheShader.h"
 
 REGAL_GLOBAL_END
 
@@ -54,8 +57,8 @@ static void REGAL_CALL cache_glShaderSource(GLuint shader, GLsizei count, const 
   RegalAssert(_context);
   DispatchTable *_next = _context->dispatcher.cache._next;
   RegalAssert(_next);
-  if (REGAL_CACHE && REGAL_CACHE_SHADER)
-    ShaderCache::shaderSource(_next->call(&_next->glShaderSource), shader, count, string, length);
+  if (Config::cache && Config::cacheShader)
+    Cache::shaderSource(_next->call(&_next->glShaderSource), shader, count, string, length);
   else
     _next->call(&_next->glShaderSource)(shader, count, string, length);
 }
@@ -66,4 +69,6 @@ void InitDispatchTableCache(DispatchTable &tbl)
 }
 
 REGAL_NAMESPACE_END
+
+#endif
 

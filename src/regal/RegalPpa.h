@@ -59,9 +59,11 @@ REGAL_GLOBAL_END
 
 REGAL_NAMESPACE_BEGIN
 
-// Only glPushAttrib(GL_STENCIL_BUFFER_BIT) so far...
+namespace Emu {
 
-struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
+// Work in progress...
+
+struct Ppa : public RegalEmu, State::Stencil, State::Depth, State::Polygon, State::Transform
 {
   void Init(RegalContext &ctx)
   {
@@ -93,11 +95,18 @@ struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
       mask &= ~GL_POLYGON_BIT;
     }
 
+    if (mask&GL_TRANSFORM_BIT)
+    {
+      transformStack.push_back(State::Transform());
+      transformStack.back() = *this;
+      mask &= ~GL_TRANSFORM_BIT;
+    }
+
     // Pass the rest through, for now
 
     RegalAssert(ctx);
 
-    if (ctx->info->core || ctx->info->gles)
+    if (ctx->info->core || ctx->info->es1 || ctx->info->es2)
       return;
 
     if (mask)
@@ -120,7 +129,7 @@ struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
         State::Depth::swap(depthStack.back());
         depthStack.pop_back();
 
-        Internal("RegalPpa::PopAttrib GL_DEPTH_BUFFER_BIT ",State::Depth::toString());
+        Internal("Regal::Ppa::PopAttrib GL_DEPTH_BUFFER_BIT ",State::Depth::toString());
 
         // Ideally we'd only set the state that has changed
         // since the glPushAttrib() - revisit
@@ -136,7 +145,7 @@ struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
         State::Stencil::swap(stencilStack.back());
         stencilStack.pop_back();
 
-        Internal("RegalPpa::PopAttrib GL_STENCIL_BUFFER_BIT ",State::Stencil::toString());
+        Internal("Regal::Ppa::PopAttrib GL_STENCIL_BUFFER_BIT ",State::Stencil::toString());
 
         // Ideally we'd only set the state that has changed
         // since the glPushAttrib() - revisit
@@ -152,7 +161,7 @@ struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
         State::Polygon::swap(polygonStack.back());
         polygonStack.pop_back();
 
-        Internal("RegalPpa::PopAttrib GL_POLYGON_BIT ",State::Polygon::toString());
+        Internal("Regal::Ppa::PopAttrib GL_POLYGON_BIT ",State::Polygon::toString());
 
         // Ideally we'd only set the state that has changed
         // since the glPushAttrib() - revisit
@@ -162,9 +171,22 @@ struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
         mask &= ~GL_POLYGON_BIT;
       }
 
+      if (mask&GL_TRANSFORM_BIT)
+      {
+        RegalAssert(transformStack.size());
+        State::Transform::swap(transformStack.back());
+
+        Internal("Regal::Ppa::PopAttrib GL_TRANSFORM_BIT ",State::Transform::toString());
+
+        State::Transform::transition(ctx->dispatcher.emulation, transformStack.back());
+        transformStack.pop_back();
+
+        mask &= ~GL_TRANSFORM_BIT;
+      }
+
       // Pass the rest through, for now
 
-      if (ctx->info->core || ctx->info->gles)
+      if (ctx->info->core || ctx->info->es1 || ctx->info->es2)
         return;
 
       if (mask)
@@ -176,7 +198,7 @@ struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
   {
     RegalAssert(ctx);
 
-    if (ctx->info->core || ctx->info->gles)
+    if (ctx->info->core || ctx->info->es1 || ctx->info->es2)
     {
       switch (pname)
       {
@@ -184,12 +206,29 @@ struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
         case GL_ACCUM_GREEN_BITS:
         case GL_ACCUM_BLUE_BITS:
         case GL_ACCUM_ALPHA_BITS:
-        case GL_ALPHA_BITS:
-        case GL_AUX_BUFFERS:
-        case GL_BLUE_BITS:
-        case GL_DEPTH_BITS:
+          if (params) {
+            params[0] = 32;
+          }
+          break;
+
+        case GL_RED_BITS:
         case GL_GREEN_BITS:
+        case GL_BLUE_BITS:
+        case GL_ALPHA_BITS:
         case GL_INDEX_BITS:
+        case GL_STENCIL_BITS:
+          if (params) {
+            params[0] = 8;
+          }
+          break;
+
+        case GL_DEPTH_BITS:
+          if (params) {
+            params[0] = 24;
+          }
+          break;
+
+        case GL_AUX_BUFFERS:
         case GL_LINE_STIPPLE:
         case GL_MAX_PIXEL_MAP_TABLE:
         case GL_MAX_NAME_STACK_DEPTH:
@@ -197,8 +236,6 @@ struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
         case GL_MAX_EVAL_ORDER:
         case GL_MAX_ATTRIB_STACK_DEPTH:
         case GL_MAX_CLIENT_ATTRIB_STACK_DEPTH:
-        case GL_RED_BITS:
-        case GL_STENCIL_BITS:
           if (params)
             params[0] = 0;
           break;
@@ -214,18 +251,21 @@ struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
   {
     switch (cap)
     {
-      case GL_DEPTH_TEST:           State::Depth::enable          = enabled; break;
-      case GL_STENCIL_TEST:         State::Stencil::enable        = enabled; break;
-      case GL_CULL_FACE:            State::Polygon::cullEnable    = enabled; break;
-      case GL_POLYGON_SMOOTH:       State::Polygon::smoothEnable  = enabled; break;
-      case GL_POLYGON_STIPPLE:      State::Polygon::stippleEnable = enabled; break;
-      case GL_POLYGON_OFFSET_FILL:  State::Polygon::offsetFill    = enabled; break;
-      case GL_POLYGON_OFFSET_LINE:  State::Polygon::offsetLine    = enabled; break;
-      case GL_POLYGON_OFFSET_POINT: State::Polygon::offsetPoint   = enabled; break;
-      default:                                                               break;
+      case GL_DEPTH_TEST:           State::Depth::enable            = enabled; break;
+      case GL_STENCIL_TEST:         State::Stencil::enable          = enabled; break;
+      case GL_CULL_FACE:            State::Polygon::cullEnable      = enabled; break;
+      case GL_POLYGON_SMOOTH:       State::Polygon::smoothEnable    = enabled; break;
+      case GL_POLYGON_STIPPLE:      State::Polygon::stippleEnable   = enabled; break;
+      case GL_POLYGON_OFFSET_FILL:  State::Polygon::offsetFill      = enabled; break;
+      case GL_POLYGON_OFFSET_LINE:  State::Polygon::offsetLine      = enabled; break;
+      case GL_POLYGON_OFFSET_POINT: State::Polygon::offsetPoint     = enabled; break;
+      case GL_NORMALIZE:            State::Transform::normalize     = enabled; break;
+      case GL_RESCALE_NORMAL:       State::Transform::rescaleNormal = enabled; break;
+      case GL_DEPTH_CLAMP:          State::Transform::depthClamp    = enabled; break;
+      default:                                                                 break;
     }
 
-    if (ctx->info->core || ctx->info->gles)
+    if (ctx->info->core || ctx->info->es1 || ctx->info->es2)
     {
       switch( cap )
       {
@@ -242,13 +282,13 @@ struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
 
   bool Enable(RegalContext *ctx, GLenum cap)
   {
-    Internal("RegalPpa::Enable ",Token::toString(cap));
+    Internal("Regal::Ppa::Enable ",Token::toString(cap));
     return SetEnable(ctx, cap, GL_TRUE);
   }
 
   bool Disable(RegalContext * ctx, GLenum cap)
   {
-    Internal("RegalPpa::Disable ",Token::toString(cap));
+    Internal("Regal::Ppa::Disable ",Token::toString(cap));
     return SetEnable(ctx, cap, GL_FALSE);
   }
 
@@ -256,7 +296,10 @@ struct RegalPpa : public RegalEmu, State::Stencil, State::Depth, State::Polygon
   std::vector<State::Depth>   depthStack;
   std::vector<State::Stencil> stencilStack;
   std::vector<State::Polygon> polygonStack;
+  std::vector<State::Transform> transformStack;
 };
+
+}
 
 REGAL_NAMESPACE_END
 

@@ -74,17 +74,28 @@ class shared_map : public shared_ptr< ::std::map<K,V> >
     typedef shared_ptr<map>    parent;
     typedef ::std::size_t      size_type;
 
+    typedef typename ::std::map<K,V>::iterator    iterator;
+    typedef typename ::std::map<K,V>::const_iterator    const_iterator;
+
     inline shared_map()  : parent(new map()) {}
     inline ~shared_map() {}
 
     // Expose std::map API
 
+    inline size_type size() const                { RegalAssert(parent::get()); return parent::get()->size(); }
+
     inline       V &operator[](const K &k)       { RegalAssert(parent::get()); return parent::get()->operator[](k); }
     inline const V &operator[](const K &k) const { RegalAssert(parent::get()); return parent::get()->operator[](k); }
 
-    inline size_type erase( const K &k)          { RegalAssert(parent::get()); return parent::get()->erase(k);      }
+    inline size_type erase(const K &k)           { RegalAssert(parent::get()); return parent::get()->erase(k);      }
+    inline void      erase(iterator p)           { RegalAssert(parent::get()); return parent::get()->erase(p);      }
 
     inline size_type count(const K &k) const     { RegalAssert(parent::get()); return parent::get()->count(k);      }
+
+    inline iterator       find(const K &k)       { RegalAssert(parent::get()); return parent::get()->find(k);      }
+    inline iterator       end()                  { RegalAssert(parent::get()); return parent::get()->end();      }
+    inline const_iterator find(const K &k) const { RegalAssert(parent::get()); return parent::get()->find(k);      }
+    inline const_iterator end() const            { RegalAssert(parent::get()); return parent::get()->end();      }
 };
 
 REGAL_NAMESPACE_END

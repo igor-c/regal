@@ -62,6 +62,7 @@ struct ContextInfo
 ${VERSION_DECLARE}
 
   GLuint maxVertexAttribs;
+  GLuint maxVaryings;
 };
 
 REGAL_NAMESPACE_END
@@ -102,7 +103,8 @@ using namespace ::REGAL_NAMESPACE_INTERNAL::Token;
 ContextInfo::ContextInfo()
 : regal_ext_direct_state_access(false),
 ${VERSION_INIT}
-  maxVertexAttribs(0)
+  maxVertexAttribs(0),
+  maxVaryings(0)
 {
    Internal("ContextInfo::ContextInfo","()");
 }
@@ -141,15 +143,44 @@ ContextInfo::init(const RegalContext &context)
 
   // Detect GL context version
 
-  gles = starts_with(version,"OpenGL ES ");
-  if (gles)
-    sscanf(version.c_str(), "OpenGL ES %d.%d", &gles_version_major, &gles_version_minor);
+  #if REGAL_SYS_ES1
+  es1 = starts_with(version, "OpenGL ES-CM");
+  if (es1)
+  {
+    sscanf(version.c_str(), "OpenGL ES-CM %d.%d", &gles_version_major, &gles_version_minor);
+  }
   else
-    sscanf(version.c_str(), "%d.%d", &gl_version_major, &gl_version_minor);
+  #endif
+  {
+    #if REGAL_SYS_ES2
+    es2 = starts_with(version,"OpenGL ES ");
+    if (es2)
+    {
+      sscanf(version.c_str(), "OpenGL ES %d.%d", &gles_version_major, &gles_version_minor);
+    }
+    else
+    #endif
+    {
+      sscanf(version.c_str(), "%d.%d", &gl_version_major, &gl_version_minor);
+    }
+  }
+
+  // For Mesa3D EGL/ES 2.0 on desktop Linux the version string doesn't start with
+  // "OpenGL ES" Is that a Mesa3D bug? Perhaps...
+
+  #if REGAL_SYS_ES2 && REGAL_SYS_EGL && !REGAL_SYS_ANDROID
+  if (Regal::Config::sysEGL)
+  {
+    es1 = false;
+    es2 = true;
+    gles_version_major = 2;
+    gles_version_minor = 0;
+  }
+  #endif
 
   // Detect core context
 
-  if (!gles && gl_version_major>=3)
+  if (!es1 && !es2 && gl_version_major>=3)
   {
     GLint flags = 0;
     RegalAssert(context.dispatcher.driver.glGetIntegerv);
@@ -157,18 +188,34 @@ ContextInfo::init(const RegalContext &context)
     core = flags & GL_CONTEXT_CORE_PROFILE_BIT ? GL_TRUE : GL_FALSE;
   }
 
-  compat = !core && !gles;
+  compat = !core && !es1 && !es2;
 
-  #if REGAL_FORCE_CORE_PROFILE
-  compat = false;
-  core   = true;
-  gles   = false;
+  if (REGAL_FORCE_CORE_PROFILE || Config::forceCoreProfile)
+  {
+    compat = false;
+    core   = true;
+    es1    = false;
+    es2    = false;
+  }
+
+  #if REGAL_SYS_ES1
+  if (REGAL_FORCE_ES1_PROFILE || Config::forceES1Profile)
+  {
+    compat = false;
+    core   = false;
+    es1    = true;
+    es2    = false;
+  }
   #endif
 
-  #if REGAL_FORCE_ES2_PROFILE
-  compat = false;
-  core   = false;
-  gles   = true;
+  #if REGAL_SYS_ES2
+  if (REGAL_FORCE_ES2_PROFILE || Config::forceES2Profile)
+  {
+    compat = false;
+    core   = false;
+    es1    = false;
+    es2    = true;
+  }
   #endif
 
   // Detect driver extensions
@@ -280,14 +327,23 @@ ${VERSION_DETECT}
 ${EXT_INIT}
 
   RegalAssert(context.dispatcher.driver.glGetIntegerv);
-  context.dispatcher.driver.glGetIntegerv( GL_MAX_VERTEX_ATTRIBS, reinterpret_cast<GLint *>(&maxVertexAttribs));
+  if (!es1)
+  {
+    context.dispatcher.driver.glGetIntegerv( GL_MAX_VERTEX_ATTRIBS, reinterpret_cast<GLint *>(&maxVertexAttribs));
+    context.dispatcher.driver.glGetIntegerv( es2 ? GL_MAX_VARYING_VECTORS : GL_MAX_VARYING_FLOATS, reinterpret_cast<GLint *>(&maxVaryings));
+  }
 
-  if (maxVertexAttribs > REGAL_MAX_VERTEX_ATTRIBS)
-      maxVertexAttribs = REGAL_MAX_VERTEX_ATTRIBS;
+  Info("OpenGL v attribs : ",maxVertexAttribs);
+  Info("OpenGL varyings  : ",maxVaryings);
+
+  if (maxVertexAttribs > REGAL_EMU_IFF_VERTEX_ATTRIBS)
+      maxVertexAttribs = REGAL_EMU_IFF_VERTEX_ATTRIBS;
 
   // Qualcomm fails with float4 attribs with 256 byte stride, so artificially limit to 8 attribs
   if (vendor == "Qualcomm" || vendor == "Chromium")
     maxVertexAttribs = 8;
+
+  Info("Regal  v attribs : ",maxVertexAttribs);
 }
 
 ${EXT_CODE}
@@ -313,7 +369,14 @@ def traverseContextInfo(apis, args):
     c.update([i.category for i in api.functions])
     c.update([i.category for i in api.typedefs])
     c.update([i.category for i in api.enums])
+
+    for i in api.enums:
+      c.update([j.category for j in i.enumerants])
+
     api.categories = [i for i in c if i and len(i) and i.find('_VERSION_')==-1 and i.find('WGL_core')==-1]
+
+    if api.name == 'egl':
+      api.categories = [i for i in api.categories if not i.startswith('GL_')]
 
 def versionDeclareCode(apis, args):
 
@@ -324,7 +387,8 @@ def versionDeclareCode(apis, args):
     if name == 'gl':
       code += '  GLboolean compat : 1;\n'
       code += '  GLboolean core   : 1;\n'
-      code += '  GLboolean gles   : 1;\n\n'
+      code += '  GLboolean es1    : 1;\n'
+      code += '  GLboolean es2    : 1;\n\n'
 
     if name in ['gl', 'glx', 'egl']:
       code += '  GLint     %s_version_major;\n' % name
@@ -365,9 +429,10 @@ def versionInitCode(apis, args):
     if name == 'gl':
       code += '  compat(false),\n'
       code += '  core(false),\n'
-      code += '  gles(false),\n'
+      code += '  es1(false),\n'
+      code += '  es2(false),\n'
 
-    if name in ['gl', 'glx']:
+    if name in ['gl', 'glx', 'egl']:
       code += '  %s_version_major(-1),\n' % name
       code += '  %s_version_minor(-1),\n' % name
 
@@ -404,7 +469,7 @@ def versionDetectCode(apis, args):
     indent = ''
     if api.name=='gl':
       indent = '  '
-      code += '  if (!gles)\n  {\n'
+      code += '  if (!es1 && !es2)\n  {\n'
 
     for i in range(len(api.versions)):
       version = api.versions[i]
@@ -501,7 +566,7 @@ def generateContextInfoHeader(apis, args):
     substitute['COPYRIGHT']       = args.copyright
     substitute['HEADER_NAME']     = "REGAL_CONTEXT_INFO"
     substitute['VERSION_DECLARE'] = versionDeclareCode(apis,args)
-    outputCode( '%s/RegalContextInfo.h' % args.outdir, contextInfoHeaderTemplate.substitute(substitute))
+    outputCode( '%s/RegalContextInfo.h' % args.srcdir, contextInfoHeaderTemplate.substitute(substitute))
 
 def generateContextInfoSource(apis, args):
 
@@ -513,4 +578,4 @@ def generateContextInfoSource(apis, args):
     substitute['VERSION_DETECT'] = versionDetectCode(apis,args)
     substitute['EXT_INIT']       = extensionStringCode(apis,args)
     substitute['EXT_CODE']       = getExtensionCode(apis,args)
-    outputCode( '%s/RegalContextInfo.cpp' % args.outdir, contextInfoSourceTemplate.substitute(substitute))
+    outputCode( '%s/RegalContextInfo.cpp' % args.srcdir, contextInfoSourceTemplate.substitute(substitute))

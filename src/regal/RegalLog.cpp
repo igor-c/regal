@@ -40,18 +40,19 @@ REGAL_GLOBAL_BEGIN
 #include <boost/print/string_list.hpp>
 
 #include "RegalLog.h"
+#include "RegalJson.h"
 #include "RegalTimer.h"
 #include "RegalMarker.h"
 #include "RegalThread.h"
 #include "RegalContext.h"
 
-#ifndef REGAL_SYS_WGL
+#if !(REGAL_SYS_WGL || (REGAL_SYS_PPAPI && !defined(__native_client__)))
 #include <pthread.h>
 #endif
 
 // Otherwise we'd need to #include <windows.h>
 
-#ifdef REGAL_SYS_WGL
+#if defined(_WIN32) && !defined(__native_client__)
 extern "C"
 {
   __declspec(dllimport) void __stdcall OutputDebugStringA( __in_opt const char* lpOutputString);
@@ -66,14 +67,14 @@ REGAL_GLOBAL_END
 
 REGAL_NAMESPACE_BEGIN
 
-using namespace ::std;
-
+using ::std::string;
+using ::std::list;
 using ::boost::print::trim;
 using ::boost::print::print_string;
 
 using namespace ::boost::print;
 
-typedef boost::print::string_list<string> string_list;
+typedef string_list<string> string_list;
 
 namespace Logging {
 
@@ -86,7 +87,10 @@ namespace Logging {
   bool enableHttp     = true;
 
   int  maxLines  = (REGAL_LOG_MAX_LINES);
+  int  maxBytes  = (REGAL_LOG_MAX_BYTES);
   bool frameTime = false;
+  bool pointers  = (REGAL_LOG_POINTERS);
+  bool thread    = false;
   bool callback  = (REGAL_LOG_CALLBACK);
 
   bool         log          = (REGAL_LOG);
@@ -103,60 +107,91 @@ namespace Logging {
 
   bool initialized = false;
 
+#if REGAL_LOG_ONCE
+  bool once      = (REGAL_LOG_ONCE);
+  std::set<std::string> uniqueErrors;
+  std::set<std::string> uniqueWarnings;
+#endif
+
   Timer                   timer;
 
   void Init()
   {
 #ifndef REGAL_NO_GETENV
+    const char *tmp;
 
-    const char *error    = GetEnv("REGAL_LOG_ERROR");
-    const char *warning  = GetEnv("REGAL_LOG_WARNING");
-    const char *info     = GetEnv("REGAL_LOG_INFO");
-    const char *app      = GetEnv("REGAL_LOG_APP");
-    const char *driver   = GetEnv("REGAL_LOG_DRIVER");
-    const char *internal = GetEnv("REGAL_LOG_INTERNAL");
-    const char *http     = GetEnv("REGAL_LOG_HTTP");
+    tmp = GetEnv("REGAL_LOG_ERROR");
+    if (tmp) enableError = atoi(tmp)!=0;
 
-    if (error)    enableError    = atoi(error)!=0;
-    if (warning)  enableWarning  = atoi(warning)!=0;
-    if (info)     enableInfo     = atoi(info)!=0;
-    if (app)      enableApp      = atoi(app)!=0;
-    if (driver)   enableDriver   = atoi(driver)!=0;
-    if (internal) enableInternal = atoi(internal)!=0;
-    if (http)     enableHttp     = atoi(http)!=0;
+    tmp = GetEnv("REGAL_LOG_WARNING");
+    if (tmp) enableWarning = atoi(tmp)!=0;
 
-    const char *api = GetEnv("REGAL_LOG_API");
-    const char *all = GetEnv("REGAL_LOG_ALL");
+    tmp = GetEnv("REGAL_LOG_INFO");
+    if (tmp) enableInfo = atoi(tmp)!=0;
 
-    if (api && atoi(api))
-      enableApp = enableDriver = true;
+    tmp = GetEnv("REGAL_LOG_APP");
+    if (tmp) enableApp = atoi(tmp)!=0;
 
-    if (all && atoi(all))
-      enableError = enableWarning = enableInfo = enableApp = enableDriver = enableInternal = enableHttp = true;
+    tmp = GetEnv("REGAL_LOG_DRIVER");
+    if (tmp) enableDriver = atoi(tmp)!=0;
 
-    const char *ml = GetEnv("REGAL_LOG_MAX_LINES");
-    if (ml) maxLines = atoi(ml);
+    tmp = GetEnv("REGAL_LOG_INTERNAL");
+    if (tmp) enableInternal = atoi(tmp)!=0;
 
-    const char *tmp = GetEnv("REGAL_FRAME_TIME");
+    tmp = GetEnv("REGAL_LOG_HTTP");
+    if (tmp) enableHttp = atoi(tmp)!=0;
+
+    //
+
+    tmp = GetEnv("REGAL_LOG_API");
+    if (tmp && atoi(tmp)) enableApp = enableDriver = true;
+
+    tmp = GetEnv("REGAL_LOG_ALL");
+    if (tmp && atoi(tmp)) enableError = enableWarning = enableInfo = enableApp = enableDriver = enableInternal = enableHttp = true;
+
+    //
+
+    tmp = GetEnv("REGAL_LOG_MAX_LINES");
+    if (tmp) maxLines = atoi(tmp);
+
+    tmp = GetEnv("REGAL_LOG_MAX_BYTES");
+    if (tmp) maxBytes = atoi(tmp);
+
+#if REGAL_LOG_ONCE
+    tmp = GetEnv("REGAL_LOG_ONCE");
+    if (tmp) once = atoi(tmp)!=0;
+#endif
+
+    tmp = GetEnv("REGAL_FRAME_TIME");
     if (tmp) frameTime = atoi(tmp)!=0;
 
-    const char *cb = GetEnv("REGAL_LOG_CALLBACK");
-    if (cb) callback = atoi(cb)!=0;
+#if REGAL_LOG_POINTERS
+    tmp = GetEnv("REGAL_LOG_POINTERS");
+    if (tmp) pointers = atoi(tmp)!=0;
+#endif
 
-    const char *rl = GetEnv("REGAL_LOG");
-    if (rl) log = atoi(rl)!=0;
+#if REGAL_LOG_THREAD
+    tmp = GetEnv("REGAL_LOG_THREAD");
+    if (tmp) thread = atoi(tmp)!=0;
+#endif
 
-    const char *rlf = GetEnv("REGAL_LOG_FILE");
-    if (rlf) logFilename = rlf;
+    tmp = GetEnv("REGAL_LOG_CALLBACK");
+    if (tmp) callback = atoi(tmp)!=0;
 
-    const char *js = GetEnv("REGAL_LOG_JSON");
-    if (js) json = atoi(js)!=0;
+    tmp = GetEnv("REGAL_LOG");
+    if (tmp) log = atoi(tmp)!=0;
 
-    const char *jf = GetEnv("REGAL_LOG_JSON_FILE");
-    if (jf) jsonFilename = jf;
+    tmp =  GetEnv("REGAL_LOG_FILE");
+    if (tmp) logFilename = tmp;
 
-    const char *bl = GetEnv("REGAL_HTTP_LOG_LIMIT");
-    if (bl) bufferLimit = atoi(bl);
+    tmp = GetEnv("REGAL_LOG_JSON");
+    if (tmp) json = atoi(tmp)!=0;
+
+    tmp = GetEnv("REGAL_LOG_JSON_FILE");
+    if (tmp) jsonFilename = tmp;
+
+    tmp = GetEnv("REGAL_HTTP_LOG_LIMIT");
+    if (tmp) bufferLimit = atoi(tmp);
 #endif
 
 #ifdef REGAL_HTTP_LOG_LIMIT
@@ -183,6 +218,10 @@ namespace Logging {
     Internal("Logging::Init","()");
 
     initialized = true;
+
+#if REGAL_LOG
+    Info("REGAL_LOG          ", log            ? "enabled" : "disabled");
+#endif
 
 #if REGAL_LOG_ERROR
     Info("REGAL_LOG_ERROR    ", enableError    ? "enabled" : "disabled");
@@ -213,10 +252,6 @@ namespace Logging {
 #endif
 
 #if REGAL_LOG_JSON
-    Info("REGAL_LOG          ", log            ? "enabled" : "disabled");
-#endif
-
-#if REGAL_LOG_JSON
     Info("REGAL_LOG_JSON     ", json           ? "enabled" : "disabled");
 #endif
 
@@ -226,6 +261,18 @@ namespace Logging {
 
 #if REGAL_LOG_STDOUT
     Info("REGAL_LOG_STDOUT   ", stdOut         ? "enabled" : "disabled");
+#endif
+
+#if REGAL_LOG_ONCE
+    Info("REGAL_LOG_ONCE     ", once           ? "enabled" : "disabled");
+#endif
+
+#if REGAL_LOG_POINTERS
+    Info("REGAL_LOG_POINTERS ", pointers       ? "enabled" : "disabled");
+#endif
+
+#if REGAL_LOG_THREAD
+    Info("REGAL_LOG_THREAD   ", thread         ? "enabled" : "disabled");
 #endif
   }
 
@@ -245,33 +292,82 @@ namespace Logging {
     }
   }
 
+  void
+  writeJSON(Json::Output &jo)
+  {
+    jo.object("logging");
+
+    jo.member("error",     enableError);
+    jo.member("warning",   enableWarning);
+    jo.member("info",      enableInfo);
+    jo.member("app",       enableApp);
+    jo.member("driver",    enableDriver);
+    jo.member("internal",  enableInternal);
+    jo.member("http",      enableHttp);
+
+    jo.member("maxLines",  maxLines);
+    jo.member("maxBytes",  maxBytes);
+
+#if REGAL_LOG_ONCE
+    jo.member("once",      once);
+#endif
+
+    jo.member("frameTime", frameTime);
+    jo.member("pointers",  pointers);
+    jo.member("thread",    thread);
+
+    jo.member("callback",    callback);
+    jo.member("log",         log);
+    jo.member("filename",    logFilename);
+    jo.member("json",        json);
+    jo.member("jsonFile",    jsonFilename);
+    jo.member("bufferLimit", bufferLimit);
+
+    jo.end();
+  }
+
   inline size_t indent()
   {
     // For OSX we need avoid REGAL_GET_CONTEXT implicitly
     // trying to create a RegalContext and triggering more
     // (recursive) logging.
 
-#if !defined(REGAL_SYS_WGL) && !REGAL_NO_TLS
+#if !REGAL_SYS_WGL && !REGAL_NO_TLS
     if (!Thread::currentContextKey || !pthread_getspecific(Thread::currentContextKey))
       return 0;
 #endif
 
     RegalContext *rCtx = REGAL_GET_CONTEXT();
 
+    // Clamp indentation to avoid underflow situation (more pops than pushes)
+    // If size_t depthBeginEnd wraps around to a huge number, we probably won't have
+    // enough RAM for all those spaces...
+
+    const size_t indentMax = size_t(128);
+
     size_t indent = 0;
+
     if (rCtx)
     {
-      indent += (rCtx->depthBeginEnd + rCtx->depthPushAttrib)*2;
-      indent += rCtx->marker ? rCtx->marker->indent() : 0;
+      indent += std::min(indentMax,rCtx->depthBeginEnd  *2);
+      indent += std::min(indentMax,rCtx->depthPushMatrix*2);
+      indent += std::min(indentMax,rCtx->depthPushAttrib*2);
+      indent += std::min(indentMax,rCtx->depthNewList   *2);
+      indent += std::min(indentMax,rCtx->marker ? rCtx->marker->indent() : 0);
     }
+
     return indent;
   }
 
   inline string message(const char *prefix, const char *delim, const char *name, const string &str)
   {
     static const char *trimSuffix = " ...";
-    std::string trimPrefix = print_string(prefix ? prefix : "", delim ? delim : "", string(indent(),' '), name ? name : "", ' ');
-    return print_string(trim(str.c_str(),'\n',maxLines>0 ? maxLines : ~0,trimPrefix.c_str(),trimSuffix), '\n');
+    string_list trimPrefix;
+    trimPrefix << print_string(prefix ? prefix : "",delim ? delim : "");
+    if (thread)
+      trimPrefix << print_string(hex(Thread::threadId()),delim ? delim : "");
+    trimPrefix << print_string(string(indent(),' '),name ? name : "",name ? " " : "");
+    return print_string(trim(str.c_str(),'\n',maxLines>0 ? maxLines : ~0,trimPrefix.str().c_str(),trimSuffix), '\n');
   }
 
   inline string jsonObject(const char *prefix, const char *name, const string &str)
@@ -380,15 +476,44 @@ namespace Logging {
 #define REGAL_LOG_TAG "Regal"
 #endif
 
-  void Output(const char *prefix, const char *delim, const char *name, const string &str)
+  void Output(const Mode mode, const char *file, const int line, const char *prefix, const char *delim, const char *name, const string &str)
   {
     if (initialized && str.length())
     {
       string m = message(prefix,delim,name,str);
 
+      // TODO - optional Regal source line numbers.
+#if 1
+      UNUSED_PARAMETER(file);
+      UNUSED_PARAMETER(line);
+#else
+      m = print_string(file,":",line," ",m);
+#endif
+
+#if REGAL_LOG_ONCE
+      if (once)
+        switch (mode)
+        {
+          case LOG_WARNING:
+            if (uniqueWarnings.find(m)!=uniqueWarnings.end())
+              return;
+            uniqueWarnings.insert(m);
+            break;
+
+          case LOG_ERROR:
+            if (uniqueErrors.find(m)!=uniqueErrors.end())
+              return;
+            uniqueErrors.insert(m);
+            break;
+
+          default:
+            break;
+        }
+#endif
+
       RegalContext *rCtx = NULL;
 
-#if !defined(REGAL_SYS_WGL) && !REGAL_NO_TLS
+#if !REGAL_SYS_WGL && !REGAL_NO_TLS
       if (Thread::currentContextKey && pthread_getspecific(Thread::currentContextKey))
         rCtx = REGAL_GET_CONTEXT();
 #else
@@ -406,7 +531,7 @@ namespace Logging {
       // ANDROID_LOG_INFO
       // ANDROID_LOG_WARN
       // ANDROID_LOG_ERROR
-      __android_log_print(ANDROID_LOG_INFO, REGAL_LOG_TAG, m.c_str());
+      __android_log_write(ANDROID_LOG_INFO, REGAL_LOG_TAG, m.c_str());
 #endif
 
 #if REGAL_LOG_JSON
@@ -420,14 +545,7 @@ namespace Logging {
 #if REGAL_LOG
       if (log && logOutput)
       {
-#if REGAL_SYS_WGL
-        OutputDebugStringA(m.c_str());
-        fprintf(logOutput, "%s", m.c_str());
-        fflush(logOutput);
-#elif REGAL_SYS_ANDROID
-#elif REGAL_SYS_NACL
-        fprintf(logOutput, "%s", m.c_str());
-        fflush(logOutput);
+#if REGAL_SYS_ANDROID
 #else
         fprintf(logOutput, "%s", m.c_str());
         fflush(logOutput);

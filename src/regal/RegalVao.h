@@ -54,8 +54,9 @@ REGAL_NAMESPACE_BEGIN
 
 #define REGAL_VAO_NUM_ARRAYS 16
 
+namespace Emu {
 
-struct RegalVao : public RegalEmu {
+struct Vao : public RegalEmu {
 
     struct Array {
 
@@ -80,20 +81,20 @@ struct RegalVao : public RegalEmu {
         const GLvoid * pointer;
     };
 
-    struct Vao {
-        Vao() : vertexBuffer( 0 ), indexBuffer( 0 ) {}
+    struct Object {
+        Object() : vertexBuffer( 0 ), indexBuffer( 0 ) {}
         GLuint vertexBuffer;
         GLuint indexBuffer;
         Array a[ REGAL_VAO_NUM_ARRAYS ];
     };
 
-    shared_map<GLuint, Vao> objects;
+    shared_map<GLuint, Object> objects;
 
     GLenum clientActiveTexture;
 
     GLuint current;
     GLuint enables;
-    Vao * currVao;
+    Object * currObject;
 
     GLuint coreVao;
     GLuint maxName;
@@ -156,16 +157,16 @@ struct RegalVao : public RegalEmu {
             ctx.dispatcher.driver.glBindVertexArray( coreVao );
         }
         current = 9999999; // this is only to force the bind...
-        currVao = NULL;
+        currObject = NULL;
         BindVertexArray( &ctx, 0 );
     }
 
     void ShadowBufferBinding( GLenum target, GLuint bufferBinding ) {
-        RegalAssert( currVao != NULL );
+        RegalAssert( currObject != NULL );
         if( target == GL_ARRAY_BUFFER ) {
-            currVao->vertexBuffer = bufferBinding;
+            currObject->vertexBuffer = bufferBinding;
         } else if( target == GL_ELEMENT_ARRAY_BUFFER ) {
-            currVao->indexBuffer = bufferBinding;
+            currObject->indexBuffer = bufferBinding;
         }
     }
 
@@ -176,8 +177,8 @@ struct RegalVao : public RegalEmu {
 
         current = name;
 
-        Vao & vao = objects[current]; // force VAO construction
-        currVao = & vao;
+        Object & vao = objects[current]; // force VAO construction
+        currObject = & vao;
         if( maxName < current ) {
             maxName = current;
         }
@@ -299,7 +300,7 @@ struct RegalVao : public RegalEmu {
             case GL_UNSIGNED_SHORT:
             case GL_INT:
             case GL_UNSIGNED_INT:
-			case GL_HALF_FLOAT:
+            case GL_HALF_FLOAT:
             case GL_FLOAT:
             case GL_DOUBLE:
                 break;
@@ -309,8 +310,8 @@ struct RegalVao : public RegalEmu {
                     return;
                 break;
             default:
-				RegalAssert( "Unknown <type> in for attrib." );
-                return;
+              RegalAssert( "Unknown <type> in for attrib." );
+              return;
         }
 
         if (size == GL_BGRA && normalized == GL_FALSE) {
@@ -334,9 +335,9 @@ struct RegalVao : public RegalEmu {
             return;
         }
         RegalAssert( index < maxVertexAttribs );
-        RegalAssert( currVao != NULL );
+        RegalAssert( currObject != NULL );
         Array & a = objects[current].a[index];
-        a.buffer = currVao->vertexBuffer;
+        a.buffer = currObject->vertexBuffer;
         a.size = size;
         a.type = type;
         a.normalized = normalized;
@@ -350,10 +351,10 @@ struct RegalVao : public RegalEmu {
 
     void Validate( RegalContext * ctx ) {
         UNUSED_PARAMETER(ctx);
-        RegalAssert( currVao != NULL );
+        RegalAssert( currObject != NULL );
         for( GLuint i = 0; i < maxVertexAttribs; i++ ) {
-#if !defined(REGAL_NO_ASSERT)
-            const Array &a = currVao->a[ i ];
+#if !REGAL_NO_ASSERT
+            const Array &a = currObject->a[ i ];
             RegalAssert( !( a.enabled && a.buffer == 0 && GLuint64( a.pointer ) < 1024 ) );
 #endif
         }
@@ -406,11 +407,11 @@ struct RegalVao : public RegalEmu {
                 break;
 
             case GL_ARRAY_BUFFER_BINDING:
-                *params = static_cast<T>(currVao->vertexBuffer);
+                *params = static_cast<T>(currObject->vertexBuffer);
                 break;
 
             case GL_ELEMENT_ARRAY_BUFFER_BINDING:
-                *params = static_cast<T>(currVao->indexBuffer);
+                *params = static_cast<T>(currObject->indexBuffer);
                 break;
 
             default:
@@ -912,8 +913,9 @@ struct RegalVao : public RegalEmu {
         ShadowEnableDisableClientState( ctx, GL_VERTEX_ARRAY, GL_TRUE );
         VertexPointer(ctx, size, GL_FLOAT, stride, pointerv);
     }
-
 };
+
+}
 
 REGAL_NAMESPACE_END
 

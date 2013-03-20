@@ -10,21 +10,32 @@
 # this script downloads, patches, and builds ffmpeg for Native Client 
 #
 
+set -e
+
 readonly PACKAGE_NAME=regal
-export NACL_GLIBC=1
-export NACL_PACKAGES_BITSIZE=64
 
-source ./build/nacl/common.sh
+NACL_GLIBC=${NACL_GLIBC:=0}
 
-export CC=${NACLCC}
-export CXX=${NACLCXX}
-export LD=${NACLLD}
-export AR=${NACLAR}
-export STRIP=${NACLSTRIP}
-export RANLIB=${NACLRANLIB}
-export PKG_CONFIG_PATH=${NACL_SDK_USR_LIB}/pkgconfig
-export PKG_CONFIG_LIBDIR=${NACL_SDK_USR_LIB}
-export FREETYPE_CONFIG=${NACL_SDK_USR_BIN}/freetype-config
-export PATH=${NACL_BIN_PATH}:${PATH};
+if [ ${NACL_GLIBC} == 1 ]; then
+    LIBC=glibc
+else
+    LIBC=newlib
+fi
 
-exec make -f Makefile SYSTEM=nacl-${NACL_PACKAGES_BITSIZE} $*
+OSNAME=linux
+
+X86_BIN_DIR=${NACL_SDK_ROOT}/toolchain/${OSNAME}_x86_${LIBC}/bin
+ARM_BIN_DIR=${NACL_SDK_ROOT}/toolchain/${OSNAME}_arm_newlib/bin
+
+export NACL_GLIBC
+export NACL_ARCH
+export PATH=${PATH}:${X86_BIN_DIR}:${ARM_BIN_DIR}
+
+echo "Building x86_64"
+make -f Makefile SYSTEM=nacl-x86_64 $*
+echo "Building i686"
+make -f Makefile SYSTEM=nacl-i686 $*
+
+unset NACL_GLIBC
+echo "Building ARM"
+make -f Makefile SYSTEM=nacl-arm $*

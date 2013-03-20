@@ -44,9 +44,9 @@
 
 REGAL_GLOBAL_BEGIN
 
-#include <assert.h>
+#include <GL/Regal.h>
 
-#include "RegalPrivate.h"  // not required, but I think it may help syntax highlighting and auto-completion...
+#include <cassert>
 
 REGAL_GLOBAL_END
 

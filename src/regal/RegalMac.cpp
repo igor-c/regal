@@ -33,9 +33,11 @@
 
 #include "RegalUtil.h"
 
+#if REGAL_SYS_OSX
+
 REGAL_GLOBAL_BEGIN
 
-#ifdef __APPLE__
+#include "RegalMac.h"
 
 #include <stdio.h>
 
@@ -51,6 +53,101 @@ CALL( CGLAreContextsShared )
 CALL( CGLSetPBufferVolatileState )
 CALL( CGLOpenCLMuxLockDown )
 
-#endif // __APPLE__
-
 REGAL_GLOBAL_END
+
+REGAL_NAMESPACE_BEGIN
+
+namespace Mac {
+
+  static int AttributeArgs(CGLPixelFormatAttribute a)
+  {
+    switch( a )
+    {
+      case kCGLPFAColorSize:
+      case kCGLPFAAlphaSize:
+      case kCGLPFADepthSize:
+      case kCGLPFAStencilSize:
+      case kCGLPFAAccumSize:
+      case kCGLPFASampleBuffers:
+      case kCGLPFASamples:
+      case kCGLPFARendererID:
+      case kCGLPFADisplayMask:
+      case kCGLPFAOpenGLProfile:
+      case kCGLPFAVirtualScreenCount:
+        return 1;
+      case kCGLPFAAllRenderers:
+      case kCGLPFADoubleBuffer:
+      case kCGLPFAStereo:
+      case kCGLPFAAuxBuffers:
+      case kCGLPFAMinimumPolicy:
+      case kCGLPFAMaximumPolicy:
+      case kCGLPFAOffScreen:
+      case kCGLPFAFullScreen:
+      case kCGLPFAAuxDepthStencil:
+      case kCGLPFAColorFloat:
+      case kCGLPFAMultisample:
+      case kCGLPFASupersample:
+      case kCGLPFASampleAlpha:
+      case kCGLPFASingleRenderer:
+      case kCGLPFANoRecovery:
+      case kCGLPFAAccelerated:
+      case kCGLPFAClosestPolicy:
+        //case kCGLPFARobust:
+      case kCGLPFABackingStore:
+        //case kCGLPFAMPSafe:
+      case kCGLPFAWindow:
+        //case kCGLPFAMultiScreen:
+      case kCGLPFACompliant:
+      case kCGLPFAPBuffer:
+      case kCGLPFARemotePBuffer:
+      case kCGLPFAAllowOfflineRenderers:
+      case kCGLPFAAcceleratedCompute:
+      default:
+        break;
+    }
+    return 0;
+  }
+
+  CGLPixelFormatAttribute *forceCoreAttribs(const CGLPixelFormatAttribute *attribs)
+  {
+    CGLPixelFormatAttribute *nattribs = NULL;
+    int attrcount = 0;
+    bool hasProfile = false;
+    while (attribs[attrcount])
+    {
+      CGLPixelFormatAttribute a = attribs[attrcount];
+      if ( a == kCGLPFAOpenGLProfile )
+        hasProfile = true;
+      attrcount += AttributeArgs( a ) + 1;
+    }
+    nattribs = new CGLPixelFormatAttribute[ attrcount + (hasProfile ? 0 : 2 ) + 1 ];
+    int profileIdx = -1;
+    for (int i = 0; i < attrcount; i++ )
+    {
+      nattribs[i] = attribs[i];
+      if ( AttributeArgs( attribs[i] ) )
+      {
+        i++;
+        nattribs[i] = attribs[i];
+        if ( hasProfile && attribs[i-1] == kCGLPFAOpenGLProfile )
+        {
+          profileIdx = i;
+          nattribs[i] = (CGLPixelFormatAttribute) 0x3200;
+        }
+        if ( attribs[i-1] == kCGLPFAAuxBuffers || attribs[i-1] == kCGLPFAAccumSize )
+          nattribs[i] = (CGLPixelFormatAttribute)0;
+      }
+    }
+    if (!hasProfile)
+    {
+      nattribs[ attrcount + 0 ] = kCGLPFAOpenGLProfile;
+      nattribs[ attrcount + 1] = (CGLPixelFormatAttribute)0x3200;
+    }
+    nattribs[ attrcount + ( hasProfile ? 0 : 2 ) ] = (CGLPixelFormatAttribute) 0;
+    return nattribs;
+  }
+}
+
+REGAL_NAMESPACE_END
+
+#endif // REGAL_SYS_OSX

@@ -86,7 +86,7 @@ ppcFormulae = {
         ]
     },
     'GetIndexed' : {
-        'entries' : [ 'glGet(Boolean|Double|Float|Integer|Integer64)i_v' ],
+        'entries' : [ 'glGet(Boolean|Double|Float|Integer|Integer64)i_v(EXT|)' ],
         'impl' : [
             'if ( !rCtx->ppc->GetIndexed( ${arg0plus} ) ) {',
             '   rCtx->dispatcher.emulation.glGet${m1}i_v( ${arg0plus} );',
@@ -124,7 +124,7 @@ ppcFormulae = {
         ]
     },
     'GetVertexAttribPointerv' : {
-        'entries' : [ 'glGetVertexAttribPointerv(ARB|)' ],
+        'entries' : [ 'glGetVertexAttribPointerv(ARB|EXT|)' ],
         'impl' : [
             'if ( !rCtx->ppc->GetVertexAttribPointerv( ${arg0plus} ) ) {',
             '   rCtx->dispatcher.emulation.glGetVertexAttribPointerv${m1}( ${arg0plus} );',

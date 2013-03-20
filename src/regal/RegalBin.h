@@ -48,7 +48,9 @@ REGAL_GLOBAL_END
 
 REGAL_NAMESPACE_BEGIN
 
-struct RegalBin : public RegalEmu
+namespace Emu {
+
+struct Bin : public RegalEmu
 {
   void Init( RegalContext &ctx )
   {
@@ -62,6 +64,8 @@ struct RegalBin : public RegalEmu
   }
 };
 
+}
+
 REGAL_NAMESPACE_END
 
-#endif // ! __REGAL_VAO_H__
+#endif // ! __REGAL_BIN_H__

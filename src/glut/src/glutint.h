@@ -29,6 +29,8 @@
 
 #include <GL/RegalGLUT.h>
 
+#ifndef __APPLE__
+
 #ifndef _WIN32
 /* added by BrianP: */
 #ifndef APIENTRY
@@ -624,7 +626,11 @@ extern GLboolean __glutTryDirect;
 extern Window __glutRoot;
 extern XSizeHints __glutSizeHints;
 extern char **__glutArgv;
+#endif __APPLE__
+
 extern char *__glutProgramName;
+
+#ifndef __APPLE__
 extern int __glutArgc;
 extern int __glutConnectionFD;
 extern int __glutInitHeight;
@@ -718,11 +724,15 @@ extern void __glutFinishMenu(Window win, int x, int y);
 #endif
 extern void __glutSetMenu(GLUTmenu * menu);
 
+#endif // __APPLE__
+
 /* private routines from glut_util.c */
 extern char * __glutStrdup(const char *string);
 extern void __glutWarning(char *format,...);
 extern void __glutFatalError(char *format,...);
 extern void __glutFatalUsage(char *format,...);
+
+#ifndef __APPLE__
 
 /* private routines from glut_win.c */
 extern GLUTwindow *__glutGetWindow(Window win);
@@ -791,5 +801,6 @@ extern LONG WINAPI __glutWindowProc(HWND win, UINT msg, WPARAM w, LPARAM l);
 extern HDC XHDC;
 #endif
 
+#endif __APPLE__
 
 #endif /* __glutint_h__ */

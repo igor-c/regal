@@ -29,13 +29,17 @@ template<typename T> detail::binary<T> binary(const T &val) { return detail::bin
 template<typename T> detail::octal<T>  octal(const T &val)  { return detail::octal<T>(val); }
 template<typename T> detail::hex<T>    hex(const T &val, const bool upperCase = false) { return detail::hex<T>(val,upperCase); }
 
+inline               detail::pad<char>     pad   (              const size_t width) { return detail::pad<char>(width,' '); }
 template<typename T> detail::left<T,char>  left  (const T &val, const size_t width) { return detail::left<T,char>(val,width,' '); }
 template<typename T> detail::right<T,char> right (const T &val, const size_t width) { return detail::right<T,char>(val,width,' '); }
 
+template<            typename C> detail::pad<C>      pad   (              const size_t width, const C padding) { return detail::pad<C>(width,padding); }
 template<typename T, typename C> detail::left<T,C>   left  (const T &val, const size_t width, const C padding) { return detail::left<T,C>(val,width,padding); }
 template<typename T, typename C> detail::right<T,C>  right (const T &val, const size_t width, const C padding) { return detail::right<T,C>(val,width,padding); }
 
 template<typename T, typename C> detail::quote<T,C>  quote (const T &val, const C q) { return detail::quote<T,C>(val,q); }
+
+template<typename T>             detail::optional<T> optional(const T &val, const bool enabled) { return detail::optional<T>(val, enabled); }
 
 template<typename T>
 detail::array<T,const char * const> array(const T *data, const std::size_t size)
@@ -59,6 +63,26 @@ detail::array<T,const char * const> array(const T *data, const std::size_t size,
 template<typename T,typename U>
 detail::array<T,U> array(const T *data, const std::size_t size, const U &quote, const U &open, const U &close, const U &delim)
 { return detail::array<T,U>(data,size,quote,open,close,delim); }
+
+inline
+detail::raw<const char * const> raw(const void *data, const std::size_t size)
+{
+  static const char * const quote = "";
+  static const char * const open  = "[ ";
+  static const char * const close = " ]";
+  static const char * const delim = " ";
+  return detail::raw<const char * const>(data,size,quote,open,close,delim);
+}
+
+template<typename T>
+detail::raw<const char * const> raw(const T *data, const std::size_t size)
+{
+  static const char * const quote = "";
+  static const char * const open  = "[ ";
+  static const char * const close = " ]";
+  static const char * const delim = " ";
+  return detail::raw<const char * const>(static_cast<const void *>(data),size,quote,open,close,delim);
+}
 
 template<typename T>
 detail::iterator<T,const char * const> iterator(const T &begin, const T &end)
@@ -99,31 +123,36 @@ detail::trim<T,U> trim(const T &str, const U delim, const std::size_t n, const T
 
 namespace boost { namespace print { namespace extend {
 
-using std::size_t;
-using std::strlen;
+using ::std::size_t;
+using ::std::strlen;
 
-using boost::print::detail::binary;
-using boost::print::detail::octal;
-using boost::print::detail::hex;
-using boost::print::detail::left;
-using boost::print::detail::right;
-using boost::print::detail::quote;
-using boost::print::detail::array;
-using boost::print::detail::iterator;
-using boost::print::detail::trim;
+using ::boost::print::detail::binary;
+using ::boost::print::detail::octal;
+using ::boost::print::detail::hex;
+using ::boost::print::detail::pad;
+using ::boost::print::detail::left;
+using ::boost::print::detail::right;
+using ::boost::print::detail::quote;
+using ::boost::print::detail::optional;
+using ::boost::print::detail::array;
+using ::boost::print::detail::raw;
+using ::boost::print::detail::iterator;
+using ::boost::print::detail::trim;
 
-using boost::print::detail::signed_length;
-using boost::print::detail::unsigned_length;
-using boost::print::detail::sprintf_length;
-using boost::print::detail::write_signed;
-using boost::print::detail::write_unsigned;
-using boost::print::detail::write_sprintf;
-using boost::print::detail::write_binary;
-using boost::print::detail::write_octal;
-using boost::print::detail::write_hex;
-using boost::print::detail::write_iterator;
+using ::boost::print::detail::signed_length;
+using ::boost::print::detail::unsigned_length;
+using ::boost::print::detail::sprintf_length;
+using ::boost::print::detail::write_signed;
+using ::boost::print::detail::write_unsigned;
+using ::boost::print::detail::write_sprintf;
+using ::boost::print::detail::write_binary;
+using ::boost::print::detail::write_octal;
+using ::boost::print::detail::write_hex;
+using ::boost::print::detail::write_iterator;
 
 // Determine the length (number of characters) for various types
+
+inline size_t length(bool               val) { return val ? 4 : 5; /* true or false */ }
 
 inline size_t length(unsigned char      val) { return unsigned_length(val); }
 inline size_t length(unsigned short     val) { return unsigned_length(val); }
@@ -199,19 +228,30 @@ inline size_t length(const hex<unsigned long long> &) { return sizeof(unsigned l
 
 inline size_t length(const void *) { return (sizeof(void *)<<1); }
 
+// Pad
+
+template<typename C> size_t length(const pad<C> &val) { return val._width; }
+
 // Left and right
 
-template<typename T, typename C> size_t length(const left<T,C>  &val) { return std::max(length(*val._val),val._width); }
-template<typename T, typename C> size_t length(const right<T,C> &val) { return std::max(length(*val._val),val._width); }
+template<typename T, typename C> size_t length(const left<T,C>   &val) { return std::max(length(*val._val),val._width); }
+template<typename T, typename C> size_t length(const right<T,C>  &val) { return std::max(length(*val._val),val._width); }
 
 // Quoting
 
-template<typename T, typename C> size_t length(const quote<T,C> &val) { return length(*val._val) + 2*length(val._q); }
+template<typename T, typename C> size_t length(const quote<T,C>  &val) { return *val._val ? length(*val._val) + 2*length(val._q) : 4; /* NULL */ }
+
+// Optional
+
+template<typename T>             size_t length(const optional<T> &val) { return val._enabled ? length(val._val) : 0; }
 
 // Array
 
 template<typename T, typename U> size_t length(const array<T,U> &val)
 {
+  if (!val._data)
+      return 4;   // NULL
+
   size_t len = length(val._open) + length(val._close) + length(val._quote)*val._size*2;
 
   if (val._size)
@@ -224,6 +264,24 @@ template<typename T, typename U> size_t length(const array<T,U> &val)
   }
 
   return len;
+}
+
+// Raw
+
+template<typename U> size_t length(const raw<U> &val)
+{
+  if (val._data)
+  {
+    const size_t words = (val._size+3)/4;
+    size_t len = length(val._open) + length(val._close);
+    len += length(val._quote)*2*words;
+    len += val._size*2;
+    if (words>1)
+      len += (words-1)*length(val._delim);
+    return len;
+  }
+
+  return 4; // NULL
 }
 
 // Iterator
@@ -274,6 +332,8 @@ template<typename T, typename U> size_t length(const trim<T,U> &val)
 }
 
 // Write to a std::string (or similar) for various types
+
+template<typename Iterator> inline void write(Iterator &i, const bool           val) { if (val) { *(i++) = 't'; *(i++) = 'r'; *(i++) = 'u'; *(i++) = 'e'; } else { *(i++) = 'f'; *(i++) = 'a'; *(i++) = 'l'; *(i++) = 's'; *(i++) = 'e'; } }
 
 template<typename Iterator> inline void write(Iterator &i, const char           val) { *i = val; ++i; }
 
@@ -392,10 +452,19 @@ template<typename Iterator> inline void write(Iterator &i, const void *val)
   write_hex(i,reinterpret_cast<size_t>(val),sizeof(size_t)<<1,false);
 }
 
+// Pad
+
+template<typename Iterator,typename C>
+inline void write(Iterator &i, const pad<C> &val)
+{
+  for (size_t j=0; j<val._width; ++j)
+    write(i,val._padding);
+}
+
 // Left and right
 
 template<typename Iterator, typename T, typename C>
-inline void write(Iterator &i, const left<T,C>  &val)
+inline void write(Iterator &i, const left<T,C> &val)
 {
   write(i,*val._val);
   const size_t len = length(*val._val);
@@ -417,9 +486,23 @@ inline void write(Iterator &i, const right<T,C> &val)
 template<typename Iterator, typename T, typename C>
 inline void write(Iterator &i, const quote<T,C> &val)
 {
-  write(i,val._q);
-  write(i,*val._val);
-  write(i,val._q);
+  if (*val._val)
+  {
+    write(i,val._q);
+    write(i,*val._val);
+    write(i,val._q);
+  }
+  else
+    write(i,"NULL");
+}
+
+// Optional
+
+template<typename Iterator,typename T>
+inline void write(Iterator &i, const optional<T> &val)
+{
+  if (val._enabled)
+    write(i,val._val);
 }
 
 // Array
@@ -427,17 +510,47 @@ inline void write(Iterator &i, const quote<T,C> &val)
 template<typename Iterator, typename T, typename U>
 inline void write(Iterator &i, const array<T,U> &val)
 {
+  if (val._data)
+  {
+    write(i,val._open);
+    if (val._size)
+    {
+      write(i,val._quote);
+      write(i,val._data[0]);
+      write(i,val._quote);
+      for (size_t j=1; j<val._size; ++j)
+      {
+        write(i,val._delim);
+        write(i,val._quote);
+        write(i,val._data[j]);
+        write(i,val._quote);
+      }
+    }
+    write(i,val._close);
+  }
+  else
+    write(i,"NULL");
+}
+
+// Raw
+
+template<typename Iterator, typename U>
+inline void write(Iterator &i, const raw<U> &val)
+{
   write(i,val._open);
   if (val._size)
   {
-    write(i,val._quote);
-    write(i,val._data[0]);
-    write(i,val._quote);
-    for (size_t j=1; j<val._size; ++j)
+    const uint8_t *k = (const uint8_t *) val._data;
+
+    for (size_t j=0; j<val._size;)
     {
-      write(i,val._delim);
+      if (j>0)
+        write(i,val._delim);
       write(i,val._quote);
-      write(i,val._data[j]);
+      write(i,hex<uint8_t>(k[j++]));
+      if (j<val._size) write(i,hex<uint8_t>(k[j++]));
+      if (j<val._size) write(i,hex<uint8_t>(k[j++]));
+      if (j<val._size) write(i,hex<uint8_t>(k[j++]));
       write(i,val._quote);
     }
   }

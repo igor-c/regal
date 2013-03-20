@@ -18,6 +18,20 @@ formulae = {
              ]
   },
 
+  'PushMatrix' : {
+    'entries' : [ 'glPushMatrix' ],
+    'impl' : [ 'RegalAssert(_context);',
+               '_context->depthPushMatrix++;'
+             ]
+  },
+
+  'PopMatrix' : {
+    'entries' : [ 'glPopMatrix' ],
+    'impl' : [ 'RegalAssert(_context);',
+               '_context->depthPushMatrix--;'
+             ]
+  },
+
   'PushAttrib' : {
     'entries' : [ 'glPushAttrib' ],
     'impl' : [ 'RegalAssert(_context);',
@@ -29,6 +43,20 @@ formulae = {
     'entries' : [ 'glPopAttrib' ],
     'impl' : [ 'RegalAssert(_context);',
                '_context->depthPushAttrib--;'
+             ]
+  },
+
+  'NewList' : {
+    'entries' : [ 'glNewList' ],
+    'impl' : [ 'RegalAssert(_context);',
+               '_context->depthNewList++;'
+             ]
+  },
+
+  'EndList' : {
+    'entries' : [ 'glEndList' ],
+    'impl' : [ 'RegalAssert(_context);',
+               '_context->depthNewList--;'
              ]
   },
 

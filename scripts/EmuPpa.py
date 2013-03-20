@@ -38,11 +38,19 @@ ppaFormulae = {
     'prefix'     : [ '_context->ppa->${m1}( ${arg0plus} );', ],
   },
   'TrackDrawBuffer' : {
-    'entries'    : [ 'glDrawBuffer(s|)' ],
+    'entries'    : [ 'glDrawBuffer(s|)(ARB|)' ],
     'impl'    : [
-      'if( ! _context->info->core && !_context->info->gles ) {',
+      'if( !_context->info->es2 ) {',
       '  _context->dispatcher.emulation.glDrawBuffer${m1}( ${arg0plus} );',
       '}',
     ],
+  },
+  'TrackMatrixMode' : {
+    'entries'    : [ 'glMatrixMode' ],
+    'prefix'     : [ '_context->ppa->glMatrixMode( ${arg0plus} );', ],
+  },
+  'TrackClipPlane' : {
+    'entries'    : [ 'glClipPlane' ],
+    'prefix'     : [ '_context->ppa->glClipPlane( ${arg0plus} );', ],
   },
 }

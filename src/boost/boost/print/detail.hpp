@@ -84,36 +84,48 @@ struct hex
   bool            _upperCase;
 };
 
-// Left and right alignment of generic types
+//
 
-template<typename T, typename C = char>
-struct left
+template<typename C = char>
+struct pad
 {
-  left(const T &val, const size_t width, const C padding = ' ')
-  : _val(&val), _width(width), _padding(padding)
+  pad(const size_t width, const C padding = ' ')
+  : _width(width), _padding(padding)
   {
   }
 
-  left<T,C> &operator=(const left<T,C> &other) { _val = other._val; _width = other._width; _padding = other._padding; }
+  pad<C> &operator=(const pad<C> &other) { _width = other._width; _padding = other._padding; }
 
-  const T * const _val;
   size_t          _width;
   C               _padding;
 };
 
+// Left and right alignment of generic types
+
 template<typename T, typename C = char>
-struct right
+struct left : public pad<C>
 {
-  right(const T &val, const size_t width, const C padding = ' ')
-  : _val(&val), _width(width), _padding(padding)
+  left(const T &val, const size_t width, const C padding = ' ')
+  : pad<C>(width,padding), _val(&val)
   {
   }
 
-  right<T,C> &operator=(const right<T,C> &other) { _val = other._val; _width = other._width; _padding = other._padding; }
+  left<T,C> &operator=(const left<T,C> &other) { _val = other._val; pad<C>::operator=(other); return *this; }
 
   const T * const _val;
-  size_t          _width;
-  C               _padding;
+};
+
+template<typename T, typename C = char>
+struct right : public pad<C>
+{
+  right(const T &val, const size_t width, const C padding = ' ')
+  : pad<C>(width,padding), _val(&val)
+  {
+  }
+
+  right<T,C> &operator=(const right<T,C> &other) { _val = other._val; pad<C>::operator=(other); return *this; }
+
+  const T * const _val;
 };
 
 // Quoting
@@ -132,6 +144,24 @@ struct quote
 private:
   quote();
   quote<T,C> &operator=(const quote<T,C> &other);
+};
+
+// Optional
+
+template<typename T>
+struct optional
+{
+  optional(const T &val, const bool enabled)
+  : _val(val), _enabled(enabled)
+  {
+  }
+
+  const T     &_val;
+  const bool   _enabled;
+
+private:
+  optional();
+  optional<T> &operator=(const optional<T> &other);
 };
 
 // Array printing
@@ -153,6 +183,27 @@ struct array
 private:
   array();
   array<T,U> &operator=(const array<T,U> &other);
+};
+
+// Raw memory dumping, in groups of 4 bytes
+
+template<typename U>
+struct raw
+{
+  raw(const void *data, const size_t size, const U &quote, const U &open, const U &close, const U &delim)
+  : _data(data), _size(size), _quote(quote), _open(open), _close(close), _delim(delim) {}
+
+  const void *_data;
+  size_t      _size;
+
+  const U _quote;
+  const U _open;
+  const U _close;
+  const U _delim;
+
+private:
+  raw();
+  raw<U> &operator=(const raw<U> &other);
 };
 
 // Iterator printing for containers

@@ -10,9 +10,12 @@ formulaeGlobal = {
 
     'GL_GREMEDY_frame_terminator' : {
         'entries' : [ 'glFrameTerminatorGREMEDY' ],
-        'impl' : [ 'if (_context && _context->frame)',
+        'impl' : [
+                   '// Notify Regal::Frame about the frame terminator event.',
+                   'if (_context && _context->frame)',
                    '  _context->frame->glFrameTerminatorGREMEDY(*_context);',
                    'RegalAssert(_context->info);',
+                   '// Return to application unless GL_GREMEDY_frame_terminator is supported by the driver.',
                    'if (!_context->info->gl_gremedy_frame_terminator) return;' ]
     },
 
@@ -21,6 +24,7 @@ formulaeGlobal = {
     'wglSwapBuffers' : {
         'entries' : [ 'wglSwapBuffers' ],
         'impl' : [ 'RegalContext *_context = REGAL_GET_CONTEXT();',
+                   '// Notify Regal::Frame about the swap buffers event.',
                    'if (_context && _context->frame)',
                    '    _context->frame->wglSwapBuffers(*_context);'
                  ]
@@ -30,9 +34,30 @@ formulaeGlobal = {
 
     'glXSwapBuffers' : {
         'entries' : [ 'glXSwapBuffers' ],
-        'impl' : [ 'RegalContext *_context = REGAL_GET_CONTEXT();',
+        'impl' : [ '// Keep track of X11 Display and GLXDrawable for logging purposes.',
+                   'RegalContext *_context = REGAL_GET_CONTEXT();',
+                   'if (_context)',
+                   '{',
+                   '    _context->x11Display  = dpy;',
+                   '    _context->x11Drawable = drawable;',
+                   '}',
+                   '// Notify Regal::Frame about the swap buffers event.',
                    'if (_context && _context->frame)',
                    '    _context->frame->glXSwapBuffers(*_context);'
+                 ]
+    },
+
+    # glXMakeCurrent
+
+    'glXMakeCurrent' : {
+        'entries' : [ 'glXMakeCurrent' ],
+        'impl' : [ '// Keep track of X11 Display and GLXDrawable for logging purposes.',
+                   'RegalContext *_context = REGAL_GET_CONTEXT();',
+                   'if (_context)',
+                   '{',
+                   '    _context->x11Display  = dpy;',
+                   '    _context->x11Drawable = drawable;',
+                   '}'
                  ]
     },
 
@@ -41,6 +66,7 @@ formulaeGlobal = {
     'eglSwapBuffers' : {
         'entries' : [ 'eglSwapBuffers' ],
         'impl' : [ 'RegalContext *_context = REGAL_GET_CONTEXT();',
+                   '// Notify Regal::Frame about the swap buffers event.',
                    'if (_context && _context->frame)',
                    '    _context->frame->eglSwapBuffers(*_context);'
                  ]
@@ -51,9 +77,9 @@ formulaeGlobal = {
     'CGLFlushDrawable' : {
         'entries' : [ 'CGLFlushDrawable' ],
         'impl' : [ 'RegalContext *_context = REGAL_GET_CONTEXT();',
+                   '// Notify Regal::Frame about the flush drawable event.',
                    'if (_context && _context->frame)',
                    '    _context->frame->CGLFlushDrawable(*_context);'
                  ]
     }
-
 }

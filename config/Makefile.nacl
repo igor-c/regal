@@ -1,0 +1,9 @@
+NAME = $(REGAL_NAME)
+
+ifeq ($(NACL_SDK_ROOT),)
+$(error NACL_SDK_ROOT needs to be specified for NaCL build)
+endif
+
+NACL_TOOLCHAIN=$(NACL_SDK_ROOT)/toolchain/linux_x86_glibc
+
+CFLAGS.EXTRA += -I$(NACL_SDK_ROOT)/include

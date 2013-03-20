@@ -29,96 +29,159 @@
 #     }
 #  }
 
-
+from ApiCodeGen import typeCode
+from ApiUtil import typeIsVoid
 import re
 from string import Template
 from string import join
 from copy import deepcopy
 
-def emuSubstitute( entry, emutmpl, codeseg, subst ) :
-    if not codeseg in emutmpl :
-        return
-    lines = []
-    for line in emutmpl[codeseg] :
-        tmpl = Template( line )
-        #print 'line: %s' % line
-        newline = tmpl.substitute( subst )
-        lines.append( newline )
-    entry[codeseg] = lines
+#
+# Apply per-section substitutions
+#
+# Inputs:
+#
+#   entry    - the "emue" dictionary
+#   formula  - formula dictionary
+#   section  - section name
+#   subs     - substitutions for string.Template.substitute
+#
 
-def emuAddSubst( name, emutmpl, subst ) :
-    if not 'subst' in emutmpl :
-        return
-    s = deepcopy( subst )
-    for newdef in emutmpl['subst'] :
-        dd = emutmpl['subst'][newdef]
-        r = None
-        for k in dd :
-            #print 'try match %s to %s' %  ( k, name )
-            m = re.match( '^%s$' % k, name )
-            if m :
-                r = dd[k]
-                #print 'matched! - result is %s' % r
-                break
-        if not r :
-            r = dd['default']
-        r = Template( r ).substitute( s )
-        subst[newdef]= r
-        #print "adding %s as %s" % ( newdef, r )
+def substitute(entry, formula, section, subs):
 
+  if not section in formula:
+    return
 
-def emuFindEntry( func, emuFormulae, member ) :
+  entry[section] = []
+  for i in formula[section]:
+    j = Template(i)
+    entry[section].append(j.substitute(subs))
 
-    if emuFormulae==None:
-      return None
+#
+# Add a substitution for string.Template.substitute purposes
+#
+# Inputs:
+#
+#   name    - entry point name
+#   formula - formula dictionary
+#   subs    - string.Template.substitute substitutions
+#
+# Outputs:
+#
+#   updated subs
 
-    name = func.name
+def addSubstitution(name, formula, subs):
 
-    #print "iff name = %s\n" % name
-    arglist = [ i.name.strip()           for i in func.parameters ]
-    #arg     = { 'arg%d' % i : arglist[i] for i in range(len(arglist)) }
-    arg     = {}
-    for i in range(len(arglist)):
-        arg['arg%d' % i] = arglist[i]
+  if not 'subst' in formula:
+    return
 
-    for i in range( 0, 3 ) :
-        label = 'arg%dplus' % i;
-        if len(arglist) > 0 :
-            arg[label] = ', '.join( arglist )
-            arglist.pop(0)
-        else :
-            arg[label] = ''
+  s = deepcopy( subs )
+  for newdef in formula['subst'] :
+    dd = formula['subst'][newdef]
 
-    for k,i in emuFormulae.iteritems():
+  r = None
+  for k in dd :
+    m = re.match( '^%s$' % k, name )
+    if m :
+      r = dd[k]
+      #print 'matched! - result is %s' % r
+      break
 
-      # Cache the compiled regular expressions, as needed
+  if not r :
+    r = dd['default']
+  r = Template( r ).substitute( s )
+  subs[newdef]= r
 
-      if 'entries_re' not in i:
-        i['entries_re'] = [ re.compile( '^%s$' % j ) for j in i['entries'] ]
+#
+# Inputs:
+#
+#   func        - Api function to match
+#   emuFormulae - Emulation formulae (list?)
+#   member      - Name of the RegalContext member to check for not-NULL
+#
+# Output:
+#
+#   A dictionary of stuff, the "emue"
+#   { 'name' : name, 'member' : member, 'impl' : { ... }, ... }
 
-      for j in i['entries_re']:
-        m = j.match( name )
-        if m :
-          emue = { 'name' : name, 'member' : member }
-          subst = deepcopy( arg )
-          for l in range( len(m.groups()) + 1) :
-            subst['m%d' % l] = m.group( l )
-          subst['name'] = name
-          emuAddSubst( name, i, subst )
-          emuSubstitute( emue, i, 'impl', subst )
-          emuSubstitute( emue, i, 'prefix', subst )
-          emuSubstitute( emue, i, 'suffix', subst )
-          return emue
+def emuFindEntry(func, emuFormulae, member):
 
+  if emuFormulae==None:
     return None
 
-# Generate code for prefix, impl or suffix
+  name = func.name
+
+  # list of function parameter names
+
+  arglist = [ i.name.strip() for i in func.parameters ]
+
+  # arg is a mapping from arg0 to function parameter name...
+
+  arg = {}
+  for i in range(len(arglist)):
+    arg['arg%d' % i] = arglist[i]
+
+  # ... and mappings from arg0plus to lists of function parameters
+
+  for i in range(0,4):
+    label = 'arg%dplus' % i;
+    if len(arglist) > 0 :
+      arg[label] = ', '.join(arglist)
+      arglist.pop(0)
+    else :
+      arg[label] = ''
+
+  # Iterator over the formulae
+  #
+  # k is the key
+  # i is the formula
+
+  for k,i in emuFormulae.iteritems():
+
+    # Cache the compiled regular expressions, as needed
+
+    if 'entries_re' not in i:
+      i['entries_re'] = [ re.compile( '^%s$' % j ) for j in i['entries'] ]
+
+  # A list of matches containing (match object, formula name, formula)
+  # Look for matches, ideally only one
+
+  m = [ [j.match(name),k,i] for k,i in emuFormulae.iteritems() for j in i['entries_re'] ]
+  m = [ j for j in m if j[0] ]
+
+  assert len(m)<=1, 'Ambiguous match (%s) for %s - giving up.'%(', '.join([j[1] for j in m]),name)
+
+  if len(m):
+    match   = m[0][0]
+    formula = m[0][2]
+    rType  = typeCode(func.ret.type)
+    dummyRetVal = ''
+    if not typeIsVoid(rType):
+      dummyRetVal = '(( %s )0)' % rType
+    emue = { 'name' : name, 'member' : member, 'dummyretval' : dummyRetVal }
+    subs = deepcopy(arg)
+    for l in range( len(match.groups()) + 1):
+      subs['m%d' % l] = match.group( l )
+    subs['name'] = name
+    subs['dummyretval'] = dummyRetVal
+    addSubstitution( name, formula, subs )
+    substitute( emue, formula, 'impl', subs )
+    substitute( emue, formula, 'init', subs )
+    substitute( emue, formula, 'prefix', subs )
+    substitute( emue, formula, 'suffix', subs )
+    return emue
+
+  return None
+
+#
+# Generate code for prefix, init, impl or suffix
+#
 
 def emuCodeGen(emue,section):
 
   tmp = []
   for i in emue:
-    if i != None and i.get(section)!=None:
+    if i!=None and i.get(section)!=None:
       if i.get('member')!=None:
         tmp.append('if (_context->%s)\n' % i['member'])
         tmp.append('{\n')

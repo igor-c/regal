@@ -33,6 +33,7 @@
 #include <limits.h>
 #include <stddef.h>
 #include <stdarg.h>
+#include <ctype.h>
 
 #include "mongoose.h"
 
@@ -191,7 +192,8 @@ static void process_command_line_arguments(char *argv[], char **options) {
       line_no++;
 
       // Ignore empty lines and comments
-      if (line[0] == '#' || line[0] == '\n')
+	  for (i = 0; isspace(* (unsigned char *) &line[i]); ) i++;
+      if (line[i] == '#' || line[i] == '\0')
         continue;
 
       if (sscanf(line, "%s %[^\r\n#]", opt, val) != 2) {
@@ -219,9 +221,11 @@ static void init_server_name(void) {
 
 static void *mongoose_callback(enum mg_event ev, struct mg_connection *conn) {
   if (ev == MG_EVENT_LOG) {
-    printf("%s\n", mg_get_request_info(conn)->log_message);
+    printf("%s\n", (const char *) mg_get_request_info(conn)->ev_data);
   }
 
+  // Returning NULL marks request as not handled, signalling mongoose to
+  // proceed with handling it.
   return NULL;
 }
 
@@ -485,6 +489,87 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmdline, int show) {
 
   // Return the WM_QUIT value.
   return msg.wParam;
+}
+#elif defined(USE_COCOA)
+#import <Cocoa/Cocoa.h>
+
+@interface Mongoose : NSObject<NSApplicationDelegate>
+- (void) openBrowser;
+- (void) shutDown;
+@end
+
+@implementation Mongoose
+- (void) openBrowser {
+  [[NSWorkspace sharedWorkspace]
+    openURL:[NSURL URLWithString:
+      [NSString stringWithUTF8String:"http://www.yahoo.com"]]];
+}
+- (void) editConfig {
+  [[NSWorkspace sharedWorkspace]
+    openFile:@"mongoose.conf" withApplication:@"TextEdit"];
+}
+- (void)shutDown{
+  [NSApp terminate:nil];
+}
+@end
+
+int main(int argc, char *argv[]) {
+  init_server_name();
+  start_mongoose(argc, argv);
+
+  [NSAutoreleasePool new];
+  [NSApplication sharedApplication];
+
+  // Add delegate to process menu item actions
+  Mongoose *myDelegate = [[Mongoose alloc] autorelease];
+  [NSApp setDelegate: myDelegate];
+
+  // Run this app as agent
+  ProcessSerialNumber psn = { 0, kCurrentProcess };
+  TransformProcessType(&psn, kProcessTransformToBackgroundApplication);
+  SetFrontProcess(&psn);
+
+  // Add status bar menu
+  id menu = [[NSMenu new] autorelease];
+
+  // Add version menu item
+  [menu addItem:[[[NSMenuItem alloc]
+    //initWithTitle:[NSString stringWithFormat:@"%s", server_name]
+    initWithTitle:[NSString stringWithUTF8String:server_name]
+    action:@selector(noexist) keyEquivalent:@""] autorelease]];
+
+  // Add configuration menu item
+  [menu addItem:[[[NSMenuItem alloc]
+    initWithTitle:@"Edit configuration"
+    action:@selector(editConfig) keyEquivalent:@""] autorelease]];
+
+  // Add connect menu item
+  [menu addItem:[[[NSMenuItem alloc]
+    initWithTitle:@"Open web root in a browser"
+    action:@selector(openBrowser) keyEquivalent:@""] autorelease]];
+
+  // Separator
+  [menu addItem:[NSMenuItem separatorItem]];
+
+  // Add quit menu item
+  [menu addItem:[[[NSMenuItem alloc]
+    initWithTitle:@"Quit"
+    action:@selector(shutDown) keyEquivalent:@"q"] autorelease]];
+
+  // Attach menu to the status bar
+  id item = [[[NSStatusBar systemStatusBar]
+    statusItemWithLength:NSVariableStatusItemLength] retain];
+  [item setHighlightMode:YES];
+  [item setImage:[NSImage imageNamed:@"mongoose_22x22.png"]];
+  [item setMenu:menu];
+
+  // Run the app
+  [NSApp activateIgnoringOtherApps:YES];
+  [NSApp run];
+
+  mg_stop(ctx);
+
+  return EXIT_SUCCESS;
 }
 #else
 int main(int argc, char *argv[]) {

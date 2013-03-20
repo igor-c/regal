@@ -34,6 +34,6 @@ LOCAL_LDLIBS    := -llog
 
 include $(BUILD_SHARED_LIBRARY)
 
-$(call import-add-path, $(LOCAL_PATH)/../../../../build/android)
-$(call import-module, Regal)
+$(call import-add-path, $(LOCAL_PATH)/../../../../build/android/Regal)
+$(call import-module, jni)
 

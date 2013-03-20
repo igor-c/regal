@@ -1,6 +1,22 @@
 #!/usr/bin/python -B
 
 iffFormulae = {
+    'VaPointer4EXTOverride' : {
+        'entries' : [ 'gl(Vertex|Color|TexCoord)PointerEXT' ],
+        'impl' : [ '_context->iff->${m1}Pointer( _context, ${arg0}, ${arg1}, ${arg2}, ${arg4} );' ],
+    },
+    'EdgeFlagPointerEXT' : {
+        'entries' : [ 'glEdgeFlagPointerEXT' ],
+        'impl' : [ '_context->iff->EdgeFlagPointer( _context, ${arg0}, ${arg2} );' ],
+    },
+    'NormalPointerEXT' : {
+        'entries' : [ 'glNormalPointerEXT' ],
+        'impl' : [ '_context->iff->NormalPointer( _context, ${arg0}, ${arg1}, ${arg3} );' ],
+    },
+    'PointerEXT' : {
+        'entries' : [ 'gl(FogCoord|SecondaryColor)PointerEXT' ],
+        'impl' : [ '_context->iff->${m1}Pointer( _context, ${arg0plus} );' ],
+    },
     'VaPointerOverride' : {
         'entries' : [ 'gl(Vertex|Normal|Color|SecondaryColor|FogCoord|EdgeFlag|TexCoord)Pointer' ],
         'impl' : [ '_context->iff->${m1}Pointer( _context, ${arg0plus} );' ],
@@ -33,7 +49,7 @@ iffFormulae = {
         'impl' : [ '_context->iff->DeleteVertexArrays( _context, ${arg0}, ${arg1} );' ],
     },
     'ImmShadowClientActiveTexture' : {
-        'entries' : [ 'glClientActiveTexture(|ARB)', ],
+        'entries' : [ 'glClientActiveTexture(ARB|)', ],
         'prefix' : [ '_context->iff->ShadowClientActiveTexture( ${arg0} ); ', ],
     },
     'ImmBegin' : {
@@ -45,11 +61,11 @@ iffFormulae = {
         'impl' : [ '_context->iff->End( _context );', ],
     },
     'ImmAttr' : {
-        'entries' : [ 'glVertexAttrib(1|2|3|4)(N|)(b|d|f|i|s|ub|us)(v|)' ],
+        'entries' : [ 'glVertexAttrib(1|2|3|4)(N|)(b|d|f|i|s|ub|us)(v|)(ARB|)' ],
         'impl' : [ '_context->iff->Attr${m2}<${m1}>( _context, ${arg0plus} );', ],
     },
     'ImmFixedAttrf' : {
-        'entries' : [ 'gl(SecondaryColor|Color|Normal|FogCoord)(2|3|4)(d|f)(v|)(EXT)?' ],
+        'entries' : [ 'gl(SecondaryColor|Color|Normal|FogCoord)(2|3|4)(d|f)(v|)(EXT|)?' ],
         'impl' : [ '_context->iff->Attr<${m2}>( _context, _context->iff->AttrIndex( RFF2A_${m1} ), ${arg0plus} );', ],
     },
     'ImmVertex' : {
@@ -57,7 +73,7 @@ iffFormulae = {
         'impl' : [ '_context->iff->Attr<${m2}>( _context, _context->iff->AttrIndex( RFF2A_${m1} ), ${arg0plus} );', ],
     },
     'ImmFixedAttri' : {
-        'entries' : [ 'gl(SecondaryColor|Color|Normal)(2|3|4)(b|i|s|ub|ui|us)(v|)(EXT)?' ],
+        'entries' : [ 'gl(SecondaryColor|Color|Normal)(2|3|4)(b|i|s|ub|ui|us)(v|)(EXT|)?' ],
         'impl' : [ '_context->iff->AttrN<${m2}>( _context, _context->iff->AttrIndex( RFF2A_${m1} ), ${arg0plus} );', ],
     },
     'ImmTexCoord' : {
@@ -65,13 +81,13 @@ iffFormulae = {
         'impl' : [ '_context->iff->Attr<${m1}>( _context, _context->iff->AttrIndex( RFF2A_TexCoord ), ${arg0plus} );', ],
     },
     'ImmMultiTexCoord' : {
-        'entries' : [ 'glMultiTexCoord(1|2|3|4)(d|f|i|s)(v|)' ],
+        'entries' : [ 'glMultiTexCoord(1|2|3|4)(d|f|i|s)(v|)(ARB|)' ],
         'impl' : [ '_context->iff->Attr<${m1}>( _context, _context->iff->AttrIndex( RFF2A_TexCoord, ${arg0} - GL_TEXTURE0 ), ${arg1plus} );', ],
     },
     'ImmRestore' : {
         'entries' : [
             'glBindBuffer',
-            'gl(Enable|Disable)ClientState',
+#           'gl(Enable|Disable)ClientState',
             'glVertexAttribPointer(ARB|)',
 #           'gl(Vertex|Normal|Color|SecondaryColor|FogCoord|TexCoord)Pointer',
             'glGetVertexAttrib(d|f|i|Pointer)v(ARB|)',
@@ -82,7 +98,7 @@ iffFormulae = {
 
 
     'FfnShadowARB' : {
-        'entries' : [ 'glActiveTexture(|ARB)' ],
+        'entries' : [ 'glActiveTexture(ARB|)' ],
         'impl' : [
             'if( ! _context->iff->ShadowActiveTexture( ${arg0plus} ) ) {',
             '    _context->dispatcher.emulation.glActiveTexture${m1}( ${arg0plus} );',
@@ -91,7 +107,12 @@ iffFormulae = {
     },
     'FfnShadeModel' : {
         'entries' : [ 'glShadeModel' ],
-        'prefix' : [ '_context->iff->ShadeModel( ${arg0plus} );', ],
+        'impl' : [
+          '_context->iff->ShadeModel( ${arg0plus} );',
+          'if( !_context->isCore() && !_context->isES2() ) {',
+          '  _context->dispatcher.emulation.glShadeModel(${arg0plus});',
+          '}',
+          ],
     },
     'FfnShadow' : {
         'entries' : [ 'gl(MatrixMode|UseProgram|Enable|Disable)' ],
@@ -186,12 +207,12 @@ iffFormulae = {
     },
     # TODO - GL_ARB_base_instance ?
     'FfnPreDraw' : {
-        'entries' : [ 'gl(Multi|)Draw(Arrays|Element|Elements)(Instanced|Indirect|BaseVertex|InstancedBaseVertex|Array|)(ARB|EXT|AMD|ATI|APPLE|)' ],
+        'entries' : [ 'gl(Multi|)Draw(Range|)(Arrays|Element|Elements)(Instanced|Indirect|BaseVertex|InstancedBaseVertex|Array|)(ARB|EXT|AMD|ATI|APPLE|)' ],
         'prefix' : [ '_context->iff->PreDraw( _context );', ],
     },
     'FfnModifyMatrix' : {
         'entries' : [
-            'gl(Load|Mult)(Transpose|)(Matrix)(f|d)',
+            'gl(Load|Mult)(Transpose|)(Matrix)(f|d)(ARB|)',
             'gl(LoadIdentity)()()',
             'gl(Rotate|Scale|Translate)()()(f|d)',
             'gl(Ortho|Frustum)()()',
@@ -204,6 +225,18 @@ iffFormulae = {
         ],
         'impl' : [ '_context->iff->${m1}${m2}${m3}( ${arg0plus} );' ],
     },
+    'Viewport' : {
+        'entries' : [ 'glViewport', ],
+        'prefix' : [ '_context->iff->Viewport( ${arg0plus} );', ],
+    },
+    'DepthRange' : {
+        'entries' : [ 'glDepthRange', ],
+        'prefix' : [ '_context->iff->DepthRange( GLfloat(${arg0}), GLfloat(${arg1}) );', ],
+    },
+    'RasterPosition' : {
+        'entries' : [ 'gl(Raster|Window)Pos(2|3)(i|s|f|d)', ],
+        'impl' : [ '_context->iff->${m1}Position( _context, ${arg0plus} );', ],
+    },
     'EnableArray' : {
         'entries' : [ 'gl(Enable|Disable)VertexAttribArray(ARB|)' ],
         'prefix' : [
@@ -213,19 +246,23 @@ iffFormulae = {
     },
 
     'ShaderSource' : {
-        'entries' : [ 'glShaderSource', ],
+        'entries' : [ 'glShaderSource(ARB|)?', ],
         'impl' : [ '_context->iff->ShaderSource( _context, ${arg0plus} );', ],
     },
     'LinkProgram' : {
-        'entries' : [ 'glLinkProgram', ],
+        'entries' : [ 'glLinkProgram(ARB|)?', ],
         'impl' : [ '_context->iff->LinkProgram( _context, ${arg0} );', ],
     },
     'CreateShader' : {
-        'entries' : [ 'glCreateShader', ],
+        'entries' : [ 'glCreateShader(ObjectARB)?', ],
         'impl' : [ 'return _context->iff->CreateShader( _context, ${arg0} );', ],
     },
     'Hint' : {
         'entries' : [ 'glHint' ],
+        'impl' : [ ],
+    },
+    'TexSubImage' : {
+        'entries' : [ 'glTexSubImage2D' ],
         'impl' : [ ],
     }
 }

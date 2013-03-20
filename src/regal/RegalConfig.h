@@ -4,6 +4,7 @@
   Copyright (c) 2012 Scott Nations
   Copyright (c) 2012 Mathias Schott
   Copyright (c) 2012 Nigel Stewart
+  Copyright (c) 2012 Google Inc.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without modification,
@@ -41,12 +42,28 @@ REGAL_GLOBAL_END
 
 REGAL_NAMESPACE_BEGIN
 
+namespace Json { struct Output; }
+
 namespace Config
 {
   void Init();
 
-  extern bool forceCoreProfile;
+  extern void writeJSON(Json::Output &jo);
+
+  extern bool forceES1Profile;
   extern bool forceES2Profile;
+  extern bool forceCoreProfile;
+
+  //
+
+  extern bool sysES1;
+  extern bool sysES2;
+  extern bool sysGL;
+
+  // Use GLX or EGL, but not both
+
+  extern bool sysGLX;
+  extern bool sysEGL;
 
   // Initial dispatch enable/disable state
 
@@ -54,28 +71,51 @@ namespace Config
   extern bool enableEmulation;
   extern bool enableDebug;
   extern bool enableError;
+  extern bool enableCode;
   extern bool enableLog;
   extern bool enableDriver;
 
   // Initial emulation layer enable/disable
 
   extern bool enableEmuPpa;
+  extern bool enableEmuPpca;
   extern bool enableEmuObj;
   extern bool enableEmuBin;
+  extern bool enableEmuXfer;
   extern bool enableEmuDsa;
   extern bool enableEmuIff;
+  extern bool enableEmuSo;
   extern bool enableEmuVao;
   extern bool enableEmuFilter;
+  extern bool enableEmuTexC;
+
+  // Force emulation layer enable/disable
+
+  extern bool forceEmuPpa;
+  extern bool forceEmuPpca;
+  extern bool forceEmuObj;
+  extern bool forceEmuBin;
+  extern bool forceEmuXfer;
+  extern bool forceEmuDsa;
+  extern bool forceEmuIff;
+  extern bool forceEmuSo;
+  extern bool forceEmuVao;
+  extern bool forceEmuFilter;
+  extern bool forceEmuTexC;
 
   // Initial context configuration
 
-  extern int  frameLimit;       // Maximum number of frames
+  extern int  frameLimit;        // Maximum number of frames
 
-  extern bool frameMd5Color;    // Log md5 hash of color buffer
+  extern bool frameMd5Color;     // Log md5 hash of color buffer
   extern bool frameMd5Stencil;
   extern bool frameMd5Depth;
 
-  extern bool frameSaveColor;   // Save color buffer to PNG file
+  extern unsigned char frameMd5ColorMask;   // bitwise mask for md5 hashing purposes
+  extern unsigned char frameMd5StencilMask; //
+  extern size_t        frameMd5DepthMask;   //
+
+  extern bool frameSaveColor;    // Save color buffer to PNG file
   extern bool frameSaveStencil;
   extern bool frameSaveDepth;
 
@@ -84,6 +124,10 @@ namespace Config
   extern bool        cache;
   extern bool        cacheShader;
   extern bool        cacheShaderRead;
+  extern bool        cacheShaderWrite;
+  extern bool        cacheTexture;
+  extern bool        cacheTextureRead;
+  extern bool        cacheTextureWrite;
   extern std::string cacheDirectory;
 };
 

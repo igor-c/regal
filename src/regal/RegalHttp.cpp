@@ -111,7 +111,7 @@ namespace Http
     {
       case MG_EVENT_LOG:
       {
-        HTrace(mg_get_log_message(conn));
+        HTrace(request_info->ev_data ? static_cast<const char *>(request_info->ev_data) : "");
         break;
       }
 
@@ -288,7 +288,7 @@ namespace Http
       // Currently there is a problem with shutting down mongoose
       // on Windows - so just skip the cleanup for now.
 
-      #ifndef REGAL_SYS_WGL
+      #if !REGAL_SYS_WGL
       mg_stop(ctx);
       #endif
 

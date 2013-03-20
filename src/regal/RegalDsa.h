@@ -52,12 +52,15 @@ REGAL_NAMESPACE_BEGIN
 #define REGAL_DSA_NUM_BUFFER_TYPES 2
 #define REGAL_DSA_INVALID 0xffffffff
 
+namespace Emu {
+
 template<typename T> inline void DsaGetv( DispatchTable & tbl, GLenum pname, T * params ) { UNUSED_PARAMETER(tbl); UNUSED_PARAMETER(pname); UNUSED_PARAMETER(params);}
 template<> inline void DsaGetv( DispatchTable & tbl, GLenum pname, GLfloat * params ) { tbl.glGetFloatv( pname, params ); }
 template<> inline void DsaGetv( DispatchTable & tbl, GLenum pname, GLdouble * params ) { tbl.glGetDoublev( pname, params ); }
 
 
-struct RegalDsa : public RegalEmu {
+struct Dsa : public RegalEmu
+{
     int callDepth;
     struct Cache {
         GLenum matrixMode;
@@ -372,67 +375,79 @@ struct RegalDsa : public RegalEmu {
     }
 
 
-    void ClientAttribDefault( RegalContext * ctx, GLbitfield mask ) {
+    void ClientAttribDefault( RegalContext * ctx, GLbitfield mask )
+    {
         DispatchTable &tbl = ctx->dispatcher.emulation;
-        if( mask & GL_CLIENT_PIXEL_STORE_BIT ) {
-            tbl.glPixelStorei( GL_UNPACK_SWAP_BYTES, 0 );
-            tbl.glPixelStorei( GL_UNPACK_LSB_FIRST, 0 );
-            tbl.glPixelStorei( GL_UNPACK_ROW_LENGTH, 0 );
-            tbl.glPixelStorei( GL_UNPACK_SKIP_ROWS, 0 );
-            tbl.glPixelStorei( GL_UNPACK_SKIP_PIXELS, 0 );
-            tbl.glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );
-            tbl.glPixelStorei( GL_UNPACK_IMAGE_HEIGHT, 0 );
-            tbl.glPixelStorei( GL_UNPACK_SKIP_IMAGES, 0 );
-            tbl.glPixelStorei( GL_PACK_SWAP_BYTES, 0 );
-            tbl.glPixelStorei( GL_PACK_LSB_FIRST, 0 );
-            tbl.glPixelStorei( GL_PACK_IMAGE_HEIGHT, 0 );
-            tbl.glPixelStorei( GL_PACK_SKIP_IMAGES, 0 );
-            tbl.glPixelStorei( GL_PACK_ROW_LENGTH, 0 );
-            tbl.glPixelStorei( GL_PACK_SKIP_ROWS, 0 );
-            tbl.glPixelStorei( GL_PACK_SKIP_PIXELS, 0 );
-            tbl.glPixelStorei( GL_PACK_ALIGNMENT, 4 );
-            tbl.glPixelStorei( GL_PIXEL_PACK_BUFFER_BINDING, 0 );
-            tbl.glPixelStorei( GL_PIXEL_UNPACK_BUFFER_BINDING, 0 );
-            tbl.glPixelStorei( GL_MAP_COLOR, 0 );
-            tbl.glPixelStorei( GL_MAP_STENCIL, 0 );
-            tbl.glPixelStorei( GL_INDEX_SHIFT, 0 );
-            tbl.glPixelStorei( GL_INDEX_OFFSET, 0 );
-            tbl.glPixelStoref( GL_RED_SCALE, 1.0f );
-            tbl.glPixelStoref( GL_GREEN_SCALE, 1.0f );
-            tbl.glPixelStoref( GL_BLUE_SCALE, 1.0f );
-            tbl.glPixelStoref( GL_ALPHA_SCALE, 1.0f );
-            tbl.glPixelStoref( GL_DEPTH_SCALE, 1.0f );
-            tbl.glPixelStoref( GL_RED_BIAS, 0.0f );
-            tbl.glPixelStoref( GL_GREEN_BIAS, 0.0f );
-            tbl.glPixelStoref( GL_BLUE_BIAS, 0.0f );
-            tbl.glPixelStoref( GL_ALPHA_BIAS, 0.0f );
-            tbl.glPixelStoref( GL_DEPTH_BIAS, 0.0f );
+
+        if (mask&GL_CLIENT_PIXEL_STORE_BIT)
+        {
+            PFNGLPIXELSTOREIPROC pixelStorei = tbl.call(&tbl.glPixelStorei);
+            PFNGLPIXELSTOREFPROC pixelStoref = tbl.call(&tbl.glPixelStoref);
+
+            RegalAssert(pixelStorei);
+            RegalAssert(pixelStoref);
+
+            pixelStorei( GL_UNPACK_SWAP_BYTES, 0 );
+            pixelStorei( GL_UNPACK_LSB_FIRST, 0 );
+            pixelStorei( GL_UNPACK_ROW_LENGTH, 0 );
+            pixelStorei( GL_UNPACK_SKIP_ROWS, 0 );
+            pixelStorei( GL_UNPACK_SKIP_PIXELS, 0 );
+            pixelStorei( GL_UNPACK_ALIGNMENT, 4 );
+            pixelStorei( GL_UNPACK_IMAGE_HEIGHT, 0 );
+            pixelStorei( GL_UNPACK_SKIP_IMAGES, 0 );
+            pixelStorei( GL_PACK_SWAP_BYTES, 0 );
+            pixelStorei( GL_PACK_LSB_FIRST, 0 );
+            pixelStorei( GL_PACK_IMAGE_HEIGHT, 0 );
+            pixelStorei( GL_PACK_SKIP_IMAGES, 0 );
+            pixelStorei( GL_PACK_ROW_LENGTH, 0 );
+            pixelStorei( GL_PACK_SKIP_ROWS, 0 );
+            pixelStorei( GL_PACK_SKIP_PIXELS, 0 );
+            pixelStorei( GL_PACK_ALIGNMENT, 4 );
+            pixelStorei( GL_PIXEL_PACK_BUFFER_BINDING, 0 );
+            pixelStorei( GL_PIXEL_UNPACK_BUFFER_BINDING, 0 );
+            pixelStorei( GL_MAP_COLOR, 0 );
+            pixelStorei( GL_MAP_STENCIL, 0 );
+            pixelStorei( GL_INDEX_SHIFT, 0 );
+            pixelStorei( GL_INDEX_OFFSET, 0 );
+
+            pixelStoref( GL_RED_SCALE, 1.0f );
+            pixelStoref( GL_GREEN_SCALE, 1.0f );
+            pixelStoref( GL_BLUE_SCALE, 1.0f );
+            pixelStoref( GL_ALPHA_SCALE, 1.0f );
+            pixelStoref( GL_DEPTH_SCALE, 1.0f );
+            pixelStoref( GL_RED_BIAS, 0.0f );
+            pixelStoref( GL_GREEN_BIAS, 0.0f );
+            pixelStoref( GL_BLUE_BIAS, 0.0f );
+            pixelStoref( GL_ALPHA_BIAS, 0.0f );
+            pixelStoref( GL_DEPTH_BIAS, 0.0f );
         }
-        if( mask & GL_CLIENT_VERTEX_ARRAY_BIT ) {
+
+        if (mask&GL_CLIENT_VERTEX_ARRAY_BIT)
+        {
             // FIXME: need number of texture units
             int maxTextureUnit = 7;
             for( int i = maxTextureUnit; i >= 0; i-- ) {
-                tbl.glClientActiveTexture( GL_TEXTURE0 + i );
-                tbl.glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+                tbl.call(&tbl.glClientActiveTexture)( GL_TEXTURE0 + i );
+                tbl.call(&tbl.glDisableClientState) ( GL_TEXTURE_COORD_ARRAY );
 
             }
             for( int i = 0; i < 16; i++ ) {
-                tbl.glDisableVertexAttribArray( i );
-                tbl.glVertexAttribPointer( i, 4, GL_FLOAT, GL_FALSE, 0, NULL );
+                tbl.call(&tbl.glDisableVertexAttribArray)( i );
+                tbl.call(&tbl.glVertexAttribPointer)     ( i, 4, GL_FLOAT, GL_FALSE, 0, NULL );
             }
-            tbl.glDisableClientState( GL_VERTEX_ARRAY );
-            tbl.glDisableClientState( GL_NORMAL_ARRAY );
-            tbl.glDisableClientState( GL_FOG_COORD_ARRAY );
-            tbl.glDisableClientState( GL_COLOR_ARRAY );
-            tbl.glDisableClientState( GL_SECONDARY_COLOR_ARRAY );
-            tbl.glDisableClientState( GL_INDEX_ARRAY );
-            tbl.glDisableClientState( GL_EDGE_FLAG_ARRAY );
-            tbl.glVertexPointer( 4, GL_FLOAT, 0, NULL );
-            tbl.glNormalPointer( GL_FLOAT, 0, NULL );
-            tbl.glFogCoordPointer( GL_FLOAT, 0, NULL );
-            tbl.glColorPointer( 4, GL_FLOAT, 0, NULL );
-            tbl.glSecondaryColorPointer( 3, GL_FLOAT, 0, NULL );
-            tbl.glIndexPointer( GL_FLOAT, 0, NULL );
+            tbl.call(&tbl.glDisableClientState)   ( GL_VERTEX_ARRAY );
+            tbl.call(&tbl.glDisableClientState)   ( GL_NORMAL_ARRAY );
+            tbl.call(&tbl.glDisableClientState)   ( GL_FOG_COORD_ARRAY );
+            tbl.call(&tbl.glDisableClientState)   ( GL_COLOR_ARRAY );
+            tbl.call(&tbl.glDisableClientState)   ( GL_SECONDARY_COLOR_ARRAY );
+            tbl.call(&tbl.glDisableClientState)   ( GL_INDEX_ARRAY );
+            tbl.call(&tbl.glDisableClientState)   ( GL_EDGE_FLAG_ARRAY );
+            tbl.call(&tbl.glVertexPointer)        ( 4, GL_FLOAT, 0, NULL );
+            tbl.call(&tbl.glNormalPointer)        ( GL_FLOAT, 0, NULL );
+            tbl.call(&tbl.glFogCoordPointer)      ( GL_FLOAT, 0, NULL );
+            tbl.call(&tbl.glColorPointer)         ( 4, GL_FLOAT, 0, NULL );
+            tbl.call(&tbl.glSecondaryColorPointer)( 3, GL_FLOAT, 0, NULL );
+            tbl.call(&tbl.glIndexPointer)         ( GL_FLOAT, 0, NULL );
         }
     }
 
@@ -619,6 +634,8 @@ struct RegalDsa : public RegalEmu {
     }
 
 };
+
+}
 
 REGAL_NAMESPACE_END
 

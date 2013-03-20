@@ -50,19 +50,21 @@ REGAL_GLOBAL_END
 
 REGAL_NAMESPACE_BEGIN
 
-struct RegalName {
+namespace Emu {
+
+struct Name {
     GLuint app;
     GLuint drv;
-    RegalName() : app( 0 ), drv( 0 ) {}
+    Name() : app( 0 ), drv( 0 ) {}
 };
 
-struct RegalNameTranslator {
-    shared_map< GLuint, RegalName > app2drv;
-    shared_map< GLuint, RegalName * > drv2app;
+struct NameTranslator {
+    shared_map< GLuint, Name > app2drv;
+    shared_map< GLuint, Name * > drv2app;
     void (REGAL_CALL *gen)( GLsizei n, GLuint * objs );
     void (REGAL_CALL *del)( GLsizei n, const GLuint * objs );
 
-    RegalNameTranslator() : gen( NULL ), del ( NULL ) {
+    NameTranslator() : gen( NULL ), del ( NULL ) {
         drv2app[ 0 ] = & app2drv[ 0 ];  // special case 0
     }
 
@@ -71,7 +73,7 @@ struct RegalNameTranslator {
     }
 
     GLuint Gen() {
-        RegalName name;
+        Name name;
         gen( 1, & name.drv );
         // could be more clever here, and this could fail...
         name.app = name.drv;
@@ -92,7 +94,7 @@ struct RegalNameTranslator {
 
     GLuint ToDriverName( GLuint appName ) {
         if( app2drv.count( appName ) == 0 ) {
-            RegalName & name = app2drv[ appName ];
+            Name & name = app2drv[ appName ];
             name.app = appName;
             gen( 1, & name.drv );
             drv2app[ name.drv ] = &name;
@@ -112,7 +114,7 @@ struct RegalNameTranslator {
         if( appName == 0 || app2drv.count( appName ) == 0 ) {
             return;
         }
-        RegalName n = app2drv[ appName ];
+        Name n = app2drv[ appName ];
         app2drv.erase( n.app );
         RegalAssert( drv2app.count( n.drv ) != 0 );
         drv2app.erase( n.drv );
@@ -120,86 +122,122 @@ struct RegalNameTranslator {
     }
 };
 
-
-
-struct RegalObj : public RegalEmu {
-
-  RegalNameTranslator bufferNames;
-	RegalNameTranslator vaoNames;
+struct Obj : public RegalEmu
+{
+  NameTranslator bufferNames;
+  NameTranslator vaoNames;
+  NameTranslator textureNames;
 
   void Init( RegalContext &ctx )
   {
     RegalContext *sharingWith = ctx.groupInitializedContext();
     if (sharingWith)
     {
-      bufferNames.app2drv = sharingWith->obj->bufferNames.app2drv;
-      bufferNames.drv2app = sharingWith->obj->bufferNames.drv2app;
-      vaoNames.app2drv    = sharingWith->obj->vaoNames.app2drv;
-      vaoNames.drv2app    = sharingWith->obj->vaoNames.drv2app;
+      bufferNames.app2drv  = sharingWith->obj->bufferNames.app2drv;
+      bufferNames.drv2app  = sharingWith->obj->bufferNames.drv2app;
+      vaoNames.app2drv     = sharingWith->obj->vaoNames.app2drv;
+      vaoNames.drv2app     = sharingWith->obj->vaoNames.drv2app;
+      textureNames.app2drv = sharingWith->obj->textureNames.app2drv;
+      textureNames.drv2app = sharingWith->obj->textureNames.drv2app;
     }
 
     bufferNames.gen = ctx.dispatcher.emulation.glGenBuffers;
     bufferNames.del = ctx.dispatcher.emulation.glDeleteBuffers;
     vaoNames.gen    = ctx.dispatcher.emulation.glGenVertexArrays;
     vaoNames.del    = ctx.dispatcher.emulation.glDeleteVertexArrays;
+    textureNames.gen = ctx.dispatcher.emulation.glGenTextures;
+    textureNames.del = ctx.dispatcher.emulation.glDeleteTextures;
   }
 
-	void BindBuffer( RegalContext * ctx, GLenum target, GLuint bufferBinding ) {
-		DispatchTable & tbl = ctx->dispatcher.emulation;
-		tbl.glBindBuffer( target, bufferNames.ToDriverName( bufferBinding ) );
-	}
+  void BindBuffer( RegalContext * ctx, GLenum target, GLuint bufferBinding )
+  {
+    DispatchTable & tbl = ctx->dispatcher.emulation;
+    tbl.glBindBuffer( target, bufferNames.ToDriverName( bufferBinding ) );
+  }
 
-	void GenBuffers( RegalContext * ctx, GLsizei n, GLuint * buffers ) {
-		UNUSED_PARAMETER(ctx);
-		for( int i = 0; i < n; i++ ) {
-			buffers[ i ] = bufferNames.Gen();
-		}
-	}
-
-	void DeleteBuffers( RegalContext * ctx, GLsizei n, const GLuint * buffers ) {
-		UNUSED_PARAMETER(ctx);
-		for( int i = 0; i < n; i++ ) {
-			bufferNames.Delete( buffers[ i ] );
-		}
-	}
-
-    GLboolean IsBuffer( RegalContext * ctx, GLuint appName ) {
-		UNUSED_PARAMETER(ctx);
-        return bufferNames.IsObject( appName );
+  void GenBuffers( RegalContext * ctx, GLsizei n, GLuint * buffers )
+  {
+    UNUSED_PARAMETER(ctx);
+    for( int i = 0; i < n; i++ ) {
+      buffers[ i ] = bufferNames.Gen();
     }
+  }
 
-
-	void BindVertexArray( RegalContext * ctx, GLuint vao ) {
-		DispatchTable & tbl = ctx->dispatcher.emulation;
-		tbl.glBindVertexArray( vaoNames.ToDriverName( vao ) );
-	}
-
-	void GenVertexArrays( RegalContext * ctx, GLsizei n, GLuint * vaos ) {
-		UNUSED_PARAMETER(ctx);
-		for( int i = 0; i < n; i++ ) {
-			vaos[ i ] = vaoNames.Gen();
-		}
-	}
-
-	void DeleteVertexArrays( RegalContext * ctx, GLsizei n, const GLuint * vaos ) {
-		UNUSED_PARAMETER(ctx);
-		for( int i = 0; i < n; i++ ) {
-			vaoNames.Delete( vaos[ i ] );
-		}
-	}
-
-    GLboolean IsVertexArray( RegalContext * ctx, GLuint appName ) {
-		UNUSED_PARAMETER(ctx);
-        return vaoNames.IsObject( appName );
+  void DeleteBuffers( RegalContext * ctx, GLsizei n, const GLuint * buffers )
+  {
+    UNUSED_PARAMETER(ctx);
+    for( int i = 0; i < n; i++ ) {
+      bufferNames.Delete( buffers[ i ] );
     }
+  }
+
+  GLboolean IsBuffer( RegalContext * ctx, GLuint appName )
+  {
+    UNUSED_PARAMETER(ctx);
+    return bufferNames.IsObject( appName );
+  }
+
+  void BindVertexArray( RegalContext * ctx, GLuint vao )
+  {
+    DispatchTable & tbl = ctx->dispatcher.emulation;
+    tbl.glBindVertexArray( vaoNames.ToDriverName( vao ) );
+  }
+
+  void GenVertexArrays( RegalContext * ctx, GLsizei n, GLuint * vaos )
+  {
+    UNUSED_PARAMETER(ctx);
+    for( int i = 0; i < n; i++ ) {
+      vaos[ i ] = vaoNames.Gen();
+    }
+  }
+
+  void DeleteVertexArrays( RegalContext * ctx, GLsizei n, const GLuint * vaos )
+  {
+    UNUSED_PARAMETER(ctx);
+    for( int i = 0; i < n; i++ ) {
+      vaoNames.Delete( vaos[ i ] );
+    }
+  }
+
+  GLboolean IsVertexArray( RegalContext * ctx, GLuint appName ) {
+    UNUSED_PARAMETER(ctx);
+    return vaoNames.IsObject( appName );
+  }
 
 
+  void BindTexture( RegalContext * ctx, GLenum target, GLuint name )
+  {
+    DispatchTable & tbl = ctx->dispatcher.emulation;
+    tbl.glBindTexture( target, textureNames.ToDriverName( name ) );
+  }
 
+  void GenTextures( RegalContext * ctx, GLsizei n, GLuint * names )
+  {
+    UNUSED_PARAMETER(ctx);
+    for( int i = 0; i < n; i++ ) {
+      names[ i ] = textureNames.Gen();
+    }
+  }
+
+  void DeleteTextures( RegalContext * ctx, GLsizei n, const GLuint * names )
+  {
+    UNUSED_PARAMETER(ctx);
+    for( int i = 0; i < n; i++ ) {
+      textureNames.Delete( names[ i ] );
+    }
+  }
+
+  GLboolean IsTexture( RegalContext * ctx, GLuint name ) {
+    UNUSED_PARAMETER(ctx);
+    return textureNames.IsObject( name );
+  }
 };
+
+}
 
 REGAL_NAMESPACE_END
 
-#endif // ! __REGAL_VAO_H__
+#endif // ! __REGAL_OBJ_H__
 
 
 

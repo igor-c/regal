@@ -76,7 +76,7 @@ struct Frame {
   Timer               frameSimpleTimeout;
 
   //
-  
+
   inline void glFrameTerminatorGREMEDY(RegalContext &ctx) { if (mode==AutoDetect) mode = FrameTerminatorGREMEDY; if (mode==FrameTerminatorGREMEDY) capture(ctx); }
   inline void wglSwapBuffers          (RegalContext &ctx) { if (mode==AutoDetect) mode = SwapBuffers;            if (mode==SwapBuffers)            capture(ctx); }
   inline void glXSwapBuffers          (RegalContext &ctx) { if (mode==AutoDetect) mode = SwapBuffers;            if (mode==SwapBuffers)            capture(ctx); }
@@ -85,7 +85,7 @@ struct Frame {
 
 private:
   void capture(RegalContext &ctx);
-  
+
   enum Mode
   {
     AutoDetect,

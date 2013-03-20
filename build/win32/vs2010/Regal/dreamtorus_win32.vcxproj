@@ -88,6 +88,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>regal32.lib;gdi32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -128,6 +129,7 @@
       <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>regal32.lib;gdi32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -165,6 +167,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>regal32.lib;gdi32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -204,6 +207,7 @@
       <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>regal32.lib;gdi32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>

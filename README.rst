@@ -7,7 +7,8 @@
 Regal
 =====
 
-https://github.com/p3/regal
+| https://github.com/p3/regal
+| `Downloads <https://bitbucket.org/nigels_com/regal/downloads>`_
 
 .. contents::
 
@@ -288,7 +289,7 @@ Linux
 
 * Ubuntu/Debian/Mint recommended packages:
 
- ``$ apt-get install libxmu-dev``
+ ``$ apt-get install libxmu-dev libxi-dev``
 
 * Use GNU make with Makefile
 
@@ -315,8 +316,8 @@ Android
 iOS
 ---
 
-NaCL
-----
+PPAPI and NaCl
+--------------
 
 Questions and Answers
 =====================
@@ -334,6 +335,11 @@ Alternatives for OpenGL Loading
 * `GLEW <http://glew.sourceforge.net/>`_.
 
 * `OpenGL Loader Generator <https://bitbucket.org/alfonse/glloadgen/wiki/Home>`_.
+
+Related Efforts
+---------------
+
+* Mesa3D mail thread: `Mesa as part of OpenGL-on-OpenGL ES 2.0 <http://lists.freedesktop.org/archives/mesa-dev/2012-March/019692.html>`_
 
 License and Credits
 ===================

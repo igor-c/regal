@@ -100,7 +100,7 @@ def apiDispatchTableDefineCode(apis, args):
     RegalAssert(reinterpret_cast<void *>(func)>=reinterpret_cast<void *>(i));
     RegalAssert(reinterpret_cast<void *>(func)< reinterpret_cast<void *>(i+1));
 
-    std::size_t offset = reinterpret_cast<char *>(func) - reinterpret_cast<char *>(i);
+    const std::size_t offset = reinterpret_cast<char *>(func) - reinterpret_cast<char *>(i);
 
     T f = *func;
 
@@ -215,4 +215,4 @@ def generateDispatchHeader(apis, args):
   substitute['API_GLOBAL_DISPATCH_TABLE_DEFINE'] = globalDispatchTableDefine
   substitute['API_DISPATCH_TABLE_DEFINE'] = dispatchTableDefine
 
-  outputCode( '%s/RegalDispatch.h' % args.outdir, dispatchHeaderTemplate.substitute(substitute))
+  outputCode( '%s/RegalDispatch.h' % args.srcdir, dispatchHeaderTemplate.substitute(substitute))

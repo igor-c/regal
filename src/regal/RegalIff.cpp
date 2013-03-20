@@ -54,6 +54,8 @@ REGAL_GLOBAL_END
 
 REGAL_NAMESPACE_BEGIN
 
+namespace Emu {
+
 #define REGAL_FIXED_FUNCTION_PROGRAM_CACHE_SET_BITS 2
 
 using namespace ::REGAL_NAMESPACE_INTERNAL::Logging;
@@ -61,14 +63,13 @@ using namespace ::REGAL_NAMESPACE_INTERNAL::Token;
 
 static int progcount = -1;
 
-typedef RegalIff RFF;
-typedef RegalIff::State State;
-typedef RegalIff::State::Texture Texture;
-typedef RegalIff::State::Light Light;
-typedef RegalIff::State::MaterialUniform MaterialUniform;
-typedef RegalIff::State::Store Store;
-typedef RegalIff::State::StoreUniform StoreUniform;
-typedef RegalIff::Program Program;
+typedef Iff::State State;
+typedef Iff::State::Texture Texture;
+typedef Iff::State::Light Light;
+typedef Iff::State::MaterialUniform MaterialUniform;
+typedef Iff::State::Store Store;
+typedef Iff::State::StoreUniform StoreUniform;
+typedef Iff::Program Program;
 
 enum FFLightEl {
   LE_Ambient = 0,
@@ -88,21 +89,22 @@ enum FFMaterialEl {
   ME_Elements = 5
 };
 
-RFF::TextureTargetBitfield TargetToBitfield( GLenum target ) {
+Iff::TextureTargetBitfield TargetToBitfield( GLenum target ) {
   switch( target ) {
-    case GL_TEXTURE_1D:        return RFF::TT_1D;
-    case GL_TEXTURE_2D:        return RFF::TT_2D;
-    case GL_TEXTURE_RECTANGLE: return RFF::TT_Rect;
-    case GL_TEXTURE_3D:        return RFF::TT_3D;
-    case GL_TEXTURE_CUBE_MAP:  return RFF::TT_CubeMap;
+    case GL_TEXTURE_1D:        return Iff::TT_1D;
+    case GL_TEXTURE_2D:        return Iff::TT_2D;
+    case GL_TEXTURE_RECTANGLE: return Iff::TT_Rect;
+    case GL_TEXTURE_3D:        return Iff::TT_3D;
+    case GL_TEXTURE_CUBE_MAP:  return Iff::TT_CubeMap;
     default: break;
   }
-  return RFF::TT_None;
+  return Iff::TT_None;
 }
 
+void GenerateVertexShaderSource( const Iff * rff, const Iff::State & state, string_list & src )
+{
+  Internal("Regal::Rff::GenerateVertexShaderSource",rff);
 
-
-void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, string_list & src ) {
   const bool gles = rff->gles;
   const bool legacy = rff->legacy;
   const Store & st = state.processed;
@@ -111,7 +113,7 @@ void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, stri
   bool hasSphereMap = false;
   bool hasReflectionMap = false;
   bool hasEyeLinearTexGen = false;
-  for( int i = 0; i < REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS; i++ ) {
+  for( int i = 0; i < REGAL_EMU_IFF_TEXTURE_UNITS; i++ ) {
     if( st.tex[i].enables == 0 ) {
       continue;
     }
@@ -119,11 +121,11 @@ void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, stri
       if( st.tex[i].texgen[j].enable == false ) {
         continue;
       }
-      RFF::TexgenMode mode = st.tex[i].texgen[j].mode;
-      hasNormalMap = hasNormalMap || mode == RFF::TG_NormalMap;
-      hasSphereMap = hasSphereMap || mode == RFF::TG_SphereMap;
-      hasReflectionMap = hasReflectionMap || mode == RFF::TG_ReflectionMap;
-      hasEyeLinearTexGen = hasEyeLinearTexGen || mode == RFF::TG_EyeLinear;
+      Iff::TexgenMode mode = st.tex[i].texgen[j].mode;
+      hasNormalMap = hasNormalMap || mode == Iff::TG_NormalMap;
+      hasSphereMap = hasSphereMap || mode == Iff::TG_SphereMap;
+      hasReflectionMap = hasReflectionMap || mode == Iff::TG_ReflectionMap;
+      hasEyeLinearTexGen = hasEyeLinearTexGen || mode == Iff::TG_EyeLinear;
     }
   }
   bool hasClipPlanes = false;
@@ -173,12 +175,12 @@ void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, stri
     src << "precision highp float;\n";
   }
   if( ~st.attrArrayFlags & ( 1 << rff->ffAttrMap[ RFF2A_Color ] ) ) {
-    src << "uniform vec4 rglAttrib[" << REGAL_MAX_VERTEX_ATTRIBS << "];\n";
+    src << "uniform vec4 rglAttrib[" << REGAL_EMU_IFF_VERTEX_ATTRIBS << "];\n";
   }
   src << "uniform mat4 rglModelview;\n";
   src << "uniform mat4 rglProjection;\n";
   src << "in vec4 rglVertex;\n";
-  for( int i = 0; i < REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS; i++ ) {
+  for( int i = 0; i < REGAL_EMU_IFF_TEXTURE_UNITS; i++ ) {
     if( st.tex[i].useMatrix ) {
       src << "uniform mat4 rglTextureMatrix" << i << ";\n";
     }
@@ -223,7 +225,7 @@ void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, stri
       src << "in float rglFogCoord;\n";
     }
   }
-  for( int i = 0; i < REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS; i++ ) {
+  for( int i = 0; i < REGAL_EMU_IFF_TEXTURE_UNITS; i++ ) {
     if( st.tex[i].enables == 0 ) {
       continue;
     }
@@ -244,7 +246,7 @@ void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, stri
     src << "out vec4 rglSCOL0;\n";
   }
 
-  for( int i = 0; i < REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS; i++ ) {
+  for( int i = 0; i < REGAL_EMU_IFF_TEXTURE_UNITS; i++ ) {
     const State::Texture & t = st.tex[i];
     if( t.enables == 0 ) {
       continue;
@@ -256,10 +258,10 @@ void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, stri
         continue;
       }
       switch( g.mode ) {
-        case RFF::TG_EyeLinear:
+        case Iff::TG_EyeLinear:
           src << "uniform vec4 rglTexGen" << i << "Eye" << tc[j] << ";\n";
           break;
-        case RFF::TG_ObjectLinear:
+        case Iff::TG_ObjectLinear:
           src << "uniform vec4 rglTexGen" << i << "Obj" << tc[j] << ";\n";
           break;
         default:
@@ -322,21 +324,21 @@ void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, stri
     }
     if( st.colorMaterial ) {
       switch( st.colorMaterialTarget0 ) {
-        case RFF::CM_None:
+        case Iff::CM_None:
           break;
-        case RFF::CM_Ambient:
+        case Iff::CM_Ambient:
           src << "    mFront[ ME_AMBIENT ] = rglColor;\n";
           break;
-        case RFF::CM_Diffuse:
+        case Iff::CM_Diffuse:
           src << "    mFront[ ME_DIFFUSE ] = rglColor;\n";
           break;
-        case RFF::CM_Specular:
+        case Iff::CM_Specular:
           src << "    mFront[ ME_SPECULAR ] = rglColor;\n";
           break;
-        case RFF::CM_Emission:
+        case Iff::CM_Emission:
           src << "    mFront[ ME_EMISSION ] = rglColor;\n";
           break;
-        case RFF::CM_AmbientAndDiffuse:
+        case Iff::CM_AmbientAndDiffuse:
           src << "    mFront[ ME_AMBIENT ] = rglColor;\n";
           src << "    mFront[ ME_DIFFUSE ] = rglColor;\n";
           break;
@@ -346,21 +348,21 @@ void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, stri
       }
       if( st.lightModelTwoSide ) {
         switch( st.colorMaterialTarget1 ) {
-          case RFF::CM_None:
+          case Iff::CM_None:
             break;
-          case RFF::CM_Ambient:
+          case Iff::CM_Ambient:
             src << "    mBack[ ME_AMBIENT ] = rglColor;\n";
             break;
-          case RFF::CM_Diffuse:
+          case Iff::CM_Diffuse:
             src << "    mBack[ ME_DIFFUSE ] = rglColor;\n";
             break;
-          case RFF::CM_Specular:
+          case Iff::CM_Specular:
             src << "    mBack[ ME_SPECULAR ] = rglColor;\n";
             break;
-          case RFF::CM_Emission:
+          case Iff::CM_Emission:
             src << "    mBack[ ME_EMISSION ] = rglColor;\n";
             break;
-          case RFF::CM_AmbientAndDiffuse:
+          case Iff::CM_AmbientAndDiffuse:
             src << "    mBack[ ME_AMBIENT ] = rglColor;\n";
             src << "    mBack[ ME_DIFFUSE ] = rglColor;\n";
             break;
@@ -485,7 +487,7 @@ void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, stri
   }
 
   bool tc_declared = false;
-  for( int i = 0; i < REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS; i++ ) {
+  for( int i = 0; i < REGAL_EMU_IFF_TEXTURE_UNITS; i++ ) {
     const State::Texture & t = state.processed.tex[i];
     if( t.enables == 0 ) {
       continue;
@@ -502,19 +504,19 @@ void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, stri
         continue;
       }
       switch( t.texgen[j].mode ) {
-        case RFF::TG_ObjectLinear:
+        case Iff::TG_ObjectLinear:
           src << "    tc." << comp[j] << " = dot( rglTexGen" << i << "Obj" << tc[j] << ", rglVertex );\n";
           break;
-        case RFF::TG_EyeLinear:
+        case Iff::TG_EyeLinear:
           src << "    tc." << comp[j] << " = dot( rglTexGen" << i << "Eye" << tc[j] << ", eh );\n";
           break;
-        case RFF::TG_NormalMap:
+        case Iff::TG_NormalMap:
           src << "    tc." << comp[j] << " = nmTc." << comp[j] << ";\n";
           break;
-        case RFF::TG_ReflectionMap:
+        case Iff::TG_ReflectionMap:
           src << "    tc." << comp[j] << " = rmTc." << comp[j] << ";\n";
           break;
-        case RFF::TG_SphereMap:
+        case Iff::TG_SphereMap:
           src << "    tc." << comp[j] << " = smTc." << comp[j] << ";\n";
           break;
         default:
@@ -543,10 +545,12 @@ void GenerateVertexShaderSource( const RFF * rff, const RFF::State & state, stri
 
 
 
-void AddTexEnv( int i, RFF::TexenvMode env, GLenum fmt,  string_list & s )
+void AddTexEnv( int i, Iff::TexenvMode env, GLenum fmt,  string_list & s )
 {
+  Internal("Regal::Rff::AddTexEnv","()");
+
   switch( env ) {
-    case RFF::TEM_Replace:
+    case Iff::TEM_Replace:
       switch( fmt ) {
         case GL_ALPHA:
           s << "    p.w = s.w;\n";
@@ -560,11 +564,11 @@ void AddTexEnv( int i, RFF::TexenvMode env, GLenum fmt,  string_list & s )
           s << "    p = s;\n";
           break;
         default:
-          s << "    //ERROR: Unsupported tex fmt\n";
+          s << "    p = s; //ERROR: Unsupported tex fmt " << Token::GLenumToString(fmt) << "\n";
           break;
       }
       break;
-    case RFF::TEM_Modulate:
+    case Iff::TEM_Modulate:
       switch( fmt ) {
         case GL_ALPHA:
           s << "    p.w *= s.w;\n";
@@ -578,11 +582,11 @@ void AddTexEnv( int i, RFF::TexenvMode env, GLenum fmt,  string_list & s )
           s << "    p *= s;\n";
           break;
         default:
-          s << "    //ERROR: Unsupported tex fmt\n";
+          s << "    p = s; //ERROR: Unsupported tex fmt" << Token::GLenumToString(fmt) << "\n";
           break;
       }
       break;
-    case RFF::TEM_Blend:
+    case Iff::TEM_Blend:
       switch( fmt ) {
         case GL_ALPHA:
           s << "    p.w *= s.w;\n";
@@ -597,11 +601,11 @@ void AddTexEnv( int i, RFF::TexenvMode env, GLenum fmt,  string_list & s )
           s << "    p.w *= s.w;\n";
           break;
         default:
-          s << "    //ERROR: Unsupported tex fmt\n"; break;
+          s << "    p = s; //ERROR: Unsupported tex fmt " << Token::GLenumToString(fmt) << "\n";
           break;
       }
       break;
-    case RFF::TEM_Add:
+    case Iff::TEM_Add:
       switch( fmt ) {
         case GL_ALPHA:
           s << "    p.w *= s.w;\n";
@@ -616,16 +620,16 @@ void AddTexEnv( int i, RFF::TexenvMode env, GLenum fmt,  string_list & s )
           s << "    p.w *= s.w;\n";
           break;
         default:
-          s << "    //ERROR: Unsupported tex fmt\n";
+          s << "    p = s; //ERROR: Unsupported tex fmt " << Token::GLenumToString(fmt) << "\n";
           break;
       }
       break;
-    case RFF::TEM_Decal:
+    case Iff::TEM_Decal:
       switch( fmt ) {
         case GL_ALPHA:
         case GL_LUMINANCE:
         case GL_LUMINANCE_ALPHA:
-          s << "    //ERROR: tex env mode undefined for this texture format\n";
+          s << "    //ERROR: tex env mode undefined for texture format " << Token::GLenumToString(fmt) << "\n";
           break;
         case GL_RGB:
           s << "    p.xyz = s.xyz;\n";
@@ -634,7 +638,7 @@ void AddTexEnv( int i, RFF::TexenvMode env, GLenum fmt,  string_list & s )
           s << "    p.xyz = mix( p.xyz, s.xyz, s.w );\n";
           break;
         default:
-          s << "    //ERROR: Unsupported tex fmt\n";
+          s << "    p = s; //ERROR: Unsupported tex fmt " << Token::GLenumToString(fmt) << "\n";
           break;
       }
       break;
@@ -644,24 +648,26 @@ void AddTexEnv( int i, RFF::TexenvMode env, GLenum fmt,  string_list & s )
   }
 }
 
-void AddTexEnvCombine( RFF::TextureEnv & env, string_list & s )
+void AddTexEnvCombine( Iff::TextureEnv & env, string_list & s )
 {
-  bool skipAlpha = env.rgb.mode == RFF::TEC_Dot3Rgba;
+  Internal("Regal::Rff::AddTexEnvCombine","()");
+
+  bool skipAlpha = env.rgb.mode == Iff::TEC_Dot3Rgba;
   int rgbSources = 0;
   int aSources = 0;
   s << "    {\n";
   switch( env.rgb.mode ) {
-    case RFF::TEC_Replace:
+    case Iff::TEC_Replace:
       rgbSources = 1;
       break;
-    case RFF::TEC_Modulate:
-    case RFF::TEC_Add:
-    case RFF::TEC_AddSigned:
-    case RFF::TEC_Dot3Rgb:
-    case RFF::TEC_Dot3Rgba:
+    case Iff::TEC_Modulate:
+    case Iff::TEC_Add:
+    case Iff::TEC_AddSigned:
+    case Iff::TEC_Dot3Rgb:
+    case Iff::TEC_Dot3Rgba:
       rgbSources = 2;
       break;
-    case RFF::TEC_Interpolate:
+    case Iff::TEC_Interpolate:
       rgbSources = 3;
       break;
     default:
@@ -669,18 +675,18 @@ void AddTexEnvCombine( RFF::TextureEnv & env, string_list & s )
   }
   if( skipAlpha == false ) {
     switch( env.a.mode ) {
-      case RFF::TEC_Replace:
+      case Iff::TEC_Replace:
         aSources = 1;
         break;
-      case RFF::TEC_Modulate:
-      case RFF::TEC_Add:
-      case RFF::TEC_AddSigned:
-      case RFF::TEC_Subtract:
-      case RFF::TEC_Dot3Rgb:
-      case RFF::TEC_Dot3Rgba:
+      case Iff::TEC_Modulate:
+      case Iff::TEC_Add:
+      case Iff::TEC_AddSigned:
+      case Iff::TEC_Subtract:
+      case Iff::TEC_Dot3Rgb:
+      case Iff::TEC_Dot3Rgba:
         aSources = 2;
         break;
-      case RFF::TEC_Interpolate:
+      case Iff::TEC_Interpolate:
         aSources = 3;
         break;
       default:
@@ -690,18 +696,18 @@ void AddTexEnvCombine( RFF::TextureEnv & env, string_list & s )
   for( int i = 0; i < rgbSources; i++ ) {
     bool skip = false;
     string source;
-    RFF::TexenvCombineSrc src = i == 0 ? env.rgb.src0 : i == 1 ? env.rgb.src1 : env.rgb.src2;
+    Iff::TexenvCombineSrc src = i == 0 ? env.rgb.src0 : i == 1 ? env.rgb.src1 : env.rgb.src2;
     switch( src ) {
-      case RFF::TCS_PrimaryColor:
+      case Iff::TCS_PrimaryColor:
         source = "rglFrontColor";
         break;
-      case RFF::TCS_Constant:
+      case Iff::TCS_Constant:
         source = "rglConstantColor";
         break;
-      case RFF::TCS_Previous:
+      case Iff::TCS_Previous:
         source = "p";
         break;
-      case RFF::TCS_Texture:
+      case Iff::TCS_Texture:
         source = "s";
         break;
       default:
@@ -709,14 +715,14 @@ void AddTexEnvCombine( RFF::TextureEnv & env, string_list & s )
         break;
     }
     string suffix;
-    RFF::TexenvCombineOp op = i == 0 ? env.rgb.op0 : i == 1 ? env.rgb.op1 : env.rgb.op2;
+    Iff::TexenvCombineOp op = i == 0 ? env.rgb.op0 : i == 1 ? env.rgb.op1 : env.rgb.op2;
     switch( op ) {
-      case RFF::TCO_Alpha:
-      case RFF::TCO_OneMinusAlpha:
+      case Iff::TCO_Alpha:
+      case Iff::TCO_OneMinusAlpha:
         suffix = ".www";
         break;
-      case RFF::TCO_Color:
-      case RFF::TCO_OneMinusColor:
+      case Iff::TCO_Color:
+      case Iff::TCO_OneMinusColor:
         suffix = ".xyz";
         break;
       default:
@@ -727,33 +733,33 @@ void AddTexEnvCombine( RFF::TextureEnv & env, string_list & s )
       s << "        vec3 csrc" << i << " = vec3(0.0f, 0.0f, 0.0f);\n";
     } else {
       s << "        vec3 csrc" << i << " = ";
-      if( op == RFF::TCO_OneMinusColor || op == RFF::TCO_OneMinusAlpha ) {
+      if( op == Iff::TCO_OneMinusColor || op == Iff::TCO_OneMinusAlpha ) {
         s << "1 - ";
       }
       s << source << suffix << ";\n";
     }
   }
   switch( env.rgb.mode ) {
-    case RFF::TEC_Replace:
+    case Iff::TEC_Replace:
       s << "        p.xyz = csrc0;\n";
       break;
-    case RFF::TEC_Modulate:
+    case Iff::TEC_Modulate:
       s << "        p.xyz = csrc0 * csrc1;\n";
       break;
-    case RFF::TEC_Add:
+    case Iff::TEC_Add:
       s << "        p.xyz = csrc0 + csrc1;\n";
       break;
-    case RFF::TEC_AddSigned:
+    case Iff::TEC_AddSigned:
       s << "        p.xyz = csrc0 + csrc1 - 0.5;\n";
       break;
-    case RFF::TEC_Subtract:
+    case Iff::TEC_Subtract:
       s << "        p.xyz = csrc0 - csrc1;\n";
       break;
-    case RFF::TEC_Dot3Rgb:
-    case RFF::TEC_Dot3Rgba:
+    case Iff::TEC_Dot3Rgb:
+    case Iff::TEC_Dot3Rgba:
       s << "        p.xyz = dot( ( 2.0 * csrc0 - 1.0 ), ( 2.0 * csrc1 - 1.0 ) );\n";
       break;
-    case RFF::TEC_Interpolate:
+    case Iff::TEC_Interpolate:
       s << "        p.xyz = mix( csrc0, csrc1, csrc2);\n";
       break;
     default:
@@ -766,18 +772,18 @@ void AddTexEnvCombine( RFF::TextureEnv & env, string_list & s )
     for( int i = 0; i < aSources; i++ ) {
       bool skip = false;
       string source;
-      RFF::TexenvCombineSrc src = i == 0 ? env.a.src0 : i == 1 ? env.a.src1 : env.a.src2;
+      Iff::TexenvCombineSrc src = i == 0 ? env.a.src0 : i == 1 ? env.a.src1 : env.a.src2;
       switch( src ) {
-        case RFF::TCS_PrimaryColor:
+        case Iff::TCS_PrimaryColor:
           source = "rglFrontColor";
           break;
-        case RFF::TCS_Constant:
+        case Iff::TCS_Constant:
           source = "rglConstantColor";
           break;
-        case RFF::TCS_Previous:
+        case Iff::TCS_Previous:
           source = "p";
           break;
-        case RFF::TCS_Texture:
+        case Iff::TCS_Texture:
           source = "s";
           break;
         default:
@@ -787,31 +793,31 @@ void AddTexEnvCombine( RFF::TextureEnv & env, string_list & s )
       if ( skip ) {
         s << "        float asrc" << i << " = 0.0f;\n";
       } else {
-        RFF::TexenvCombineOp op = i == 0 ? env.a.op0 : i == 1 ? env.a.op1 : env.a.op2;
+        Iff::TexenvCombineOp op = i == 0 ? env.a.op0 : i == 1 ? env.a.op1 : env.a.op2;
         s << "        float asrc" << i << " = ";
-        if( op == RFF::TCO_OneMinusAlpha ) {
+        if( op == Iff::TCO_OneMinusAlpha ) {
           s << "1 - ";
         }
         s << source << ".w;\n";
       }
     }
     switch( env.a.mode ) {
-      case RFF::TEC_Replace:
+      case Iff::TEC_Replace:
         s << "        p.w = asrc0;\n";
         break;
-      case RFF::TEC_Modulate:
+      case Iff::TEC_Modulate:
         s << "        p.w = asrc0 * asrc1;\n";
         break;
-      case RFF::TEC_Add:
+      case Iff::TEC_Add:
         s << "        p.w = asrc0 + asrc1;\n";
         break;
-      case RFF::TEC_AddSigned:
+      case Iff::TEC_AddSigned:
         s << "        p.w = asrc0 + asrc1 - 0.5;\n";
         break;
-      case RFF::TEC_Subtract:
+      case Iff::TEC_Subtract:
         s << "        p.w = asrc0 - asrc1;\n";
         break;
-      case RFF::TEC_Interpolate:
+      case Iff::TEC_Interpolate:
         s << "        p.w = mix( asrc0, asrc1, asrc2 );\n";
         break;
       default:
@@ -855,51 +861,53 @@ string TexEnvFuncName( GLenum mode, GLenum format ) {
 
 string TargetSuffix( GLubyte ttb ) {
   switch( ttb ) {
-    case RFF::TT_1D: return "1D";
-    case RFF::TT_2D: return "2D";
-    case RFF::TT_Rect: return "Rect";
-    case RFF::TT_3D: return "3D";
-    case RFF::TT_CubeMap: return "Cube";
+    case Iff::TT_1D: return "1D";
+    case Iff::TT_2D: return "2D";
+    case Iff::TT_Rect: return "Rect";
+    case Iff::TT_3D: return "3D";
+    case Iff::TT_CubeMap: return "Cube";
     default: break;
   }
   return "";
 }
 
-string TextureFetch( bool es, bool legacy, RFF::TextureTargetBitfield b ) {
+string TextureFetch( bool es, bool legacy, Iff::TextureTargetBitfield b ) {
   if( es || legacy ) {
     switch( b ) {
-      case RFF::TT_1D:      return "texture1D";
-      case RFF::TT_2D:      return "texture2D";
-      case RFF::TT_CubeMap: return "textureCube";
+      case Iff::TT_1D:      return "texture1D";
+      case Iff::TT_2D:      return "texture2D";
+      case Iff::TT_CubeMap: return "textureCube";
       default: break;
     }
   }
   return "texture";
 }
-string TextureFetchSwizzle( bool es, bool legacy, RFF::TextureTargetBitfield b ) {
+string TextureFetchSwizzle( bool es, bool legacy, Iff::TextureTargetBitfield b ) {
   if( es || legacy ) {
     switch( b ) {
-      case RFF::TT_1D:      return ".x";
-      case RFF::TT_2D:      return ".xy";
-      case RFF::TT_Rect:    return ".xy";
-      case RFF::TT_3D:      return ".xyz";
-      case RFF::TT_CubeMap: return ".xyz";
+      case Iff::TT_1D:      return ".x";
+      case Iff::TT_2D:      return ".xy";
+      case Iff::TT_Rect:    return ".xy";
+      case Iff::TT_3D:      return ".xyz";
+      case Iff::TT_CubeMap: return ".xyz";
       default: break;
     }
     return "";
   }
   switch( b ) {
-    case RFF::TT_1D:      return ".x";
-    case RFF::TT_2D:      return ".xy";
-    case RFF::TT_Rect:    return ".xy";
-    case RFF::TT_3D:      return ".xyz";
-    case RFF::TT_CubeMap: return ".xyz";
+    case Iff::TT_1D:      return ".x";
+    case Iff::TT_2D:      return ".xy";
+    case Iff::TT_Rect:    return ".xy";
+    case Iff::TT_3D:      return ".xyz";
+    case Iff::TT_CubeMap: return ".xyz";
     default: break;
   }
   return "";
 }
 
-void GenerateFragmentShaderSource( RFF * rff, string_list & src ) {
+void GenerateFragmentShaderSource( Iff * rff, string_list &src )
+{
+  Internal("Regal::Rff::GenerateFragmentShaderSource",rff);
 
   const Store & st = rff->ffstate.processed;
   if( rff->gles ) {
@@ -943,21 +951,21 @@ void GenerateFragmentShaderSource( RFF * rff, string_list & src ) {
     src << "in vec4 rglFOG;\n";
   }
   bool needsConstantColor = false;
-  for( int i = 0; i < REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS; i++ ) {
+  for( int i = 0; i < REGAL_EMU_IFF_TEXTURE_UNITS; i++ ) {
     Texture t = rff->ffstate.processed.tex[i];
     if( t.enables == 0 ) {
       continue;
     }
     src << "uniform sampler" << TargetSuffix( t.enables ) << " rglSampler" << i << ";\n";
     src << "in vec4 rglTEXCOORD" << i << ";\n";
-    RFF::TextureEnv & env = t.unit.env;
-    if( env.mode == RFF::TEM_Combine ) {
+    Iff::TextureEnv & env = t.unit.env;
+    if( env.mode == Iff::TEM_Combine ) {
       needsConstantColor =
-      env.rgb.src0 == RFF::TCS_Constant ||
-      env.rgb.src1 == RFF::TCS_Constant ||
-      env.rgb.src2 == RFF::TCS_Constant ;
+      env.rgb.src0 == Iff::TCS_Constant ||
+      env.rgb.src1 == Iff::TCS_Constant ||
+      env.rgb.src2 == Iff::TCS_Constant ;
     }
-    if( env.mode == RFF::TEM_Blend ) {
+    if( env.mode == Iff::TEM_Blend ) {
       src << "uniform vec4 rglTexEnvColor" << i << ";\n";
     }
   }
@@ -970,7 +978,7 @@ void GenerateFragmentShaderSource( RFF * rff, string_list & src ) {
     }
   }
   if( st.alphaTest.enable ) {
-    if (st.alphaTest.comp != RFF::CF_Never && st.alphaTest.comp != RFF::CF_Always ) {
+    if (st.alphaTest.comp != Iff::CF_Never && st.alphaTest.comp != Iff::CF_Always ) {
       src << "uniform float rglAlphaRef;\n";
     }
   }
@@ -989,9 +997,9 @@ void GenerateFragmentShaderSource( RFF * rff, string_list & src ) {
     src << "    vec4 p = rglFrontColor;\n";
   }
   bool s_declared = false;
-  for( int i = 0; i < REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS; i++ ) {
+  for( int i = 0; i < REGAL_EMU_IFF_TEXTURE_UNITS; i++ ) {
     Texture t = rff->ffstate.processed.tex[ i ];
-    RFF::TextureTargetBitfield b = rff->ffstate.GetTextureEnable( i );
+    Iff::TextureTargetBitfield b = rff->ffstate.GetTextureEnable( i );
     if( b == 0 ) {
       continue;
     }
@@ -1000,15 +1008,15 @@ void GenerateFragmentShaderSource( RFF * rff, string_list & src ) {
       s_declared = true;
     }
     switch( b ) {
-      case RFF::TT_1D:
-      case RFF::TT_2D:
+      case Iff::TT_1D:
+      case Iff::TT_2D:
       {
         src << "    s = " << TextureFetch( rff->gles, rff->legacy, b )
             << "( rglSampler" << i << ", rglTEXCOORD" << i
             << TextureFetchSwizzle( rff->gles, rff->legacy, b ) << " / rglTEXCOORD" << i << ".w );\n";
         break;
       }
-      case RFF::TT_CubeMap:
+      case Iff::TT_CubeMap:
       {
         src << "    s = " << TextureFetch( rff->gles, rff->legacy, b )
             << "( rglSampler" << i << ", rglTEXCOORD" << i
@@ -1021,14 +1029,14 @@ void GenerateFragmentShaderSource( RFF * rff, string_list & src ) {
         break;
     }
     switch( t.unit.env.mode ) {
-      case RFF::TEM_Replace:
-      case RFF::TEM_Modulate:
-      case RFF::TEM_Add:
-      case RFF::TEM_Decal:
-      case RFF::TEM_Blend:
+      case Iff::TEM_Replace:
+      case Iff::TEM_Modulate:
+      case Iff::TEM_Add:
+      case Iff::TEM_Decal:
+      case Iff::TEM_Blend:
         AddTexEnv( i, t.unit.env.mode, t.unit.fmt, src );
         break;
-      case RFF::TEM_Combine:
+      case Iff::TEM_Combine:
         AddTexEnvCombine( t.unit.env, src );
         break;
       default:
@@ -1051,13 +1059,13 @@ void GenerateFragmentShaderSource( RFF * rff, string_list & src ) {
   if( st.fog.enable ) {
     src << "    float f = abs( -rglFOG.z / rglFOG.w );\n";
     switch( st.fog.mode ) {
-      case RFF::FG_Linear:
+      case Iff::FG_Linear:
         src << "    float fogFactor = ( rglFog[0].z - f ) / ( rglFog[0].z - rglFog[0].y );\n";
         break;
-      case RFF::FG_Exp:
+      case Iff::FG_Exp:
         src << "    float fogFactor = exp( -( rglFog[0].x * f ) );\n";
         break;
-      case RFF::FG_Exp2:
+      case Iff::FG_Exp2:
         src << "    float fogFactor = exp( -( rglFog[0].x * rglFog[0].x * f * f ) );\n";
         break;
       default:
@@ -1070,14 +1078,14 @@ void GenerateFragmentShaderSource( RFF * rff, string_list & src ) {
   }
   if( st.alphaTest.enable ) {
     switch( st.alphaTest.comp ) {
-      case RFF::CF_Never:    src << "    discard;\n"; break;
-      case RFF::CF_Less:     src << "    if( rglFragColor.w >= rglAlphaRef ) discard;\n"; break;
-      case RFF::CF_Greater:  src << "    if( rglFragColor.w <= rglAlphaRef ) discard;\n"; break;
-      case RFF::CF_Lequal:   src << "    if( rglFragColor.w > rglAlphaRef ) discard;\n"; break;
-      case RFF::CF_Gequal:   src << "    if( rglFragColor.w < rglAlphaRef ) discard;\n"; break;
-      case RFF::CF_Equal:    src << "    if( rglFragColor.w != rglAlphaRef ) discard;\n"; break;
-      case RFF::CF_NotEqual: src << "    if( rglFragColor.w == rglAlphaRef ) discard;\n"; break;
-      case RFF::CF_Always: break;
+      case Iff::CF_Never:    src << "    discard;\n"; break;
+      case Iff::CF_Less:     src << "    if( rglFragColor.w >= rglAlphaRef ) discard;\n"; break;
+      case Iff::CF_Greater:  src << "    if( rglFragColor.w <= rglAlphaRef ) discard;\n"; break;
+      case Iff::CF_Lequal:   src << "    if( rglFragColor.w > rglAlphaRef ) discard;\n"; break;
+      case Iff::CF_Gequal:   src << "    if( rglFragColor.w < rglAlphaRef ) discard;\n"; break;
+      case Iff::CF_Equal:    src << "    if( rglFragColor.w != rglAlphaRef ) discard;\n"; break;
+      case Iff::CF_NotEqual: src << "    if( rglFragColor.w == rglAlphaRef ) discard;\n"; break;
+      case Iff::CF_Always: break;
       default: src << "//ERROR: Unsupported alpha comp func\n"; break;
     }
   }
@@ -1123,8 +1131,11 @@ r3::Matrix4f RescaleNormal( const r3::Matrix4f & m ) {
 static GLchar dbgLog[1<<15];
 static GLsizei dbgLogLen;
 
-bool State::SetEnable( RFF * ffn, bool enable, GLenum cap ) {
-  RFF::Version & ver = ffn->ver;
+bool State::SetEnable( Iff * ffn, bool enable, GLenum cap )
+{
+  Internal("Regal::State::SetEnable",enable," ",Token::GLenumToString(cap));
+
+  Iff::Version & ver = ffn->ver;
   int activeTex = ffn->activeTextureIndex;
   int shift;
   switch( cap ) {
@@ -1171,7 +1182,8 @@ bool State::SetEnable( RFF * ffn, bool enable, GLenum cap ) {
     default:
       return false;
   }
-  if( activeTex >= REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS ) {
+  if( activeTex >= REGAL_EMU_IFF_TEXTURE_UNITS ) {
+    Warning( "Active texture index is too large: ", activeTex, " >= ", REGAL_EMU_IFF_TEXTURE_UNITS );
     return true;
   }
   Texture & t = raw.tex[ activeTex ];
@@ -1181,13 +1193,16 @@ bool State::SetEnable( RFF * ffn, bool enable, GLenum cap ) {
   } else {
     t.enables &= ~v;
   }
-  //Logging::Output( "%d %d\n", activeTex, t.enables );
+  Internal("Regal::State::SetEnable","activeTex=",activeTex," enables=",t.enables);
   raw.ver = ver.Update();
   return true;
 }
 
-void State::SetLight( RFF * ffn, GLenum light, GLenum pname, const GLfloat * params ) {
-  RFF::Version & ver = ffn->ver;
+void State::SetLight( Iff * ffn, GLenum light, GLenum pname, const GLfloat * params )
+{
+  Internal("Regal::State::SetLight",light,Token::GLenumToString(pname));
+
+  Iff::Version & ver = ffn->ver;
   int idx = light - GL_LIGHT0;
   if( idx < 0 || idx >= REGAL_FIXED_FUNCTION_MAX_LIGHTS ) {
     return;
@@ -1259,8 +1274,11 @@ void State::SetLight( RFF * ffn, GLenum light, GLenum pname, const GLfloat * par
   }
 }
 
-void State::SetMaterial( RFF * ffn, GLenum face, GLenum pname, const GLfloat * params ) {
-  RFF::Version & ver = ffn->ver;
+void State::SetMaterial( Iff * ffn, GLenum face, GLenum pname, const GLfloat * params )
+{
+  Internal("Regal::State::SetMaterial",face,Token::GLenumToString(pname));
+
+  Iff::Version & ver = ffn->ver;
   for( int i = 0; i < 2; i++ ) {
     if( ( i == 0 && face == GL_BACK ) || ( i == 1 && face == GL_FRONT ) ) {
       continue;
@@ -1279,8 +1297,10 @@ void State::SetMaterial( RFF * ffn, GLenum face, GLenum pname, const GLfloat * p
   }
 }
 
-void State::GetMaterial( RFF * ffn, GLenum face, GLenum pname, GLfloat * params )
+void State::GetMaterial( Iff * ffn, GLenum face, GLenum pname, GLfloat * params )
 {
+  Internal("Regal::State::GetMaterial",face,Token::GLenumToString(pname));
+
   UNUSED_PARAMETER(ffn);
 
   for( int i = 0; i < 2; i++ ) {
@@ -1299,7 +1319,7 @@ void State::GetMaterial( RFF * ffn, GLenum face, GLenum pname, GLfloat * params 
   }
 }
 
-void State::SetTexgen( RegalIff * ffn, int coord, GLenum space, const GLfloat * params )
+void State::SetTexgen( Iff * ffn, int coord, GLenum space, const GLfloat * params )
 {
   Internal("State::SetTexgen ",ffn,coord,toString(space),boost::print::array(params,4));
 
@@ -1314,7 +1334,7 @@ void State::SetTexgen( RegalIff * ffn, int coord, GLenum space, const GLfloat * 
   *tguver = uniform.ver = ffn->ver.Update();
 }
 
-void State::GetTexgen( RegalIff * ffn, int coord, GLenum space, GLfloat * params )
+void State::GetTexgen( Iff * ffn, int coord, GLenum space, GLfloat * params )
 {
   Internal("State::GetTexgen ",ffn,coord,toString(space));
 
@@ -1337,13 +1357,15 @@ void State::GetTexgen( RegalIff * ffn, int coord, GLenum space, GLfloat * params
   }
 }
 
-void State::SetAlphaFunc( RegalIff * ffn, RegalIff::CompareFunc comp, GLfloat alphaRef ) {
+void State::SetAlphaFunc( Iff * ffn, Iff::CompareFunc comp, GLfloat alphaRef )
+{
   raw.alphaTest.comp = comp;
   uniform.alphaTest.alphaRef = std::min( 1.0f, std::max( 0.0f, alphaRef ) );
   uniform.alphaTest.ver = uniform.ver = raw.ver = ffn->ver.Update();
 }
 
-void State::SetClip( RegalIff * ffn, GLenum plane, const GLfloat * equation ) {
+void State::SetClip( Iff * ffn, GLenum plane, const GLfloat * equation )
+{
   int idx = plane - GL_CLIP_PLANE0;
   if( idx >= REGAL_FIXED_FUNCTION_MAX_CLIP_PLANES ) {
     return;
@@ -1352,7 +1374,10 @@ void State::SetClip( RegalIff * ffn, GLenum plane, const GLfloat * equation ) {
   uniform.clip[ idx ].ver = uniform.ver = ffn->ver.Update();
 }
 
-void Program::Init( RegalContext * ctx, const Store & sstore, const GLchar *vsSrc, const GLchar *fsSrc ) {
+void Program::Init( RegalContext * ctx, const Store & sstore, const GLchar *vsSrc, const GLchar *fsSrc )
+{
+  Internal("Regal::Program::Init","()");
+
   ver = 0;
   progcount = 0;
   RegalAssert(ctx);
@@ -1378,21 +1403,11 @@ void Program::Init( RegalContext * ctx, const Store & sstore, const GLchar *vsSr
   Uniforms( ctx, tbl );
   tbl.call(&tbl.glUseProgram)( ctx->iff->program );
 }
-void Program::Init( RegalContext * ctx, const Store & sstore ) {
-  ver = 0;
-  progcount = 0;
-  DispatchTable & tbl = ctx->dispatcher.emulation;
-  store = sstore;
-  Attribs( ctx );
-  tbl.glLinkProgram( pg );
-  tbl.glUseProgram( pg );
-  Samplers( ctx, tbl );
-  Uniforms( ctx, tbl );
-  tbl.glUseProgram( ctx->iff->program );
-}
 
 void Program::Shader( RegalContext * ctx, DispatchTable & tbl, GLenum type, GLuint & shader, const GLchar *src )
 {
+  Internal("Regal::Program::Shader","()");
+
   UNUSED_PARAMETER(ctx);
 
   const GLchar *srcs[] = { src };
@@ -1413,7 +1428,10 @@ void Program::Shader( RegalContext * ctx, DispatchTable & tbl, GLenum type, GLui
   tbl.call(&tbl.glAttachShader)( pg, shader );
 }
 
-void Program::Attribs( RegalContext * ctx ) {
+void Program::Attribs( RegalContext * ctx )
+{
+  Internal("Regal::Program::Attribs","()");
+
   DispatchTable & tbl = ctx->dispatcher.emulation;
 
   tbl.call(&tbl.glBindAttribLocation)( pg, ctx->iff->ffAttrMap[ RFF2A_Vertex ], "rglVertex" );
@@ -1430,7 +1448,7 @@ void Program::Attribs( RegalContext * ctx ) {
   if( store.fog.enable && store.fog.useDepth == false ) {
     tbl.call(&tbl.glBindAttribLocation)( pg, ctx->iff->ffAttrMap[ RFF2A_FogCoord ], "rglFogCoord" );
   }
-  GLuint units = std::min( (GLuint)ctx->iff->ffAttrNumTex, (GLuint)REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS );
+  GLuint units = std::min( (GLuint)ctx->iff->ffAttrNumTex, (GLuint)REGAL_EMU_IFF_TEXTURE_UNITS );
   for( GLuint i = 0; i < units; i++ ) {
 #ifndef REGAL_HACK_SET_001
     if( store.tex[i].enables == 0 ) {
@@ -1443,14 +1461,40 @@ void Program::Attribs( RegalContext * ctx ) {
   }
 }
 
+// seth: for user program mode just do all the bind attribs, aliasing is OK in GL
+void Program::UserShaderModeAttribs( RegalContext * ctx )
+{
+  Internal("Regal::Program::UserShaderModeAttribs","()");
+
+  DispatchTable & tbl = ctx->dispatcher.emulation;
+
+  tbl.call(&tbl.glBindAttribLocation)( pg, ctx->iff->ffAttrMap[ RFF2A_Vertex ], "rglVertex" );
+  tbl.call(&tbl.glBindAttribLocation)( pg, ctx->iff->ffAttrMap[ RFF2A_Normal ], "rglNormal" );
+  tbl.call(&tbl.glBindAttribLocation)( pg, ctx->iff->ffAttrMap[ RFF2A_Color ], "rglColor" );
+  tbl.call(&tbl.glBindAttribLocation)( pg, ctx->iff->ffAttrMap[ RFF2A_SecondaryColor ], "rglSecondaryColor" );
+  tbl.call(&tbl.glBindAttribLocation)( pg, ctx->iff->ffAttrMap[ RFF2A_FogCoord ], "rglFogCoord" );
+  GLuint units = std::min( /*(GLuint)ctx->iff->ffAttrNumTex*/(GLuint)16, (GLuint)REGAL_EMU_IFF_TEXTURE_UNITS );
+  for( GLuint i = 0; i < units; i++ ) {
+    if( store.tex[i].enables == 0 ) {
+      continue;
+    }
+    string_list ss;
+    ss << "rglMultiTexCoord" << i;
+    tbl.call(&tbl.glBindAttribLocation)( pg, ctx->iff->ffAttrTexBegin + i, ss.str().c_str() );
+  }
+}
+
+
 void Program::Samplers( RegalContext * ctx, DispatchTable & tbl )
 {
+  Internal("Regal::Program::Samplers","()");
+
   UNUSED_PARAMETER(ctx);
 
   GLchar samp[64];
   strcpy( samp, "rglSamplerN" );
   int len = (int)strlen( samp );
-  for( GLchar i = 0; i < REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS; i++ ) {
+  for( GLchar i = 0; i < REGAL_EMU_IFF_TEXTURE_UNITS; i++ ) {
     samp[ len - 1 ] = '0' + i;
     GLint slot = tbl.call(&tbl.glGetUniformLocation)( pg, samp );
     if( slot >= 0 ) {
@@ -1461,6 +1505,8 @@ void Program::Samplers( RegalContext * ctx, DispatchTable & tbl )
 
 void Program::Uniforms( RegalContext * ctx, DispatchTable & tbl )
 {
+  Internal("Regal::Program::Uniforms","()");
+
   UNUSED_PARAMETER(ctx);
 
   for( size_t i = 1; i < sizeof(regalFFUniformInfo)/sizeof(regalFFUniformInfo[0]); i++ ) {
@@ -1471,12 +1517,14 @@ void Program::Uniforms( RegalContext * ctx, DispatchTable & tbl )
   }
 }
 
-void RFF::InitFixedFunction( RegalContext * ctx )
+void Iff::InitFixedFunction( RegalContext * ctx )
 {
+  Internal("Regal::Rff::InitFixedFunction","()");
+
   RegalAssert(ctx);
   RegalAssert(ctx->info);
 
-  gles     = ctx->info->gles;
+  gles   = ctx->info->es2;
   legacy = ctx->info->compat && ctx->info->gl_version_major<=2;
 
   shadowMatrixMode = GL_MODELVIEW;
@@ -1486,7 +1534,7 @@ void RFF::InitFixedFunction( RegalContext * ctx )
   shadowActiveTextureIndex = 0;
 
   currprog = NULL;
-  for( int i = 0; i < REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS; i++ ) {
+  for( int i = 0; i < REGAL_EMU_IFF_TEXTURE_UNITS; i++ ) {
     textureUnit[ i ] = TextureUnit();
     textureEnvColor[i] = Float4( 0.0f, 0.0f, 0.0f, 1.0f );
     textureEnvColorVer[i] = 0;
@@ -1542,10 +1590,17 @@ void RFF::InitFixedFunction( RegalContext * ctx )
   fmtmap[ GL_RGBA16 ] = GL_RGBA;
 
   fmtmap[ GL_RGBA16F ] = GL_RGBA16F;
+  fmtmap[ GL_SRGB ] = GL_SRGB;
+  fmtmap[ GL_SRGB8 ] = GL_SRGB;
   fmtmap[ GL_SRGB8_ALPHA8 ] = GL_SRGB8_ALPHA8;
+  fmtmap[ GL_SLUMINANCE ] = GL_SLUMINANCE;
+  fmtmap[ GL_SLUMINANCE8 ] = GL_SLUMINANCE;
 
   fmtmap[ GL_RGB16F_ARB ]       = GL_RGB;
   fmtmap[ GL_RGBA32F_ARB ]      = GL_RGB;
+
+  fmtmap[ GL_DEPTH_COMPONENT16 ] = GL_DEPTH_COMPONENT16;
+
   fmtmap[ GL_INTENSITY16F_ARB ] = GL_INTENSITY;
 
   // GL_ARB_ES2_compatibility
@@ -1553,7 +1608,10 @@ void RFF::InitFixedFunction( RegalContext * ctx )
   fmtmap[ GL_RGB565 ]           = GL_RGB;
 }
 
-void RFF::ShadowMultiTexBinding( GLenum texunit, GLenum target, GLuint obj ) {
+void Iff::ShadowMultiTexBinding( GLenum texunit, GLenum target, GLuint obj )
+{
+  Internal("Regal::Rff::ShadowMultiTexBinding",toString(texunit)," ",toString(target)," ",obj);
+
   activeTextureIndex = texunit - GL_TEXTURE0;
   if( activeTextureIndex > ( REGAL_EMU_MAX_TEXTURE_UNITS - 1 ) ) {
     return;
@@ -1567,24 +1625,28 @@ void RFF::ShadowMultiTexBinding( GLenum texunit, GLenum target, GLuint obj ) {
   ffstate.raw.ver = ver.Update();
 }
 
-void RFF::ShadowTextureInfo( GLuint obj, GLenum target, GLint internalFormat )
+void Iff::ShadowTextureInfo( GLuint obj, GLenum target, GLint internalFormat )
 {
+  Internal("Regal::Rff::ShadowTextureInfo",obj," ",GLenumToString(target)," ",GLenumToString(internalFormat));
+
   UNUSED_PARAMETER(target);
   // assert( target == tip->tgt );
   if( fmtmap.count( internalFormat ) == 0 ) {
-    Warning( "Unknown internal format: ", internalFormat );
+    Warning( "Unknown internal format: ", GLenumToString(internalFormat) );
   }
   GLint fmt = fmtmap[ internalFormat ];
   textureObjToFmt[ obj ] = fmt;
   ffstate.raw.ver = ver.Update();
 }
 
-void RFF::ShadowMultiTexInfo( GLenum texunit, GLenum target, GLint internalFormat ) {
+void Iff::ShadowMultiTexInfo( GLenum texunit, GLenum target, GLint internalFormat )
+{
   activeTextureIndex = texunit - GL_TEXTURE0;
   ShadowTexInfo( target, internalFormat );
 }
 
-void RFF::ShadowTexInfo( GLenum target, GLint internalFormat ) {
+void Iff::ShadowTexInfo( GLenum target, GLint internalFormat )
+{
   if( shadowActiveTextureIndex > ( REGAL_EMU_MAX_TEXTURE_UNITS - 1 ) ) {
     return;
   }
@@ -1592,7 +1654,8 @@ void RFF::ShadowTexInfo( GLenum target, GLint internalFormat ) {
   textureUnit[ shadowActiveTextureIndex ].fmt = fmtmap[ internalFormat ];
 }
 
-void RFF::TexEnv( GLenum texunit, GLenum target, GLenum pname, const GLfloat *v ) {
+void Iff::TexEnv( GLenum texunit, GLenum target, GLenum pname, const GLfloat *v )
+{
   activeTextureIndex = texunit - GL_TEXTURE0;
   switch( target ) {
     case GL_TEXTURE_ENV:
@@ -1614,13 +1677,16 @@ void RFF::TexEnv( GLenum texunit, GLenum target, GLenum pname, const GLfloat *v 
   TexEnv( texunit, target, pname, iv );
 }
 
-void RFF::TexEnv( GLenum texunit, GLenum target, GLenum pname, const GLint *v ) {
+void Iff::TexEnv( GLenum texunit, GLenum target, GLenum pname, const GLint *v )
+{
+  Internal("Regal::Rff::TexEnv",GLenumToString(texunit)," ",GLenumToString(target)," ",GLenumToString(pname));
+
   activeTextureIndex = texunit - GL_TEXTURE0;
   switch( target ) {
     case GL_TEXTURE_ENV:
       switch( pname ) {
         case GL_TEXTURE_ENV_MODE: {
-          if( activeTextureIndex >= REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS ) {
+          if( activeTextureIndex >= REGAL_EMU_IFF_TEXTURE_UNITS ) {
             return;
           }
           TextureUnit *tup = & textureUnit[ activeTextureIndex ];
@@ -1770,7 +1836,10 @@ inline size_t compute_hash(const Store &val)
   return Lookup3::hashlittle(reinterpret_cast<const char *>(&val) + sizeof(GLuint), sizeof(Store)-sizeof(GLuint64)-sizeof(GLuint), 0);
 }
 
-void RFF::State::Process( RegalIff * ffn ) {
+void Iff::State::Process( Iff * ffn )
+{
+  Internal("Regal::State::Process","()");
+
   const Store & r = raw;
   Store & p = processed;
   StoreUniform & u = uniform;
@@ -1792,12 +1861,12 @@ void RFF::State::Process( RegalIff * ffn ) {
 
   u.alphaTest.alphaRef = floor( u.alphaTest.alphaRef * 255.0f + 0.5f ) / 255.0f;
 
-  for( int i = 0; i < REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS; i++ ) {
+  for( int i = 0; i < REGAL_EMU_IFF_TEXTURE_UNITS; i++ ) {
     TextureUnit & ti = ffn->textureUnit[ i ];
     raw.tex[i].unit = ti;
   }
 
-  for( int i = 0; i < REGAL_FIXED_FUNCTION_MAX_TEXTURE_UNITS; i++ ) {
+  for( int i = 0; i < REGAL_EMU_IFF_TEXTURE_UNITS; i++ ) {
     Texture & pt = p.tex[i];
     const Texture & rt= r.tex[i];
     // for processed state, only the highest priority texture enable set (others are dont-care)
@@ -1833,7 +1902,10 @@ void RFF::State::Process( RegalIff * ffn ) {
   p.hash = (GLuint) compute_hash(p);
 }
 
-void RFF::UpdateUniforms( RegalContext * ctx ) {
+void Iff::UpdateUniforms( RegalContext * ctx )
+{
+  Internal("Regal::Rff::UpdateUniforms",ctx);
+
   Program & pgm = *currprog;
   DispatchTable & tbl = ctx->dispatcher.emulation;
   if( pgm.ver != ffstate.Ver() ) {
@@ -2005,7 +2077,7 @@ void RFF::UpdateUniforms( RegalContext * ctx ) {
         case FFU_Attrib: {
           if( ui.ver != u.vabVer ) {
             ui.ver = u.vabVer;
-            tbl.glUniform4fv( ui.slot, REGAL_MAX_VERTEX_ATTRIBS, & immVab.attr[0].x );
+            tbl.glUniform4fv( ui.slot, REGAL_EMU_IFF_VERTEX_ATTRIBS, & immVab.attr[0].x );
           }
           break;
         }
@@ -2016,9 +2088,9 @@ void RFF::UpdateUniforms( RegalContext * ctx ) {
   }
 }
 
-inline bool operator == ( const RFF::State::Store & lhs, const RFF::State::Store & rhs )
+inline bool operator == ( const Iff::State::Store & lhs, const Iff::State::Store & rhs )
 {
-  return memcmp(&lhs,&rhs,sizeof( RFF::State::Store ) - sizeof( lhs.ver ))==0;
+  return memcmp(&lhs,&rhs,sizeof( Iff::State::Store ) - sizeof( lhs.ver ))==0;
 }
 
 inline size_t ProgHashToSet( size_t hash ) {
@@ -2028,7 +2100,10 @@ inline size_t ProgHashToSet( size_t hash ) {
 std::vector<GLuint> wayhist(1 << ( REGAL_FIXED_FUNCTION_PROGRAM_CACHE_SIZE_BITS - REGAL_FIXED_FUNCTION_PROGRAM_CACHE_SET_BITS ),0);
 std::vector<GLuint> evicthist(1 << ( REGAL_FIXED_FUNCTION_PROGRAM_CACHE_SIZE_BITS - REGAL_FIXED_FUNCTION_PROGRAM_CACHE_SET_BITS ),0);
 
-void RFF::UseFixedFunctionProgram( RegalContext * ctx ) {
+void Iff::UseFixedFunctionProgram( RegalContext * ctx )
+{
+  Internal("Regal::Rff::UseFixedFunctionProgram",ctx);
+
   if( currprog != NULL && currprog->ver == ver.Current() ) {
     return;
   }
@@ -2094,16 +2169,15 @@ void RFF::UseFixedFunctionProgram( RegalContext * ctx ) {
   UpdateUniforms( ctx );
 }
 
-void RFF::UseShaderProgram( RegalContext * ctx ) {
+void Iff::UseShaderProgram( RegalContext * ctx )
+{
+  Internal("Regal::Rff::UseShaderProgram",ctx);
+
   if( currprog != NULL && currprog->ver == ver.Current() ) {
     return;
   }
   ffstate.Process( this );
-  if( shprogmap.count( program ) == 0 ) {
-    Program & p = shprogmap[ program ];
-    p.pg = program;
-    p.Init( ctx, ffstate.processed );
-  }
+  RegalAssert( shprogmap.count( program ) != 0 );
   currprog = & shprogmap[ program ];
   if( currprog->pg == 0 ) {
     Warning( "The program is 0. That can't be right.\n" );
@@ -2111,69 +2185,252 @@ void RFF::UseShaderProgram( RegalContext * ctx ) {
   UpdateUniforms( ctx );
 }
 
-static void stompVersion(GLchar *str)
+static int remove_version(GLchar *str)
+{
+  GLchar version[4];
+
+  if (!str)
+    return -1;
+
+  GLchar *i = str;
+  while ((i = strstr(i,"#version ")))
+  {
+    if (i==str || i[-1]=='\n')
+    {
+      i[0] = '/';
+      i[1] = '/';
+
+      // return version number
+      i+=9;
+      while (*i == ' ') i++;
+      for (int j=0; j<3; i++,j++)
+        version[j] = *i;
+      version[3] = '\0';
+      return atoi(version);
+    }
+    ++i;
+  }
+  return -1;
+}
+
+static void remove_precision(GLchar *str)
 {
   if (!str)
     return;
 
   GLchar *i = str;
-  while (i = strstr(i,"#version "))
+  while ((i = strstr(i,"precision ")))
   {
     if (i==str || i[-1]=='\n')
     {
       i[0] = '/';
       i[1] = '/';
     }
-    ++i;
+    i+=9;
   }
 }
 
-void RFF::ShaderSource( RegalContext *ctx, GLuint shader, GLsizei count, const GLchar **string, const GLint *length)
+// replace ftransform with "rgl_ftform" in order to avoid conflict with possibly deprecated ftransform
+static void replace_ftransform(GLchar *str)
 {
-  if( string[0][0] == '#' && string[0][1] == 'v' ) {
-    ctx->dispatcher.emulation.glShaderSource( shader, count, string, length );
+  if (!str)
+    return;
+
+  GLchar *i = str;
+  const GLchar *replacement = "rgl_ftform";
+  while ((i = strstr(i,"ftransform()")))
+  {
+    memcpy( i, replacement, 10 );
+    i+=10;
+  }
+}
+
+static bool uses_string( const char * str, int count, const GLchar **srcstr, const GLint *length ) {
+    for( int i = 0; i < count; i++ ) {
+       const size_t len = (length && length[i] >= 0) ? length[i] : strlen(srcstr[i]);
+       std::string seg(srcstr[i],len);
+       if( seg.find( str ) != std::string::npos ) {
+           return true;
+       }
+    }
+    return false;
+}
+
+void Iff::ShaderSource( RegalContext *ctx, GLuint shader, GLsizei count, const GLchar **srcstr, const GLint *length)
+{
+  bool uses_ftransform = false;
+  for( int i = 0; i < count && uses_ftransform == false; i++ ) {
+    std::string seg;
+    if( length != NULL ) {
+      seg = std::string( srcstr[i], length[i] );
+    } else {
+      seg = std::string( srcstr[i] );
+    }
+    if( seg.find( "ftransform()" ) != std::string::npos ) {
+      uses_ftransform = true;
+    }
+  }
+  //uses_ftransform = false; // hack
+  if( srcstr[0][0] == '#' && srcstr[0][1] == 'v' ) {
+    ctx->dispatcher.emulation.glShaderSource( shader, count, srcstr, length );
     return;
   }
 
-  std::vector< const GLchar * > s;
-  s.resize( count + 1 );
-  std::vector< GLint > l;
-  l.resize( count + 1 );
-  for( size_t i = 1; i < s.size(); i++ )
+  // Make room for Regal preamble
+
+  std::vector<GLchar *> s(count + 1);
+  std::vector<GLint   > l(count + 1);
+
+  // Copy the input shader code so we can change it in-place
+  int version = -1;
+  for (GLsizei i=0; i<count; ++i)
   {
-    if (string) {
-      s[i] = string[i - 1];
-    }
-    l[i] = length ? length[i - 1] : static_cast<GLint>( strlen( string[ i - 1 ] ));
+    l[i+1] = length ? length[i] : static_cast<GLint>(strlen(static_cast<const char *>(srcstr[i])));
+    if (srcstr)
+      s[i+1] = strndup(srcstr[i],l[i+1]);
+    if (version<0)
+      version = remove_version(s[i+1]);
+    if (uses_ftransform && gles )
+      replace_ftransform(s[i+1]);
+    if( legacy )
+      remove_precision(s[i+1]);
   }
+
+
+  // Preamble
+
   string_list ss;
-  if( gles ) {
-    ss << "#version 100\n";
-  } else if ( legacy ) {
-    ss << "#version 120\n";
-  } else {
-    ss << "#version 140\n";
+  if (gles)
+  {
+    // hack around #version 100 on x86 failing compilation
+    if( ctx->info->gl_version_major >= 3 ) {
+      ss << "#version 120\n";
+      ss << "#define precision\n";
+    } else {
+      ss << "#version 100\n";
+    }
   }
-  if( gles || legacy ) {
-    if( shaderTypeMap[ shader ] == GL_VERTEX_SHADER ) {
+  else if (legacy)
+  {
+    ss << "#version 120\n";
+    ss << "#define precision\n";
+  }
+  else
+  {
+    if (version > 0) {
+      // We should honor the version in the original shader if we can, but leave out for now.
+      //ss << "#version " << version << "\n";
+      if (shaderTypeMap[ shader ] == GL_VERTEX_SHADER)
+      {
+        ss << "#define in attribute\n";
+        ss << "#define out varying\n";
+      }
+      else
+      {
+        ss << "#define in varying\n";
+      }
+    } else {
+      ss << "#version 140\n";
+    }
+  }
+  if (gles || legacy)
+  {
+    if (shaderTypeMap[ shader ] == GL_VERTEX_SHADER)
+    {
       ss << "#define in attribute\n";
       ss << "#define out varying\n";
-    } else {
+    }
+    else
+    {
       ss << "#define in varying\n";
     }
   } else {
     if( shaderTypeMap[ shader ] == GL_VERTEX_SHADER ) {
 
     } else {
-      ss << "#define gl_FragColor rglFragColor\n";
+      ss << "#define gl_FragColor           rglFragColor\n";
+      ss << "out vec4 rglFragColor;\n";
       ss << "#define texture1D texture\n";
       ss << "#define texture2D texture\n";
       ss << "#define textureCube texture\n";
-      ss << "out vec4 rglFragColor;\n";
     }
   }
   if( gles ) {
     ss << "precision highp float;\n";
+  }
+
+  ss << "#define centroid                              \n";
+  ss << "#define gl_FogFragCoord        rglFogFragCoord\n";
+  if( shaderTypeMap[ shader ] == GL_VERTEX_SHADER ) {
+    ss << "#define gl_Color               rglColor\n";
+  } else {
+    ss << "#define gl_Color               rglFrontColor\n";
+  }
+  ss << "#define gl_FrontColor          rglFrontColor\n";
+  if( shaderTypeMap[ shader ] == GL_VERTEX_SHADER ) {
+    ss << "#define gl_SecondaryColor               rglSecondaryColor\n";
+  } else {
+    ss << "#define gl_SecondaryColor               rglFrontSecondaryColor\n";
+  }
+
+  ss << "#define gl_FrontSecondaryColor rglFrontSecondaryColor\n";
+  ss << "#define gl_ClipVertex          rglClipVertex\n";
+  ss << "#define gl_FragDepth           rglFragDepth\n";
+if( gles ) {
+  ss << "#define texture3d              texture2d\n";
+  ss << "#define texture3D(a,b)         texture2D(a,b.xy)\n";
+  ss << "#define sampler3D              sampler2D\n";
+}
+
+if( uses_string( "gl_FogFragCoord", count, srcstr, length ) ) {
+  ss << "out float rglFogFragCoord;\n";
+}
+
+// NOTE: ES 2.0 does not support gl_FragDepth, so we just discard it, for now
+// See: http://www.khronos.org/registry/gles/specs/2.0/GLSL_ES_Specification_1.0.17.pdf
+
+if( uses_string( "gl_FragDepth", count, srcstr, length ) ) {
+  ss << (shaderTypeMap[shader]==GL_VERTEX_SHADER ? "out" : " ") <<  " float rglFragDepth;\n";
+}
+
+
+if( uses_string( "gl_Color", count, srcstr, length ) ) {
+  if( shaderTypeMap[ shader ] == GL_VERTEX_SHADER ) {
+    ss << "in vec4 rglColor;\n";
+  } else {
+    ss << "in vec4 rglFrontColor;\n";
+  }
+}
+if( uses_string( "gl_FrontColor", count, srcstr, length ) ) {
+  ss << "out vec4 rglFrontColor;\n";
+}
+
+// NOTE: gl_SecondaryColor can be a vertex shader output, or a fragment shader input.
+// See: http://www.opengl.org/registry/doc/GLSLangSpec.4.30.7.pdf
+
+if( uses_string( "gl_SecondaryColor", count, srcstr, length ) ) {
+  if( shaderTypeMap[ shader ] == GL_VERTEX_SHADER ) {
+    ss << "in vec4 rglSecondaryColor;\n";
+  } else {
+    ss << "in vec4 rglFrontSecondaryColor;\n";
+  }
+}
+
+if( uses_string( "gl_FrontSecondaryColor", count, srcstr, length ) ) {
+  ss << "out vec4 rglFrontSecondaryColor;\n";
+}
+if( uses_string( "gl_ClipVertex", count, srcstr, length ) ) {
+  // should be "out", but temporarily disabled due to register pressure concerns
+  // ss << "out vec4 rglClipVertex;\n";
+  ss << "vec4 rglClipVertex;\n";
+}
+
+  if ( uses_ftransform  && gles ) {
+    ss << "uniform mat4 rglModelview;\n";
+    ss << "uniform mat4 rglProjection;\n";
+    // should be "in", but temporarily disabled due to register pressure concerns
+    // ss << "in vec4 rglVertex;\n";
+    ss << "vec4 rglVertex;\n";
   }
 
   ss << "#define gl_Modelview rglModelview\n";
@@ -2181,16 +2438,35 @@ void RFF::ShaderSource( RegalContext *ctx, GLuint shader, GLsizei count, const G
   ss << "#define gl_TextureMatrix0 rglTextureMatrix0\n";
   ss << "#define gl_Sampler0 rglSampler0\n\n";
 
+  if ( uses_ftransform && gles ) {
+    ss << "vec4 rgl_ftform() { return gl_Projection * gl_Modelview * rglVertex; }\n\n";
+  }
   //Logging::Output( "foo:\n%s", ss.str().c_str() );
-  std::string preamble = ss.str();
-  s[0] = preamble.c_str();
-  l[0] = static_cast<GLint>( strlen( s[0] ) );
-  ctx->dispatcher.emulation.glShaderSource( shader, count + 1, &s[0], &l[0] );
+
+  string preamble = ss.str();
+  s[0] = const_cast<char *>(preamble.c_str());
+  l[0] = (int)preamble.length();
+  ctx->dispatcher.emulation.glShaderSource( shader, count + 1, const_cast<const GLchar**>(&s[0]), &l[0] );
 }
 
-void RFF::LinkProgram( RegalContext *ctx, GLuint program ) {
+void Iff::LinkProgram( RegalContext *ctx, GLuint program ) {
+  // need to bind attribs just before link for Regal-generated attribs
+  if ( program != 0 ) {
+    if( shprogmap.count( program ) == 0 ) {
+      ffstate.Process( this );
+      Program & p = shprogmap[ program ];
+      p.pg = program;
+      p.UserShaderModeAttribs(ctx);
+    }
+  }
   ctx->dispatcher.emulation.glLinkProgram( program );
+  Program & p = shprogmap[ program ];
+  DispatchTable & tbl = ctx->dispatcher.emulation;
+  p.Samplers( ctx, tbl );
+  p.Uniforms( ctx, tbl );
 }
+
+}; // namespace Emu
 
 REGAL_NAMESPACE_END
 
