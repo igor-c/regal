@@ -305,7 +305,7 @@ typedef void * CGLPixelFormatObj;
 typedef void * CGLRendererInfoObj;
 typedef void * CGLPBufferObj;
 typedef void * CGLShareGroupObj;
-typedef void * IOSurfaceRef;
+typedef struct __IOSurface * IOSurfaceRef;
 typedef void * CGSConnectionID;
 typedef void * CGSWindowID;
 typedef void * CGSSurfaceID;

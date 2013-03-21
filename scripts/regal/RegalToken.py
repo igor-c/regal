@@ -53,6 +53,24 @@ namespace Token {
     return tmp.str();
   }
 
+  // http://www.opengl.org/sdk/docs/man3/xhtml/glMapBufferRange.xml
+
+  std::string GLbufferAccessToString(GLbitfield v)
+  {
+    const GLbitfield other = v & ~(GL_MAP_READ_BIT | GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+
+    string_list<std::string> tmp;
+    if (v & GL_MAP_READ_BIT)              { if (tmp.size()) tmp += " | "; tmp += "GL_MAP_READ_BIT"; }
+    if (v & GL_MAP_WRITE_BIT)             { if (tmp.size()) tmp += " | "; tmp += "GL_MAP_WRITE_BIT"; }
+    if (v & GL_MAP_INVALIDATE_RANGE_BIT)  { if (tmp.size()) tmp += " | "; tmp += "GL_MAP_INVALIDATE_RANGE_BIT"; }
+    if (v & GL_MAP_INVALIDATE_BUFFER_BIT) { if (tmp.size()) tmp += " | "; tmp += "GL_MAP_INVALIDATE_BUFFER_BIT"; }
+    if (v & GL_MAP_FLUSH_EXPLICIT_BIT)    { if (tmp.size()) tmp += " | "; tmp += "GL_MAP_FLUSH_EXPLICIT_BIT"; }
+    if (v & GL_MAP_UNSYNCHRONIZED_BIT)    { if (tmp.size()) tmp += " | "; tmp += "GL_MAP_UNSYNCHRONIZED_BIT"; }
+    if (other || v==0)                    { if (tmp.size()) tmp += " | "; tmp += size_t(other); }
+
+    return tmp.str();
+  }
+
   std::string GLTexParameterToString(GLenum pname, const GLfloat param)
   {
     switch (pname)
@@ -444,7 +462,8 @@ namespace Token {
   const char * GLbooleanToString     (GLboolean  v);
   const char * internalFormatToString(GLint      v);
 
-  std::string  GLclearToString       (GLbitfield v);
+  std::string GLclearToString       (GLbitfield v);
+  std::string GLbufferAccessToString(GLbitfield v);
 
   std::string GLTexParameterToString(GLenum pname, const GLfloat  param );
   std::string GLTexParameterToString(GLenum pname, const GLint    param );

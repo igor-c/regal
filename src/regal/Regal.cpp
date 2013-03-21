@@ -6504,6 +6504,10 @@ extern "C" {
     RegalContext *_context = REGAL_GET_CONTEXT();
     App("glDebugMessageInsertAMD","(", toString(category), ", ", toString(severity), ", ", id, ", ", length, ", ", boost::print::quote(buf,'"'), ")");
     if (!_context) return;
+    if (_context && _context->marker)
+      _context->marker->InsertEventMarker( *_context,length,buf );
+    RegalAssert(_context->info);
+    if (!_context->info->gl_amd_debug_output) return;
     DispatchTable *_next = &_context->dispatcher.front();
     RegalAssert(_next);
     _next->call(&_next->glDebugMessageInsertAMD)(category, severity, id, length, buf);
@@ -7580,6 +7584,10 @@ extern "C" {
     RegalContext *_context = REGAL_GET_CONTEXT();
     App("glDebugMessageInsertARB","(", toString(source), ", ", toString(type), ", ", id, ", ", toString(severity), ", ", length, ", ", boost::print::quote(buf,'"'), ")");
     if (!_context) return;
+    if (_context && _context->marker)
+      _context->marker->InsertEventMarker( *_context,length,buf );
+    RegalAssert(_context->info);
+    if (!_context->info->gl_arb_debug_output) return;
     DispatchTable *_next = &_context->dispatcher.front();
     RegalAssert(_next);
     _next->call(&_next->glDebugMessageInsertARB)(source, type, id, severity, length, buf);
@@ -8670,7 +8678,7 @@ extern "C" {
   REGAL_DECL GLvoid *REGAL_CALL glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access)
   {
     RegalContext *_context = REGAL_GET_CONTEXT();
-    App("glMapBufferRange","(", toString(target), ", ", offset, ", ", length, ", ", access, ")");
+    App("glMapBufferRange","(", toString(target), ", ", offset, ", ", length, ", ", GLbufferAccessToString(access), ")");
     if (!_context) return NULL;
     DispatchTable *_next = &_context->dispatcher.front();
     RegalAssert(_next);
@@ -18162,7 +18170,7 @@ extern "C" {
   REGAL_DECL GLvoid *REGAL_CALL glMapBufferRangeEXT(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access)
   {
     RegalContext *_context = REGAL_GET_CONTEXT();
-    App("glMapBufferRangeEXT","(", toString(target), ", ", offset, ", ", length, ", ", access, ")");
+    App("glMapBufferRangeEXT","(", toString(target), ", ", offset, ", ", length, ", ", GLbufferAccessToString(access), ")");
     if (!_context) return NULL;
     DispatchTable *_next = &_context->dispatcher.front();
     RegalAssert(_next);
@@ -20108,6 +20116,10 @@ extern "C" {
     RegalContext *_context = REGAL_GET_CONTEXT();
     App("glDebugMessageInsert","(", toString(source), ", ", toString(type), ", ", id, ", ", toString(severity), ", ", length, ", ", boost::print::quote(buf,'"'), ")");
     if (!_context) return;
+    if (_context && _context->marker)
+      _context->marker->InsertEventMarker( *_context,length,buf );
+    RegalAssert(_context->info);
+    if (!_context->info->gl_khr_debug) return;
     DispatchTable *_next = &_context->dispatcher.front();
     RegalAssert(_next);
     _next->call(&_next->glDebugMessageInsert)(source, type, id, severity, length, buf);
@@ -20168,6 +20180,10 @@ extern "C" {
     RegalContext *_context = REGAL_GET_CONTEXT();
     App("glPopDebugGroup","()");
     if (!_context) return;
+    if (_context && _context->marker)
+      _context->marker->PopGroupMarker( *_context );
+    RegalAssert(_context->info);
+    if (!_context->info->gl_khr_debug) return;
     DispatchTable *_next = &_context->dispatcher.front();
     RegalAssert(_next);
     _next->call(&_next->glPopDebugGroup)();
@@ -20178,6 +20194,10 @@ extern "C" {
     RegalContext *_context = REGAL_GET_CONTEXT();
     App("glPushDebugGroup","(", toString(source), ", ", id, ", ", length, ", ", boost::print::quote(message,'"'), ")");
     if (!_context) return;
+    if (_context && _context->marker)
+      _context->marker->PushGroupMarker( *_context, length, message );
+    RegalAssert(_context->info);
+    if (!_context->info->gl_khr_debug) return;
     DispatchTable *_next = &_context->dispatcher.front();
     RegalAssert(_next);
     _next->call(&_next->glPushDebugGroup)(source, id, length, message);

@@ -14589,7 +14589,7 @@ static GLvoid *REGAL_CALL code_glMapBufferRange(GLenum target, GLintptr offset, 
                    _code << toString(target);
     _code << ", "; _code << offset;
     _code << ", "; _code << length;
-    _code << ", "; _code << access;
+    _code << ", "; _code << GLbufferAccessToString(access);
     _code << ");\n";
     printf("%s",_code.str().c_str());
     return _ret;
@@ -31560,7 +31560,7 @@ static GLvoid *REGAL_CALL code_glMapBufferRangeEXT(GLenum target, GLintptr offse
                    _code << toString(target);
     _code << ", "; _code << offset;
     _code << ", "; _code << length;
-    _code << ", "; _code << access;
+    _code << ", "; _code << GLbufferAccessToString(access);
     _code << ");\n";
     printf("%s",_code.str().c_str());
     return _ret;

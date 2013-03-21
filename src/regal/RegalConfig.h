@@ -50,6 +50,12 @@ namespace Config
 
   extern void writeJSON(Json::Output &jo);
 
+  //
+
+  extern ::std::string configFile;
+
+  //
+
   extern bool forceES1Profile;
   extern bool forceES2Profile;
   extern bool forceCoreProfile;
@@ -121,14 +127,14 @@ namespace Config
 
   // Caching
 
-  extern bool        cache;
-  extern bool        cacheShader;
-  extern bool        cacheShaderRead;
-  extern bool        cacheShaderWrite;
-  extern bool        cacheTexture;
-  extern bool        cacheTextureRead;
-  extern bool        cacheTextureWrite;
-  extern std::string cacheDirectory;
+  extern bool          cache;
+  extern bool          cacheShader;
+  extern bool          cacheShaderRead;
+  extern bool          cacheShaderWrite;
+  extern bool          cacheTexture;
+  extern bool          cacheTextureRead;
+  extern bool          cacheTextureWrite;
+  extern ::std::string cacheDirectory;
 };
 
 REGAL_NAMESPACE_END

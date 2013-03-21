@@ -1,11 +1,18 @@
-include config/Makefile.nacl
+include config/nacl.inc
 
 NACL_ARCH := arm
-CC  := arm-nacl-gcc
-CXX := arm-nacl-g++
-LD  := arm-nacl-g++
-STRIP  := arm-nacl-strip
 
+NACL_TOOLCHAIN := $(NACL_SDK_ROOT)/toolchain/$(NACL_OS)_arm_$(NACL_LIBC)
+
+CC     := $(NACL_TOOLCHAIN)/bin/arm-nacl-gcc
+CXX    := $(NACL_TOOLCHAIN)/bin/arm-nacl-g++
+LD     := $(NACL_TOOLCHAIN)/bin/arm-nacl-g++
+AR     := $(NACL_TOOLCHAIN)/bin/arm-nacl-ar
+RANLIB :=
+STRIP  ?=
+
+#WARN += -Wno-unused-but-set-variable -Wno-maybe-uninitialized
+#WARN += -Wno-conversion-null
 BIN_EXTENSION = _arm.nexe
 EXT.DYNAMIC = so
 LDFLAGS.EXTRA =
@@ -14,9 +21,6 @@ LDFLAGS.GL =
 LDFLAGS.GLU = -lRegalGLU
 LDFLAGS.GLUT = -lRegalGLUT
 LDFLAGS.STATIC =
-WARN = -Wall -W -Wno-unused-parameter
-CFLAGS.DEBUG = -g
-CFLAGS.RELEASE = -O2
 BIN.SUFFIX =
 LIB.SONAME = lib$(NAME).so.$(SO_MAJOR)
 LIB.DEVLNK = lib$(NAME).so

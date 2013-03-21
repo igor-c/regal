@@ -1602,16 +1602,22 @@ GL_TEXTURE_CUBE_MAP.esVersions = [2.0]
 GL_TEXTURE_CUBE_MAP.bindTexture = True
 GL_TEXTURE_CUBE_MAP_NEGATIVE_X = Enumerant('GL_TEXTURE_CUBE_MAP_NEGATIVE_X', 0x8516, 'GL_VERSION_1_3')
 GL_TEXTURE_CUBE_MAP_NEGATIVE_X.esVersions = [2.0]
+GL_TEXTURE_CUBE_MAP_NEGATIVE_X.texImage = True
 GL_TEXTURE_CUBE_MAP_NEGATIVE_Y = Enumerant('GL_TEXTURE_CUBE_MAP_NEGATIVE_Y', 0x8518, 'GL_VERSION_1_3')
 GL_TEXTURE_CUBE_MAP_NEGATIVE_Y.esVersions = [2.0]
+GL_TEXTURE_CUBE_MAP_NEGATIVE_Y.texImage = True
 GL_TEXTURE_CUBE_MAP_NEGATIVE_Z = Enumerant('GL_TEXTURE_CUBE_MAP_NEGATIVE_Z', 0x851a, 'GL_VERSION_1_3')
 GL_TEXTURE_CUBE_MAP_NEGATIVE_Z.esVersions = [2.0]
+GL_TEXTURE_CUBE_MAP_NEGATIVE_Z.texImage = True
 GL_TEXTURE_CUBE_MAP_POSITIVE_X = Enumerant('GL_TEXTURE_CUBE_MAP_POSITIVE_X', 0x8515, 'GL_VERSION_1_3')
 GL_TEXTURE_CUBE_MAP_POSITIVE_X.esVersions = [2.0]
+GL_TEXTURE_CUBE_MAP_POSITIVE_X.texImage = True
 GL_TEXTURE_CUBE_MAP_POSITIVE_Y = Enumerant('GL_TEXTURE_CUBE_MAP_POSITIVE_Y', 0x8517, 'GL_VERSION_1_3')
 GL_TEXTURE_CUBE_MAP_POSITIVE_Y.esVersions = [2.0]
+GL_TEXTURE_CUBE_MAP_POSITIVE_Y.texImage = True
 GL_TEXTURE_CUBE_MAP_POSITIVE_Z = Enumerant('GL_TEXTURE_CUBE_MAP_POSITIVE_Z', 0x8519, 'GL_VERSION_1_3')
 GL_TEXTURE_CUBE_MAP_POSITIVE_Z.esVersions = [2.0]
+GL_TEXTURE_CUBE_MAP_POSITIVE_Z.texImage = True
 GL_TRANSPOSE_COLOR_MATRIX = Enumerant('GL_TRANSPOSE_COLOR_MATRIX', 0x84e6, 'GL_VERSION_1_3')
 GL_TRANSPOSE_MODELVIEW_MATRIX = Enumerant('GL_TRANSPOSE_MODELVIEW_MATRIX', 0x84e3, 'GL_VERSION_1_3')
 GL_TRANSPOSE_PROJECTION_MATRIX = Enumerant('GL_TRANSPOSE_PROJECTION_MATRIX', 0x84e4, 'GL_VERSION_1_3')
@@ -3994,6 +4000,7 @@ GL_TEXTURE_2D = Enumerant('GL_TEXTURE_2D', 0x0de1, 'GL_ARB_internalformat_query2
 GL_TEXTURE_2D.esVersions = [2.0]
 GL_TEXTURE_2D.enableCap = True
 GL_TEXTURE_2D.bindTexture = True
+GL_TEXTURE_2D.texImage = True
 GL_TEXTURE_2D_ARRAY = Enumerant('GL_TEXTURE_2D_ARRAY', 0x8c1a, 'GL_ARB_internalformat_query2')
 GL_TEXTURE_2D_MULTISAMPLE = Enumerant('GL_TEXTURE_2D_MULTISAMPLE', 0x9100, 'GL_ARB_internalformat_query2')
 GL_TEXTURE_2D_MULTISAMPLE_ARRAY = Enumerant('GL_TEXTURE_2D_MULTISAMPLE_ARRAY', 0x9102, 'GL_ARB_internalformat_query2')
@@ -21031,7 +21038,7 @@ glMapBufferRange.ret = Return('GLvoid *')
 glMapBufferRange.add( Input( 'target','GLenum' ))
 glMapBufferRange.add( Input( 'offset','GLintptr' ))
 glMapBufferRange.add( Input( 'length','GLsizeiptr' ))
-glMapBufferRange.add( Input( 'access','GLbitfield' ))
+glMapBufferRange.add( Input( 'access','GLbitfield' ,regalLog = 'GLbufferAccessToString(access)' ))
 glMapBufferRange.version = '3.0'
 glMapBufferRange.category = 'GL_ARB_map_buffer_range'
 glMapBufferRange.trace = True
@@ -31977,7 +31984,7 @@ glMapBufferRangeEXT.ret = Return('GLvoid *')
 glMapBufferRangeEXT.add( Input( 'target','GLenum' ))
 glMapBufferRangeEXT.add( Input( 'offset','GLintptr' ))
 glMapBufferRangeEXT.add( Input( 'length','GLsizeiptr' ))
-glMapBufferRangeEXT.add( Input( 'access','GLbitfield' ))
+glMapBufferRangeEXT.add( Input( 'access','GLbitfield' ,regalLog = 'GLbufferAccessToString(access)' ))
 glMapBufferRangeEXT.version = ''
 glMapBufferRangeEXT.category = 'GL_EXT_map_buffer_range'
 glMapBufferRangeEXT.trace = True

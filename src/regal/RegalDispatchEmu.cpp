@@ -17033,11 +17033,16 @@ static void REGAL_CALL emu_glTexSubImage2D(GLenum target, GLint level, GLint xof
        #endif
          switch (target)
          {
-           case GL_TEXTURE_CUBE_MAP:
+           case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+           case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+           case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+           case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+           case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+           case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
            case GL_TEXTURE_2D:
              break;
            default:
-             Warning("glTexSubImage2D does not support ",GLenumToString(format)," for ES 2.0.");
+             Warning("glTexSubImage2D does not support ",GLenumToString(target)," for ES 2.0.");
              return;
          }
       DispatchTable *_next = _context->dispatcher.emulation._next;

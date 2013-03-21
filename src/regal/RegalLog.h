@@ -39,7 +39,6 @@ REGAL_GLOBAL_BEGIN
 #include <list>
 #include <set>
 
-#include <boost/print/json.hpp>           // Note - shouldn't need this in RegalLog.h
 #include <boost/print/print_string.hpp>
 
 REGAL_GLOBAL_END

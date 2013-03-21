@@ -37,11 +37,9 @@ REGAL_GLOBAL_BEGIN
 
 #include <limits>
 
-#include <boost/print/print_string.hpp>
-using boost::print::print_string;
+#include <boost/print/json.hpp>
 
 #include "RegalLog.h"
-#include "RegalJson.h"
 #include "RegalConfig.h"
 #include "RegalSystem.h"
 
@@ -49,7 +47,11 @@ REGAL_GLOBAL_END
 
 REGAL_NAMESPACE_BEGIN
 
+namespace Json { struct Output : public ::boost::print::json::output<std::string> {}; }
+
 namespace Config {
+
+  ::std::string configFile("");  // Don't read/write configuration by default
 
   bool forceES1Profile  = REGAL_FORCE_ES1_PROFILE;
   bool forceES2Profile  = REGAL_FORCE_ES2_PROFILE;
@@ -79,17 +81,17 @@ namespace Config {
   bool enableEmuFilter  = REGAL_EMU_FILTER;
   bool enableEmuTexC    = REGAL_EMU_TEXC;
 
-  bool forceEmuPpa     = REGAL_FORCE_EMU_PPA;
-  bool forceEmuPpca    = REGAL_FORCE_EMU_PPCA;
-  bool forceEmuObj     = REGAL_FORCE_EMU_OBJ;
-  bool forceEmuBin     = REGAL_FORCE_EMU_BIN;
-  bool forceEmuXfer    = REGAL_FORCE_EMU_XFER;
-  bool forceEmuDsa     = REGAL_FORCE_EMU_DSA;
-  bool forceEmuIff     = REGAL_FORCE_EMU_IFF;
-  bool forceEmuSo      = REGAL_FORCE_EMU_SO;
-  bool forceEmuVao     = REGAL_FORCE_EMU_VAO;
-  bool forceEmuFilter  = REGAL_FORCE_EMU_FILTER;
-  bool forceEmuTexC    = REGAL_FORCE_EMU_TEXC;
+  bool forceEmuPpa      = REGAL_FORCE_EMU_PPA;
+  bool forceEmuPpca     = REGAL_FORCE_EMU_PPCA;
+  bool forceEmuObj      = REGAL_FORCE_EMU_OBJ;
+  bool forceEmuBin      = REGAL_FORCE_EMU_BIN;
+  bool forceEmuXfer     = REGAL_FORCE_EMU_XFER;
+  bool forceEmuDsa      = REGAL_FORCE_EMU_DSA;
+  bool forceEmuIff      = REGAL_FORCE_EMU_IFF;
+  bool forceEmuSo       = REGAL_FORCE_EMU_SO;
+  bool forceEmuVao      = REGAL_FORCE_EMU_VAO;
+  bool forceEmuFilter   = REGAL_FORCE_EMU_FILTER;
+  bool forceEmuTexC     = REGAL_FORCE_EMU_TEXC;
 
   int  frameLimit       = 0;  // Unlimited
 
@@ -105,14 +107,14 @@ namespace Config {
   bool frameSaveStencil = false;
   bool frameSaveDepth   = false;
 
-  bool        cache             = REGAL_CACHE;
-  bool        cacheShader       = false;
-  bool        cacheShaderRead   = false;
-  bool        cacheShaderWrite  = false;
-  bool        cacheTexture      = false;
-  bool        cacheTextureRead  = false;
-  bool        cacheTextureWrite = false;
-  std::string cacheDirectory("./");
+  bool          cache             = REGAL_CACHE;
+  bool          cacheShader       = false;
+  bool          cacheShaderRead   = false;
+  bool          cacheShaderWrite  = false;
+  bool          cacheTexture      = false;
+  bool          cacheTextureRead  = false;
+  bool          cacheTextureWrite = false;
+  ::std::string cacheDirectory("./");
 
   void Init()
   {
@@ -120,6 +122,9 @@ namespace Config {
 
 #ifndef REGAL_NO_GETENV
     const char *tmp;
+
+    tmp = GetEnv( "REGAL_CONFIG_FILE" );
+    if (tmp) configFile = tmp;
 
 #if !REGAL_FORCE_ES1_PROFILE
     tmp = GetEnv( "REGAL_FORCE_ES1_PROFILE" );
@@ -494,73 +499,87 @@ namespace Config {
   {
     jo.object("config");
 
-    jo.member("forceES1Profile",  forceES1Profile);
-    jo.member("forceES2Profile",  forceES2Profile);
-    jo.member("forceCoreProfile", forceCoreProfile);
+      jo.member("configFile", configFile);
 
-    jo.object("system");
-    jo.member("ES1", sysES1);
-    jo.member("ES2", sysES2);
-    jo.member("GL",  sysGL);
-    jo.member("GLX", sysGLX);
-    jo.member("EGL", sysEGL);
-    jo.end();
+      jo.object("system");
+        jo.member("ES1", sysES1);
+        jo.member("ES2", sysES2);
+        jo.member("GL",  sysGL);
+        jo.member("GLX", sysGLX);
+        jo.member("EGL", sysEGL);
+      jo.end();
 
-    jo.member("forceEmulation",  forceEmulation);
-    jo.member("enableEmulation", enableEmulation);
+      jo.object("force");
+        jo.member("ES1",  forceES1Profile);
+        jo.member("ES2",  forceES2Profile);
+        jo.member("Core", forceCoreProfile);
+      jo.end();
 
-    jo.object("dispatch");
-    jo.member("debug",  enableDebug);
-    jo.member("error",  enableError);
-    jo.member("code",   enableCode);
-    jo.member("log",    enableLog);
-    jo.member("driver", enableDriver);
-    jo.end();
+      jo.object("dispatch");
 
-    jo.object("enableEmulationLayer");
-    jo.member("ppa",    enableEmuPpa);
-    jo.member("obj",    enableEmuObj);
-    jo.member("bin",    enableEmuBin);
-    jo.member("dsa",    enableEmuDsa);
-    jo.member("iff",    enableEmuIff);
-    jo.member("so",     enableEmuSo);
-    jo.member("vao",    enableEmuVao);
-    jo.member("texc",   enableEmuTexC);
-    jo.member("filter", enableEmuFilter);
-    jo.end();
+        jo.object("enable");
+          jo.member("debug",     enableDebug);
+          jo.member("error",     enableError);
+          jo.member("code",      enableCode);
+          jo.member("emulation", enableEmulation);
+          jo.member("log",       enableLog);
+          jo.member("driver",    enableDriver);
+        jo.end();
 
-    jo.object("forceEmulationLayer");
-    jo.member("ppa",    forceEmuPpa);
-    jo.member("obj",    forceEmuObj);
-    jo.member("bin",    forceEmuBin);
-    jo.member("dsa",    forceEmuDsa);
-    jo.member("iff",    forceEmuIff);
-    jo.member("so",     forceEmuSo);
-    jo.member("vao",    forceEmuVao);
-    jo.member("texc",   forceEmuTexC);
-    jo.member("filter", forceEmuFilter);
-    jo.end();
+        jo.object("force");
+          jo.member("emulation", forceEmulation);
+        jo.end();
 
-    jo.object("frame");
-    jo.member("limit",       frameLimit);
-    jo.member("md5Color",    frameMd5Color);
-    jo.member("md5Stencil",  frameMd5Stencil);
-    jo.member("md5Depth",    frameMd5Depth);
-    jo.member("saveColor",   frameSaveColor);
-    jo.member("saveStencil", frameSaveStencil);
-    jo.member("saveDepth",   frameSaveDepth);
-    jo.end();
+        jo.object("emulation");
 
-    jo.object("cache");
-    jo.member("enable",       cache);
-    jo.member("shader",       cacheShader);
-    jo.member("shaderWrite",  cacheShaderWrite);
-    jo.member("shaderRead",   cacheShaderRead);
-    jo.member("texture",      cacheShader);
-    jo.member("textureWrite", cacheShaderWrite);
-    jo.member("textureRead",  cacheShaderRead);
-    jo.member("directory",    cacheDirectory);
-    jo.end();
+          jo.object("enable");
+            jo.member("ppa",    enableEmuPpa);
+            jo.member("obj",    enableEmuObj);
+            jo.member("bin",    enableEmuBin);
+            jo.member("dsa",    enableEmuDsa);
+            jo.member("iff",    enableEmuIff);
+            jo.member("so",     enableEmuSo);
+            jo.member("vao",    enableEmuVao);
+            jo.member("texc",   enableEmuTexC);
+            jo.member("filter", enableEmuFilter);
+          jo.end();
+
+          jo.object("force");
+            jo.member("ppa",    forceEmuPpa);
+            jo.member("obj",    forceEmuObj);
+            jo.member("bin",    forceEmuBin);
+            jo.member("dsa",    forceEmuDsa);
+            jo.member("iff",    forceEmuIff);
+            jo.member("so",     forceEmuSo);
+            jo.member("vao",    forceEmuVao);
+            jo.member("texc",   forceEmuTexC);
+            jo.member("filter", forceEmuFilter);
+          jo.end();
+
+        jo.end();
+
+      jo.end();
+
+      jo.object("frame");
+        jo.member("limit",       frameLimit);
+        jo.member("md5Color",    frameMd5Color);
+        jo.member("md5Stencil",  frameMd5Stencil);
+        jo.member("md5Depth",    frameMd5Depth);
+        jo.member("saveColor",   frameSaveColor);
+        jo.member("saveStencil", frameSaveStencil);
+        jo.member("saveDepth",   frameSaveDepth);
+      jo.end();
+
+      jo.object("cache");
+        jo.member("enable",       cache);
+        jo.member("shader",       cacheShader);
+        jo.member("shaderWrite",  cacheShaderWrite);
+        jo.member("shaderRead",   cacheShaderRead);
+        jo.member("texture",      cacheShader);
+        jo.member("textureWrite", cacheShaderWrite);
+        jo.member("textureRead",  cacheShaderRead);
+        jo.member("directory",    cacheDirectory);
+      jo.end();
 
     jo.end();
   }

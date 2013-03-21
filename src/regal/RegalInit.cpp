@@ -34,6 +34,8 @@
 
 REGAL_GLOBAL_BEGIN
 
+#include <boost/print/json.hpp>
+
 #include <map>
 using namespace std;
 
@@ -52,6 +54,8 @@ REGAL_GLOBAL_END
 REGAL_NAMESPACE_BEGIN
 
 using Token::toString;
+
+namespace Json { struct Output : public ::boost::print::json::output<std::string> {}; }
 
 static ::REGAL_NAMESPACE_INTERNAL::Init *_init = NULL;
 
@@ -84,11 +88,45 @@ Init::Init()
   Config::Init();
   Http::Init();
 
+  // TODO - read configuration file
+
   Http::Start();
 }
 
 Init::~Init()
 {
+  //
+  // Write out the Regal configuration file as JSON
+  //
+
+  if (Config::configFile.length())
+  {
+    Json::Output jo;
+    jo.object();
+      jo.object("regal");
+        Config::writeJSON(jo);
+        Logging::writeJSON(jo);
+      jo.end();
+    jo.end();
+
+    FILE *f = fopen(Config::configFile.c_str(),"wt");
+    if (f)
+    {
+      string tmp = jo.str();
+      fwrite(tmp.c_str(),1,tmp.length(),f);
+      fclose(f);
+      Info("Regal configuration written to ",Config::configFile);
+    }
+    else
+    {
+      Warning("Regal configuration could not be written to ",Config::configFile);
+    }
+  }
+
+  //
+  // Shutdown...
+  //
+
   Http::Stop();
   Logging::Cleanup();
 }

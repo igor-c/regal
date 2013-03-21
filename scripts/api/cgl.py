@@ -23,7 +23,7 @@ CGLPBufferObj.default = '0'
 CGLShareGroupObj = Typedef('CGLShareGroupObj','void *')
 CGLShareGroupObj.default = '0'
 
-IOSurfaceRef = Typedef('IOSurfaceRef','void *')
+IOSurfaceRef = Typedef('IOSurfaceRef','struct __IOSurface *')
 IOSurfaceRef.default = '0'
 
 CGSConnectionID = Typedef('CGSConnectionID','void *')

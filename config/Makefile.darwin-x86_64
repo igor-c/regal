@@ -3,6 +3,7 @@ CC = cc
 LD = cc
 EXT.DYNAMIC = dylib
 CFLAGS.EXTRA = -arch x86_64 -dynamic -fno-common
+CFLAGS.EXTRA += -MMD
 PICFLAG = -fPIC
 LDFLAGS.EXTRA = -arch x86_64
 ifneq (undefined, $(origin REGAL_APPLE_GLX))

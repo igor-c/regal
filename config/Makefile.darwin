@@ -3,6 +3,7 @@ CC = cc
 LD = cc
 EXT.DYNAMIC = dylib
 CFLAGS.EXTRA = -dynamic -fno-common -Wno-constant-logical-operand
+CFLAGS.EXTRA += -MMD
 PICFLAG = -fPIC
 LDFLAGS.EXTRA =
 ifneq (undefined, $(origin REGAL_APPLE_GLX))

@@ -37,10 +37,10 @@ REGAL_GLOBAL_BEGIN
 #include <cstdio>
 #include <cstdarg>
 
+#include <boost/print/json.hpp>
 #include <boost/print/string_list.hpp>
 
 #include "RegalLog.h"
-#include "RegalJson.h"
 #include "RegalTimer.h"
 #include "RegalMarker.h"
 #include "RegalThread.h"
@@ -75,6 +75,8 @@ using ::boost::print::print_string;
 using namespace ::boost::print;
 
 typedef string_list<string> string_list;
+
+namespace Json { struct Output : public ::boost::print::json::output<std::string> {}; }
 
 namespace Logging {
 
@@ -297,31 +299,33 @@ namespace Logging {
   {
     jo.object("logging");
 
-    jo.member("error",     enableError);
-    jo.member("warning",   enableWarning);
-    jo.member("info",      enableInfo);
-    jo.member("app",       enableApp);
-    jo.member("driver",    enableDriver);
-    jo.member("internal",  enableInternal);
-    jo.member("http",      enableHttp);
+      jo.object("enable");
+        jo.member("error",     enableError);
+        jo.member("warning",   enableWarning);
+        jo.member("info",      enableInfo);
+        jo.member("app",       enableApp);
+        jo.member("driver",    enableDriver);
+        jo.member("internal",  enableInternal);
+        jo.member("http",      enableHttp);
+      jo.end();
 
-    jo.member("maxLines",  maxLines);
-    jo.member("maxBytes",  maxBytes);
+      jo.member("maxLines",  maxLines);
+      jo.member("maxBytes",  maxBytes);
 
 #if REGAL_LOG_ONCE
-    jo.member("once",      once);
+      jo.member("once",      once);
 #endif
 
-    jo.member("frameTime", frameTime);
-    jo.member("pointers",  pointers);
-    jo.member("thread",    thread);
+      jo.member("frameTime", frameTime);
+      jo.member("pointers",  pointers);
+      jo.member("thread",    thread);
 
-    jo.member("callback",    callback);
-    jo.member("log",         log);
-    jo.member("filename",    logFilename);
-    jo.member("json",        json);
-    jo.member("jsonFile",    jsonFilename);
-    jo.member("bufferLimit", bufferLimit);
+      jo.member("callback",    callback);
+      jo.member("log",         log);
+      jo.member("filename",    logFilename);
+      jo.member("json",        json);
+      jo.member("jsonFile",    jsonFilename);
+      jo.member("bufferLimit", bufferLimit);
 
     jo.end();
   }
@@ -376,82 +380,95 @@ namespace Logging {
     // http://www.altdevblogaday.com/2012/08/21/using-chrometracing-to-view-your-inline-profiling-data/
     //
     // object {
-    // "cat": "MY_SUBSYSTEM",  //catagory
-    // "pid": 4260,  //process ID
-    // "tid": 4776, //thread ID
-    // "ts": 2168627922668, //time-stamp of this event
-    // "ph": "B", // Begin sample
-    // "name": "doSomethingCostly", //name of this event
-    // "args": { //arguments associated with this event.
-    //}
+    // "cat": "MY_SUBSYSTEM",       // catagory
+    // "pid": 4260,                 // process ID
+    // "tid": 4776,                 // thread ID
+    // "ts": 2168627922668,         // time-stamp of this event
+    // "ph": "B",                   // Begin sample
+    // "name": "doSomethingCostly", // name of this event
+    // "args": { }                  //arguments associated with this event.
+    // }
     //
 
-    string_list os;
-    os << "{\n";
-    os << ::boost::print::json::member(::boost::print::json::pair("cat",prefix));
-    os << ::boost::print::json::member(::boost::print::json::pair("pid",Thread::procId()));
-    os << ::boost::print::json::member(::boost::print::json::pair("tid",Thread::threadId()%(1<<16)));
-    os << ::boost::print::json::member(::boost::print::json::pair("ts",timer.now()));
+    Json::Output jo;
+
+    jo.member("cat",prefix);
+    jo.member("pid",Thread::procId());
+    jo.member("tid",Thread::threadId()%(1<<16));
+    jo.member("ts", timer.now());
+
+    // Unnamed logging events such as error, warning and info ones
 
     if (!name)
     {
-      os << ::boost::print::json::member(::boost::print::json::pair("ph","I"));
-      os << ::boost::print::json::member(::boost::print::json::pair("name",str));
-      os << "\"args\" : {} \n";
+      jo.member("ph",  "I");
+      jo.member("name",str);
+      jo.object("args");
+      jo.end();
     }
+
+    // begin/end groupings
+
     else if (!strcmp(name,"glBegin"))
     {
-      os << ::boost::print::json::member(::boost::print::json::pair("ph","B"));
-      os << ::boost::print::json::member(::boost::print::json::pair("name","glBegin"));
-      os << "\"args\" : { ";
-      os << ::boost::print::json::member(::boost::print::json::pair("inputs",str),false);
-      os << "}\n";
+      jo.member("ph",  "B");
+      jo.member("name","glBegin");
+      jo.object("args");
+        jo.member("inputs",str);
+      jo.end();
     }
     else if (!strcmp(name,"glEnd"))
     {
-      os << ::boost::print::json::member(::boost::print::json::pair("ph","E"));
-      os << ::boost::print::json::member(::boost::print::json::pair("name","glBegin"));
-      os << "\"args\" : {} \n";
+      jo.member("ph",  "E");
+      jo.member("name","glBegin");
+      jo.object("args");
+      jo.end();
     }
     else if (!strcmp(name,"glPushMatrix"))
     {
-      os << ::boost::print::json::member(::boost::print::json::pair("ph","B"));
-      os << ::boost::print::json::member(::boost::print::json::pair("name","glPushMatrix"));
-      os << "\"args\" : { ";
-      os << ::boost::print::json::member(::boost::print::json::pair("inputs",str),false);
-      os << "}\n";
+      jo.member("ph",  "B");
+      jo.member("name","glPushMatrix");
+      jo.object("args");
+        jo.member("inputs",str);
+      jo.end();
     }
     else if (!strcmp(name,"glPopMatrix"))
     {
-      os << ::boost::print::json::member(::boost::print::json::pair("ph","E"));
-      os << ::boost::print::json::member(::boost::print::json::pair("name","glPushMatrix"));
-      os << "\"args\" : {} \n";
+      jo.member("ph",  "E");
+      jo.member("name","glPushMatrix");
+      jo.object("args");
+      jo.end();
     }
     else if (!strcmp(name,"glPushGroupMarkerEXT"))
     {
-      os << ::boost::print::json::member(::boost::print::json::pair("ph","B"));
-      os << ::boost::print::json::member(::boost::print::json::pair("name","glPushGroupMarkerExt"));
-      os << "\"args\" : { ";
-      os << ::boost::print::json::member(::boost::print::json::pair("inputs",str),false);
-      os << "}\n";
+      jo.member("ph",  "B");
+      jo.member("name","glPushGroupMarkerExt");
+      jo.object("args");
+        jo.member("inputs",str);
+      jo.end();
     }
     else if (!strcmp(name,"glPopGroupMarkerEXT"))
     {
-      os << ::boost::print::json::member(::boost::print::json::pair("ph","E"));
-      os << ::boost::print::json::member(::boost::print::json::pair("name","glPushGroupMarkerExt"));
-      os << "\"args\" : {} \n";
+      jo.member("ph",  "E");
+      jo.member("name","glPushGroupMarkerExt");
+      jo.object("args");
+      jo.end();
     }
+
+    // Generic named events
+
     else
     {
-      os << ::boost::print::json::member(::boost::print::json::pair("ph","I"));
-      os << ::boost::print::json::member(::boost::print::json::pair("name",name ? name : ""));
-      os << "\"args\" : { ";
-      os << ::boost::print::json::member(::boost::print::json::pair("inputs",str),false);
-      os << "}\n";
+      jo.member("ph",  "I");
+      jo.member("name",name ? name : "");
+      jo.object("args");
+        jo.member("inputs",str);
+      jo.end();
     }
-    os << "},\n";
-    return os.str();
+
+    return jo.str();
   }
+
   // Append to the log buffer
 
   inline void append(string &str)

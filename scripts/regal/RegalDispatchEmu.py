@@ -258,13 +258,13 @@ def apiEmuFuncDefineCode(apis, args):
                     for j in i.enumerants:
                       if getattr(j,'esVersions',None)==None:
                         continue
-                      if getattr(j,'bindTexture',None)==None:
+                      if getattr(j,'texImage',None)==None:
                         continue
-                      if 2.0 in j.esVersions and j.bindTexture == True:
+                      if 2.0 in j.esVersions and j.texImage:
                         code += '           case %s:\n'%(j.name)
                 code += '             break;\n'
                 code += '           default:\n'
-                code += '             Warning("%s does not support ",GLenumToString(format)," for ES 2.0.");\n'%(name)
+                code += '             Warning("%s does not support ",GLenumToString(target)," for ES 2.0.");\n'%(name)
                 code += '             return;\n'
                 code += '         }\n'
 

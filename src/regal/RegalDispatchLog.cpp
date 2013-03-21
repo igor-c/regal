@@ -8538,7 +8538,7 @@ static GLvoid *REGAL_CALL log_glMapBufferRange(GLenum target, GLintptr offset, G
     DispatchTable *_next = _context->dispatcher.logging._next;
     RegalAssert(_next);
     GLvoid * ret = _next->call(&_next->glMapBufferRange)(target, offset, length, access);
-    Driver("glMapBufferRange","(", toString(target), ", ", offset, ", ", length, ", ", access, ")", " returned ", boost::print::optional(ret,Logging::pointers));
+    Driver("glMapBufferRange","(", toString(target), ", ", offset, ", ", length, ", ", GLbufferAccessToString(access), ")", " returned ", boost::print::optional(ret,Logging::pointers));
     return ret;
 }
 
@@ -18060,7 +18060,7 @@ static GLvoid *REGAL_CALL log_glMapBufferRangeEXT(GLenum target, GLintptr offset
     DispatchTable *_next = _context->dispatcher.logging._next;
     RegalAssert(_next);
     GLvoid * ret = _next->call(&_next->glMapBufferRangeEXT)(target, offset, length, access);
-    Driver("glMapBufferRangeEXT","(", toString(target), ", ", offset, ", ", length, ", ", access, ")", " returned ", boost::print::optional(ret,Logging::pointers));
+    Driver("glMapBufferRangeEXT","(", toString(target), ", ", offset, ", ", length, ", ", GLbufferAccessToString(access), ")", " returned ", boost::print::optional(ret,Logging::pointers));
     return ret;
 }
 
